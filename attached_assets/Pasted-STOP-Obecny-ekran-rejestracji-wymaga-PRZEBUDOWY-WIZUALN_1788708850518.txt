@@ -1,0 +1,413 @@
+STOP. Obecny ekran rejestracji wymaga PRZEBUDOWY WIZUALNEJ.
+
+Nie poprawiaj go kosmetycznie. Przebuduj layout.
+
+Obecny efekt wygląda jak prosty formularz rejestracyjny z małą kreskówkową postacią. TO NIE JEST KIERUNEK, KTÓREGO CHCEMY.
+
+PRISON LIFE ma wyglądać jak profesjonalna gra przeglądarkowa w stylu premium, inspirowana jakością UI Hero Zero / Shakes & Fidget, ale w naszym własnym realistycznym, mrocznym świecie więziennym.
+
+==================================================
+NAJWAŻNIEJSZE
+==================================================
+
+Ekran rejestracji ma być PEŁNOPRAWNYM EKRANEM GRY.
+
+Nie wygląda jak:
+- formularz,
+- panel administracyjny,
+- landing page,
+- aplikacja SaaS,
+- kreator postaci z prostej gry mobilnej.
+
+Ma wyglądać jak ekran z gotowej gry.
+
+Załączona referencja jest SOURCE OF TRUTH dla wyglądu.
+
+==================================================
+LAYOUT
+==================================================
+
+Obecnie zawartość jest zdecydowanie ZA MAŁA.
+
+Wykorzystaj całą dostępną szerokość ekranu.
+
+Główna zawartość powinna zajmować większość viewportu, z dużą centralną postacią.
+
+Nie pozostawiaj ogromnych pustych obszarów po lewej i prawej stronie.
+
+Docelowo desktop powinien wyglądać mniej więcej tak:
+
+HEADER
+────────────────────────────────────────────────────────────
+
+        STWÓRZ SWOJEGO WIĘŹNIA
+
+┌────────────────┬────────────────────────┬──────────────────┐
+│                │                        │                  │
+│  TOŻSAMOŚĆ     │                        │  TYP WIĘŹNIA     │
+│                │      DUŻA POSTAĆ       │                  │
+│  KSYWA         │                        │  BYK             │
+│                │   REALISTYCZNA         │  SZCZUR           │
+│  WYGLĄD        │   POSTAĆ WIĘŹNIA       │  LIS              │
+│                │                        │  WILK             │
+│  opcje         │                        │                  │
+│                │                        │                  │
+└────────────────┴────────────────────────┴──────────────────┘
+
+────────────────────────────────────────────────────────────
+                    [ DALEJ → ]
+────────────────────────────────────────────────────────────
+FOOTER
+
+Nie traktuj tego schematu dosłownie — zachowaj estetykę i kompozycję referencji — ale ZDECYDOWANIE zwiększ skalę głównej zawartości.
+
+==================================================
+CENTRALNA POSTAĆ
+==================================================
+
+To jest NAJWAŻNIEJSZY ELEMENT.
+
+Obecna postać jest zbyt mała, zbyt prosta i wygląda jak cartoon placeholder.
+
+Usuń ten kierunek.
+
+Postać powinna zajmować dużą część centralnej kolumny.
+
+Ma być widoczna niemal od stóp do głowy.
+
+Styl postaci:
+
+- realistyczny,
+- lekko stylizowany,
+- gritty,
+- industrialny,
+- mroczny,
+- zgodny z grafiką strony głównej Prison Life.
+
+Ma wyglądać jak bohater gry, a nie emoji / figurka.
+
+Wizualizacja postaci powinna znajdować się w realistycznym więziennym otoczeniu:
+- betonowa ściana,
+- kraty,
+- światło wpadające przez małe okno,
+- cienie,
+- zużyte materiały,
+- subtelna mgła / kurz,
+- przemysłowe oświetlenie.
+
+Nie używaj prostego płaskiego gradientu jako tła postaci.
+
+==================================================
+KREATOR WYGLĄDU
+==================================================
+
+Panel WYGLĄD ma być prawdziwym kreatorem postaci.
+
+Kategorie:
+
+TWARZ
+FRYZURA
+ZAROST
+TATUAŻE
+UBRANIE
+KOLOR SKÓRY
+
+Każda opcja ma mieć wizualny preview.
+
+ALE:
+
+Kliknięcie opcji musi FAKTYCZNIE zmieniać centralną postać.
+
+Nie wystarczy zaznaczyć kafelka.
+
+Jeżeli kliknę inną fryzurę, włosy na postaci muszą się zmienić.
+
+Jeżeli kliknę inny zarost, zarost musi się zmienić.
+
+Jeżeli kliknę tatuaż, tatuaż musi pojawić się na postaci.
+
+Jeżeli kliknę ubranie, ubranie musi się zmienić.
+
+Jeżeli kliknę kolor skóry, kolor skóry musi się zmienić.
+
+==================================================
+WARSTWOWY SYSTEM POSTACI
+==================================================
+
+Zaimplementuj postać jako warstwy:
+
+BODY
+SKIN
+FACE
+HAIR
+BEARD
+TATTOO
+OUTFIT
+ACCESSORIES
+
+Każdy element musi być możliwy do podmienienia niezależnie.
+
+Przygotuj rzeczywiste assety dla wariantów.
+
+NIE używaj:
+- zwykłych ikon,
+- emoji,
+- prostych kółek,
+- placeholderów,
+- nazw „Hair 1”, „Hair 2” bez zmiany grafiki.
+
+Jeżeli na tym etapie nie mamy finalnych assetów, stwórz spójne assety prototypowe, ale muszą wyglądać jak rzeczywiste elementy postaci.
+
+Architektura ma pozwalać później dodać dziesiątki kolejnych elementów.
+
+==================================================
+PANEL TYPU WIĘŹNIA
+==================================================
+
+Po prawej:
+
+WYBIERZ TYP WIĘŹNIA
+
+KAŻDY TYP TO INNA DROGA.
+
+BYK
+SIŁA • ŻYCIE
+
+SZCZUR
+SZYBKOŚĆ • UNIKI
+
+LIS
+TECHNIKA • TAKTYKA
+
+WILK
+BALANS
+
+Karty mają wyglądać jak element UI gry.
+
+Nie jak zwykłe HTML cards.
+
+Każda karta:
+- ma ikonę / portret,
+- nazwę,
+- specjalizację,
+- aktywny stan,
+- hover,
+- kliknięcie.
+
+Aktywny typ:
+ciemne tło + mocne pomarańczowe obramowanie + subtelne podświetlenie.
+
+==================================================
+KSYWA
+==================================================
+
+Ksywa powinna znajdować się w lewej części kreatora.
+
+Nagłówek:
+
+KSYWA
+
+Input:
+
+Wpisz swoją ksywę...
+
+Po wpisaniu:
+
+KOSA
+
+powinna być widoczna również przy podglądzie postaci.
+
+Dodaj pod nią numer więźnia:
+
+#A-47291
+
+==================================================
+PROGRESS
+==================================================
+
+Na samej górze zachowaj:
+
+01 WYGLĄD
+02 TYP
+03 DANE
+04 GOTOWE
+
+Ale zrób to elegancko i proporcjonalnie.
+
+Nie może zajmować połowy ekranu.
+
+Aktualny krok = pomarańczowy.
+
+==================================================
+HEADER
+==================================================
+
+Header ma być zgodny wizualnie z główną stroną Prison Life.
+
+Logo po lewej.
+
+Progress po środku.
+
+Po prawej:
+
+MASZ JUŻ KONTO?
+
+[ ZALOGUJ SIĘ ]
+
+Nie twórz drugiego wielkiego menu.
+
+==================================================
+DOLNA NAWIGACJA
+==================================================
+
+Na dole:
+
+po lewej:
+MASZ JUŻ KONTO?
+[ ZALOGUJ SIĘ ]
+
+po prawej:
+[ DALEJ → ]
+
+To ma być szeroki, elegancki pasek gry.
+
+Przycisk DALEJ jest głównym CTA.
+
+==================================================
+DESIGN SYSTEM
+==================================================
+
+ZACHOWAJ:
+
+grafit
+czarny
+brudną biel
+ciemną zieleń
+rdzawy pomarańcz
+
+Materiały:
+
+BETON
+STAL
+RDZA
+ZUŻYTE POWIERZCHNIE
+KRATY
+CIENIE
+METAL
+
+UI powinno mieć:
+- cienkie metalowe obramowania,
+- subtelne tekstury,
+- głębię,
+- cienie,
+- niewielkie pomarańczowe akcenty.
+
+Nie rób neonowego gamingowego UI.
+
+Nie rób cyberpunku.
+
+Nie rób fantasy.
+
+Nie rób cartoonowego stylu.
+
+==================================================
+TYPOGRAFIA
+==================================================
+
+Nagłówki mają być DUŻE.
+
+Szczególnie:
+
+STWÓRZ
+SWOJEGO
+WIĘŹNIA
+
+To powinien być jeden z wizualnych punktów skupienia.
+
+Użyj mocnego, skondensowanego fontu gamingowego / industrialnego.
+
+Tekst pomocniczy ma być znacznie mniejszy.
+
+Nie używaj domyślnego Arial / Inter jako głównego fontu całego designu.
+
+==================================================
+SKALA
+==================================================
+
+BARDZO WAŻNE:
+
+Nie powtarzaj obecnego błędu, czyli:
+
+mały formularz
++
+mała postać
++
+ogromna pusta przestrzeń.
+
+Chcemy:
+
+DUŻA POSTAĆ
+DUŻY NAGŁÓWEK
+DUŻE PANELE
+DOBRE WYKORZYSTANIE EKRANU
+
+Całość ma być wizualnie „ciężka”.
+
+Po wejściu na ekran użytkownik ma od razu zobaczyć:
+
+„TWORZĘ SWOJEGO WIĘŹNIA”.
+
+==================================================
+INTERAKTYWNOŚĆ
+==================================================
+
+Wszystko musi działać:
+
+- wybór ksywy,
+- wybór twarzy,
+- wybór fryzury,
+- wybór zarostu,
+- wybór tatuażu,
+- wybór ubrania,
+- wybór skóry,
+- wybór typu,
+- DALEJ,
+- WSTECZ,
+- progress.
+
+Stan ma być zachowany pomiędzy krokami.
+
+==================================================
+NIE RÓB
+==================================================
+
+NIE:
+- modala,
+- małego formularza,
+- małej kreskówkowej postaci,
+- ogromnej pustej przestrzeni,
+- generycznych kart,
+- SaaS UI,
+- flat design,
+- emoji zamiast grafik,
+- placeholderów udających finalny wygląd,
+- przypadkowych kolorowych elementów,
+- kolejnego dashboardu.
+
+==================================================
+CEL
+==================================================
+
+Po przebudowie ekran ma wyglądać tak, jakby był fragmentem GOTOWEJ GRY PRISON LIFE.
+
+Ma być spójny z naszym ekranem głównym.
+
+Jeżeli musisz wybrać pomiędzy prostszym rozwiązaniem technicznym a rozwiązaniem, które daje lepszy efekt wizualny — wybierz lepszy efekt wizualny.
+
+NAJPIERW DOPRACUJ DESKTOP.
+
+Dopiero gdy desktop wygląda profesjonalnie, dostosuj mobile.
+
+Nie zatrzymuj się na „działa”.
+
+Ma wyglądać dobrze.
