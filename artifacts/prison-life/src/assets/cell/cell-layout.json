@@ -1,0 +1,77 @@
+{
+  "scene": {
+    "background": "cell-background.webp",
+    "reference_width": 1536,
+    "reference_height": 1024,
+    "positioning": "absolute percentages relative to the cell scene container",
+    "rule": "Never auto-arrange scene objects with flex/grid. Never randomize positions."
+  },
+  "interactive_slots": {
+    "bed": {
+      "x": 4,
+      "y": 49,
+      "width": 28,
+      "height": 34,
+      "label": "LOZKO"
+    },
+    "shelf": {
+      "x": 7,
+      "y": 27,
+      "width": 19,
+      "height": 12,
+      "label": "POLKA"
+    },
+    "locker": {
+      "x": 66,
+      "y": 25,
+      "width": 18,
+      "height": 43,
+      "label": "SZAFKA"
+    },
+    "sink": {
+      "x": 76,
+      "y": 45,
+      "width": 12,
+      "height": 17,
+      "label": "UMYWALKA"
+    },
+    "table": {
+      "x": 75,
+      "y": 58,
+      "width": 22,
+      "height": 29,
+      "label": "STOL"
+    },
+    "stool": {
+      "x": 43,
+      "y": 57,
+      "width": 10,
+      "height": 18,
+      "label": "STOLEK"
+    },
+    "tv": {
+      "x": 87,
+      "y": 0,
+      "width": 10,
+      "height": 23,
+      "label": "TELEWIZOR"
+    },
+    "vent": {
+      "x": 61,
+      "y": 12,
+      "width": 9,
+      "height": 10,
+      "label": "WENTYLACJA"
+    }
+  },
+  "implementation": {
+    "layer_order": [
+      "background",
+      "upgradable_objects",
+      "character",
+      "interaction_labels"
+    ],
+    "upgrade_rule": "An upgrade replaces the current object asset inside the same slot. The slot coordinates never change.",
+    "hitbox_rule": "Clickable hitboxes must use the same slot coordinates as the corresponding object."
+  }
+}

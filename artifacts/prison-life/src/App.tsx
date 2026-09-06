@@ -17,6 +17,7 @@ import {
   Coins,
   Crosshair,
   Crown,
+  Droplets,
   Dumbbell,
   BedDouble,
   Facebook,
@@ -43,6 +44,7 @@ import {
   UserRound,
   UserRoundPen,
   Users,
+  Wind,
   X,
   Youtube,
   Zap,
@@ -58,7 +60,8 @@ import foxAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_58_23_1788713918595.png
 import femaleFoxAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_09_1788715078788.png';
 import wolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_59_09_1788713957701.png';
 import femaleWolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_54_1788715089958.png';
-import gameSceneArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_50_39_1788709841559.png';
+import cellBackground from './assets/cell/cell-background.webp';
+import cellLayout from './assets/cell/cell-layout.json';
 
 const queryClient = new QueryClient();
 
@@ -433,14 +436,17 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
-    if (id === 'training') navigateSection('training');
-    else showNotice(
-      id === 'bed' ? 'Łóżko: odpoczynek przywróci energię.'
-        : id === 'locker' ? 'Szafka: schowek jest gotowy na Twój ekwipunek.'
-          : id === 'table' ? 'Stół: tutaj rozpoczniesz zadania.'
-            : id === 'tv' ? 'Telewizor: sprawdzasz najnowsze wiadomości z bloku.'
-              : 'Skrytka: ukryty schowek czeka na właściwy moment.',
-    );
+    const messages: Record<HotspotId, string> = {
+      bed: 'Łóżko: odpoczynek przywróci energię.',
+      shelf: 'Półka: tutaj przechowujesz drobiazgi i notatki.',
+      locker: 'Szafka: schowek jest gotowy na Twój ekwipunek.',
+      sink: 'Umywalka: zimna woda pomaga zachować czujność.',
+      table: 'Stół: tutaj rozpoczniesz zadania.',
+      stool: 'Stołek: mały, ale przydatny element celi.',
+      tv: 'Telewizor: sprawdzasz najnowsze wiadomości z bloku.',
+      vent: 'Wentylacja: przez kratkę słychać życie całego bloku.',
+    };
+    showNotice(messages[id]);
   };
   const sendChat = (event: FormEvent) => {
     event.preventDefault();
@@ -450,7 +456,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setChatMessage('');
   };
 
-  return <main className="game-shell-page" style={{ '--game-scene-artwork': `url("${gameSceneArtwork}")` } as CSSProperties}>
+  return <main className="game-shell-page">
     <header className="game-header">
       <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
@@ -465,7 +471,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
             <section className="game-panel prisoner-panel"><div className="panel-title"><span>MÓJ WIĘZIEŃ</span><button onClick={() => showNotice('Edycja więźnia będzie dostępna wkrótce.')}><UserRoundPen size={12} /> EDYTUJ</button></div><div className="prisoner-profile"><div><h2>{gameData.nickname.toUpperCase()}</h2><span>#A-7421</span><strong>POZIOM {gameData.level}</strong><div className="profile-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div><GamePortrait creator={creator} small /></div><div className="prisoner-stats">{gameStats.map(({ label, value, icon: Icon, color }) => <div className="prisoner-stat" key={label}><Icon size={16} className={`stat-${color}`} /><span>{label}</span><div><i style={{ width: `${value * 10}%` }} /></div><b>{value}</b></div>)}</div><div className="reputation-row"><div><span>REPUTACJA</span><strong>{gameData.reputation}</strong></div><div><span>RANGA</span><strong>{gameData.rank}</strong></div></div><blockquote>„ZA KRATAMI WSZYSCY<br />JESTEŚMY RÓWNI...<br /><em>ALE NIE NA DŁUGO.”</em></blockquote></section>
-             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 6) * 100}%` }} /></div></div><b>{visited.size} / 6</b></div></div></section>
+            <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
         </div> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
@@ -503,10 +509,21 @@ function App() {
 
 export default App;
 
-type HotspotId = 'bed' | 'locker' | 'table' | 'training' | 'tv' | 'stash';
+type HotspotId = keyof typeof cellLayout.interactive_slots;
 
-function CellHotspot({ id, label, description, icon: Icon, onClick, active }: { id: HotspotId; label: string; description: string; icon: typeof BedDouble; onClick: () => void; active: boolean }) {
-  return <button className={`cell-hotspot hotspot-${id} ${active ? 'visited' : ''}`} onClick={onClick} data-testid={`button-hotspot-${id}`}><span className="hotspot-icon"><Icon size={17} /></span><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={14} /></button>;
+type CellSlot = {
+  id: HotspotId;
+  label: string;
+  description: string;
+  icon: typeof BedDouble;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+function CellHotspot({ id, label, description, icon: Icon, x, y, width, height, onClick, active }: CellSlot & { onClick: () => void; active: boolean }) {
+  return <button className={`cell-hotspot hotspot-${id} ${active ? 'visited' : ''}`} style={{ left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%` }} onClick={onClick} data-testid={`button-hotspot-${id}`}><span className="hotspot-icon"><Icon size={17} /></span><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={14} /></button>;
 }
 
 function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn: () => void }) {
@@ -540,15 +557,21 @@ const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shiel
   { id: 'ranking', label: 'RANKING', icon: Trophy },
 ];
 
+const cellSlots: CellSlot[] = [
+  { id: 'bed', ...cellLayout.interactive_slots.bed, label: 'ŁÓŻKO', description: 'Odpocznij i odzyskaj siły', icon: BedDouble },
+  { id: 'shelf', ...cellLayout.interactive_slots.shelf, label: 'PÓŁKA', description: 'Przechowuj drobiazgi i notatki', icon: Archive },
+  { id: 'locker', ...cellLayout.interactive_slots.locker, label: 'SZAFKA', description: 'Przechowuj swoje rzeczy', icon: Archive },
+  { id: 'sink', ...cellLayout.interactive_slots.sink, label: 'UMYWALKA', description: 'Zachowaj czujność', icon: Droplets },
+  { id: 'table', ...cellLayout.interactive_slots.table, label: 'STÓŁ', description: 'Wykonuj zadania', icon: Table },
+  { id: 'stool', ...cellLayout.interactive_slots.stool, label: 'STOŁEK', description: 'Sprawdź ten element celi', icon: Table },
+  { id: 'tv', ...cellLayout.interactive_slots.tv, label: 'TELEWIZOR', description: 'Sprawdź najnowsze wiadomości', icon: Tv },
+  { id: 'vent', ...cellLayout.interactive_slots.vent, label: 'WENTYLACJA', description: 'Nasłuchuj życia bloku', icon: Wind },
+];
+
 function CellScene({ visited, onHotspot }: { visited: Set<HotspotId>; onHotspot: (id: HotspotId) => void }) {
   return <div className="cell-scene" data-testid="cell-scene">
-    <div className="scene-artwork" aria-label="Widok celi więźnia" role="img" />
-    <CellHotspot id="bed" label="ŁÓŻKO" description="Odpocznij i odzyskaj siły" icon={BedDouble} onClick={() => onHotspot('bed')} active={visited.has('bed')} />
-    <CellHotspot id="locker" label="SZAFKA" description="Przechowuj swoje rzeczy" icon={Archive} onClick={() => onHotspot('locker')} active={visited.has('locker')} />
-    <CellHotspot id="table" label="STÓŁ" description="Wykonuj zadania" icon={Table} onClick={() => onHotspot('table')} active={visited.has('table')} />
-    <CellHotspot id="training" label="TRENING" description="Popraw swoje statystyki" icon={Dumbbell} onClick={() => onHotspot('training')} active={visited.has('training')} />
-    <CellHotspot id="tv" label="TELEWIZOR" description="Sprawdź najnowsze wiadomości" icon={Tv} onClick={() => onHotspot('tv')} active={visited.has('tv')} />
-    <CellHotspot id="stash" label="SKRYTKA" description="Otwórz ukryty schowek" icon={LockKeyhole} onClick={() => onHotspot('stash')} active={visited.has('stash')} />
+    <div className="scene-artwork" style={{ backgroundImage: `url("${cellBackground}")` }} aria-label="Widok celi więźnia" role="img" />
+    {cellSlots.map((slot) => <CellHotspot key={slot.id} {...slot} onClick={() => onHotspot(slot.id)} active={visited.has(slot.id)} />)}
   </div>;
 }
 
