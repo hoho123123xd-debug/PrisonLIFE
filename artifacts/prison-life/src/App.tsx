@@ -94,7 +94,7 @@ const featureItems = [
   { title: 'Zdobądź szczyt', copy: 'Wspinaj się w rankingach i zapisz się w historii Prison Life.', icon: Crown },
 ];
 const panelItems = [
-  { label: 'Cela', icon: Shield },
+  { label: 'Twoja Postać', icon: Shield },
   { label: 'Trening', icon: Dumbbell },
   { label: 'Walka', icon: Crosshair },
   { label: 'Praca', icon: BriefcaseBusiness },
@@ -1330,7 +1330,7 @@ function FightView({ creator, gameData, onNotice, onReturn }: { creator: Creator
 }
 
 const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shield }> = [
-  { id: 'cell', label: 'CELA', icon: Shield },
+  { id: 'cell', label: 'TWOJA POSTAĆ', icon: Shield },
   { id: 'messages', label: 'WIADOMOŚCI', icon: MessageSquare },
   { id: 'fight', label: 'WALKA', icon: Swords },
   { id: 'training', label: 'TRENING', icon: Dumbbell },
