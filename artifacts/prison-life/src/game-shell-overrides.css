@@ -2449,6 +2449,7 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: var(--game-space);
+  height: 100%;
   overflow: hidden;
   isolation: isolate;
 }
@@ -2504,7 +2505,7 @@
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(280px, .88fr) minmax(0, 1.7fr);
-  grid-template-rows: minmax(0, 1fr) 154px;
+  grid-template-rows: minmax(0, 1fr) 174px;
   gap: var(--game-space);
 }
 .inventory-equipment-panel {
@@ -2786,15 +2787,15 @@
   min-height: 0;
   position: relative;
   display: grid;
-  grid-template-columns: 136px minmax(0, 1fr) auto;
+  grid-template-columns: 136px minmax(0, 1fr);
   gap: 14px;
-  align-items: center;
+  align-items: stretch;
   padding: 9px;
   overflow: hidden;
 }
 .inventory-detail-art {
+  width: auto;
   height: 100%;
-  min-height: 0;
   display: grid;
   place-items: center;
   border: 1px solid rgba(185, 195, 188, .12);
@@ -2806,6 +2807,11 @@
 }
 .inventory-detail-copy {
   min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 .inventory-detail-title {
   display: flex;
@@ -2833,6 +2839,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
+  margin-top: auto;
 }
 .inventory-detail-actions button {
   min-width: 78px;
@@ -2866,8 +2873,9 @@
   padding: 0;
 }
 .inventory-detail-count {
-  align-self: start;
-  padding: 10px 7px 0 0;
+  position: absolute;
+  top: 10px;
+  right: 8px;
   color: #969f98;
   font: 11px 'Barlow Condensed';
   white-space: nowrap;
@@ -2901,7 +2909,8 @@
   }
   .game-shell-page .game-content-training,
   .game-shell-page .game-content-development,
-  .game-shell-page .game-content-fight {
+  .game-shell-page .game-content-fight,
+  .game-shell-page .game-content-equipment {
     display: block;
     grid-template-columns: none;
     grid-template-rows: none;
@@ -2977,7 +2986,67 @@
   }
   .game-shell-page .game-content-training,
   .game-shell-page .game-content-development,
-  .game-shell-page .game-content-fight {
+  .game-shell-page .game-content-fight,
+  .game-shell-page .game-content-equipment {
     overflow: auto;
+  }
+  .game-shell-page .inventory-view {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    grid-template-rows: auto auto;
+  }
+  .inventory-heading {
+    min-height: 70px;
+    padding: 8px 10px 5px;
+  }
+  .inventory-heading h1 {
+    font-size: 36px;
+  }
+  .inventory-heading p {
+    margin-top: 6px;
+    font-size: 10px;
+  }
+  .inventory-heading-mark {
+    display: none;
+  }
+  .inventory-layout {
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(390px, 55vh) auto 160px;
+  }
+  .inventory-equipment-panel {
+    grid-row: auto;
+  }
+  .inventory-items-panel {
+    min-height: 390px;
+  }
+  .inventory-detail-panel {
+    min-height: 160px;
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+    padding: 9px;
+  }
+  .inventory-detail-art {
+    position: static;
+    width: auto;
+    height: 100%;
+  }
+  .inventory-detail-copy {
+    height: auto;
+  }
+  .inventory-detail-actions {
+    position: static;
+    flex-wrap: wrap;
+  }
+  .inventory-detail-count {
+    top: 8px;
+    right: 7px;
+  }
+  .inventory-item-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(78px, 1fr));
   }
 }
