@@ -447,7 +447,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'market' && section !== 'equipment' && section !== 'quests') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -481,7 +481,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : ''}`}>
+       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
@@ -489,7 +489,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE MISJE</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsView onNotice={showNotice} /> : activeSection === 'market' ? <BlackMarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -561,6 +561,80 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+type MarketFilter = 'ALL' | 'USABLE' | 'EQUIPMENT' | 'OTHER';
+
+type MarketProduct = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  category: Exclude<MarketFilter, 'ALL'>;
+  icon: typeof Archive;
+};
+
+const marketProducts: MarketProduct[] = [
+  { id: 'phone', name: 'TELEFON', description: 'Pozwala na kontakt z innymi więźniami.', price: 500, category: 'USABLE', icon: Archive },
+  { id: 'lighter-market', name: 'ZAPALNICZKA', description: 'Przydatna w wielu sytuacjach.', price: 120, category: 'USABLE', icon: Zap },
+  { id: 'picks', name: 'WYTRYCH', description: 'Ułatwia otwieranie zamkniętych drzwi.', price: 300, category: 'EQUIPMENT', icon: Crosshair },
+  { id: 'bandage-market', name: 'BANDAŻ', description: 'Przywraca część zdrowia.', price: 150, category: 'USABLE', icon: Archive },
+  { id: 'knife-market', name: 'NÓŻ', description: 'Niebezpieczne narzędzie w rękach więźnia.', price: 400, category: 'EQUIPMENT', icon: Swords },
+  { id: 'cigarettes-market', name: 'PAPIEROSY', description: 'Zmniejszają stres.', price: 80, category: 'OTHER', icon: Wind },
+];
+
+function BlackMarketView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [filter, setFilter] = useState<MarketFilter>('ALL');
+  const [balance, setBalance] = useState(1250);
+  const [owned, setOwned] = useState<Record<string, number>>({ 'lighter-market': 1, 'bandage-market': 2, 'cigarettes-market': 3 });
+  const filters: Array<{ id: MarketFilter; label: string; icon: typeof Archive }> = [
+    { id: 'ALL', label: 'WSZYSTKO', icon: Archive },
+    { id: 'USABLE', label: 'UŻYTKOWE', icon: Zap },
+    { id: 'EQUIPMENT', label: 'SPRZĘT', icon: Crosshair },
+    { id: 'OTHER', label: 'INNE', icon: Wind },
+  ];
+  const visibleProducts = filter === 'ALL' ? marketProducts : marketProducts.filter((product) => product.category === filter);
+
+  const buyProduct = (product: MarketProduct) => {
+    if (balance < product.price) {
+      onNotice(`Nie stać Cię na przedmiot: ${product.name.toLowerCase()}.`);
+      return;
+    }
+    setBalance((current) => current - product.price);
+    setOwned((current) => ({ ...current, [product.id]: (current[product.id] ?? 0) + 1 }));
+    onNotice(`Kupiono: ${product.name.toLowerCase()}.`);
+  };
+
+  return <section className="market-view" style={{ '--market-art-url': `url("${cellReference}")` } as CSSProperties} data-testid="market-view">
+    <header className="market-hero">
+      <div>
+        <span className="eyebrow">HANDEL</span>
+        <h1>CZARNY RYNEK</h1>
+        <p>TUTAJ ZNAJDZIESZ RZECZY, KTÓRYCH NIE KUPISZ W SKLEPIE.</p>
+      </div>
+      <div className="market-hero-copy">DOBRE<br />RZECZY<br /><strong>MAJĄ SWOJĄ<br />CENĘ.</strong></div>
+    </header>
+    <div className="market-balance"><span>GOTÓWKA</span><strong>$ {balance.toLocaleString('pl-PL')}</strong></div>
+    <div className="market-hero-art" />
+    <div className="market-toolbar">
+      <div className="market-filters" role="tablist" aria-label="Filtry czarnego rynku">
+        {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} role="tab" aria-selected={filter === id}><FilterIcon size={14} />{label}</button>)}
+      </div>
+      <div className="market-toolbar-status"><span><Archive size={15} /> DOSTĘPNE PRZEDMIOTY: {visibleProducts.length}</span><button onClick={() => onNotice('Oferta czarnego rynku została odświeżona.')}><Timer size={14} /> ODŚWIEŻ <small>00:42:17</small></button></div>
+    </div>
+    <div className="market-products">
+      {visibleProducts.map((product) => {
+        const ProductIcon = product.icon;
+        return <article className="market-product-card" key={product.id}>
+          <div className={`market-product-art market-product-art-${product.id}`}><ProductIcon size={76} strokeWidth={1.05} /></div>
+          <div className="market-product-copy"><h2>{product.name}</h2><p>{product.description}</p><small>Posiadasz: {owned[product.id] ?? 0}</small></div>
+          <strong className="market-product-price">$ {product.price}</strong>
+          <button className="market-buy-button" onClick={() => buyProduct(product)}>KUP</button>
+        </article>;
+      })}
+    </div>
+    <footer className="market-note"><span><CircleDollarSign size={15} /> Ceny i dostępność przedmiotów na czarnym rynku mogą się zmieniać. Sprawdź regularnie nowe dostawy.</span><em>„W więzieniu wszystko ma swoją cenę.”</em></footer>
+  </section>;
 }
 
 type MissionTab = 'available' | 'active' | 'completed';

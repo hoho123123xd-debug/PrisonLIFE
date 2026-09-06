@@ -2432,7 +2432,8 @@
 .game-shell-page .game-content-development,
 .game-shell-page .game-content-fight,
 .game-shell-page .game-content-equipment,
-.game-shell-page .game-content-missions {
+.game-shell-page .game-content-missions,
+.game-shell-page .game-content-market {
   display: block;
   overflow: hidden;
 }
@@ -2440,7 +2441,8 @@
 .game-shell-page .cell-development-view,
 .game-shell-page .fight-view,
 .game-shell-page .inventory-view,
-.game-shell-page .missions-view {
+.game-shell-page .missions-view,
+.game-shell-page .market-view {
   height: 100%;
   min-height: 0;
 }
@@ -2456,6 +2458,245 @@
   overflow: hidden;
   isolation: isolate;
 }
+
+/* Black market screen — dense storefront layout based on the supplied reference. */
+.game-shell-page .market-view {
+  position: relative;
+  display: grid;
+  grid-template-rows: 178px 48px minmax(0, 1fr) 42px;
+  gap: var(--game-space);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding-bottom: 2px;
+  isolation: isolate;
+}
+.market-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(180deg, rgba(5, 10, 12, .35), rgba(5, 10, 12, .88)), var(--market-art-url) center / cover;
+  filter: saturate(.65) contrast(1.06);
+  opacity: .55;
+}
+.market-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding: 15px 14px;
+  overflow: hidden;
+  border: 1px solid rgba(84, 102, 96, .32);
+  background: linear-gradient(90deg, rgba(7, 13, 15, .95), rgba(9, 16, 18, .64) 55%, rgba(9, 14, 16, .36)), var(--market-art-url) center 42% / cover;
+}
+.market-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 30%, rgba(0, 0, 0, .38));
+  pointer-events: none;
+}
+.market-hero .eyebrow {
+  position: relative;
+  z-index: 1;
+  color: var(--game-orange-soft);
+  font-size: 11px;
+}
+.market-hero h1 {
+  position: relative;
+  z-index: 1;
+  margin: 4px 0 3px;
+  color: #f0ede4;
+  font: 700 clamp(35px, 4.2vw, 58px) / .88 'Oswald';
+}
+.market-hero p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #c0c4ba;
+  font: 13px 'Barlow Condensed';
+  letter-spacing: .05em;
+}
+.market-hero-copy {
+  position: absolute;
+  z-index: 1;
+  right: 31%;
+  top: 20%;
+  color: rgba(220, 223, 211, .15);
+  font: italic 700 18px / 1 'Oswald';
+  transform: rotate(-8deg);
+}
+.market-hero-copy strong {
+  color: rgba(218, 117, 45, .32);
+}
+.market-balance {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  right: 14px;
+  width: 160px;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 13px;
+  border: 1px solid #374941;
+  background: rgba(7, 14, 16, .86);
+}
+.market-balance span {
+  color: #a3aaa1;
+  font: 10px 'Barlow Condensed';
+}
+.market-balance strong {
+  color: #68c86c;
+  font: 700 26px 'Oswald';
+}
+.market-hero-art { display: none; }
+.market-toolbar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.market-filters {
+  min-width: 0;
+  display: flex;
+  gap: 5px;
+}
+.market-filters button,
+.market-toolbar-status button {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid #35433f;
+  color: #919b94;
+  background: rgba(9, 17, 19, .88);
+  cursor: pointer;
+  font: 11px 'Barlow Condensed';
+}
+.market-filters button:hover,
+.market-filters button.active {
+  border-color: var(--game-orange);
+  color: #23150e;
+  background: linear-gradient(90deg, #ed7628, #ef963e);
+}
+.market-toolbar-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.market-toolbar-status > span,
+.market-toolbar-status button {
+  color: #98a29a;
+  font: 10px 'Barlow Condensed';
+}
+.market-toolbar-status button {
+  min-height: 34px;
+  padding: 0 10px;
+}
+.market-toolbar-status button small {
+  color: #d7bd70;
+}
+.market-products {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.market-product-card {
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: 105px minmax(0, 1fr) 70px;
+  grid-template-rows: 1fr auto;
+  column-gap: 10px;
+  padding: 8px;
+  overflow: hidden;
+  border: 1px solid #35423f;
+  background: linear-gradient(135deg, rgba(19, 28, 29, .96), rgba(7, 13, 15, .94));
+}
+.market-product-card:hover {
+  border-color: rgba(231, 117, 37, .82);
+  box-shadow: inset 0 0 19px rgba(231, 117, 37, .1);
+}
+.market-product-art {
+  grid-row: 1 / span 2;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #b8b7ac;
+  background: radial-gradient(circle at center, rgba(104, 107, 92, .24), transparent 65%);
+}
+.market-product-art-phone { color: #9b9d95; transform: rotate(-12deg); }
+.market-product-art-lighter-market { color: #d59d52; }
+.market-product-art-picks { color: #bdb8a5; }
+.market-product-art-bandage-market { color: #c7c1ae; }
+.market-product-art-knife-market { color: #c2cbc7; transform: rotate(-20deg); }
+.market-product-art-cigarettes-market { color: #d0ad77; }
+.market-product-copy {
+  min-width: 0;
+  align-self: center;
+}
+.market-product-copy h2 {
+  margin: 0 0 5px;
+  color: #eeeae0;
+  font: 700 15px 'Oswald';
+}
+.market-product-copy p {
+  max-width: 175px;
+  margin: 0 0 7px;
+  color: #a0aaa1;
+  font: 11px / 1.2 'Barlow Condensed';
+}
+.market-product-copy small {
+  color: #8e9891;
+  font: 10px 'Barlow Condensed';
+}
+.market-product-price {
+  align-self: end;
+  color: #6ed174;
+  font: 700 19px 'Oswald';
+}
+.market-buy-button {
+  align-self: end;
+  min-height: 30px;
+  border: 1px solid #ee842d;
+  color: #21130c;
+  background: linear-gradient(90deg, #ee7629, #ee9a3c);
+  cursor: pointer;
+  font: 700 12px 'Barlow Condensed';
+}
+.market-buy-button:hover { background: #ffad4d; }
+.market-note {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border: 1px solid rgba(92, 106, 99, .22);
+  color: #8d9790;
+  background: rgba(8, 15, 17, .74);
+  font: 10px 'Barlow Condensed';
+}
+.market-note span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.market-note svg { color: #aeb5aa; }
+.market-note em {
+  color: #8e968e;
+  font: italic 14px 'Oswald';
+}
+
+/* Equipment screen — dense item management layout based on the supplied reference. */
 .missions-view::before {
   content: '';
   position: absolute;
@@ -3235,7 +3476,8 @@
   .game-shell-page .game-content-development,
   .game-shell-page .game-content-fight,
   .game-shell-page .game-content-equipment,
-  .game-shell-page .game-content-missions {
+  .game-shell-page .game-content-missions,
+  .game-shell-page .game-content-market {
     display: block;
     grid-template-columns: none;
     grid-template-rows: none;
@@ -3323,8 +3565,58 @@
   .game-shell-page .game-content-development,
   .game-shell-page .game-content-fight,
   .game-shell-page .game-content-equipment,
-  .game-shell-page .game-content-missions {
+  .game-shell-page .game-content-missions,
+  .game-shell-page .game-content-market {
     overflow: auto;
+  }
+  .game-shell-page .market-view {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    grid-template-rows: 170px auto auto 42px;
+  }
+  .market-hero {
+    min-height: 170px;
+  }
+  .market-hero-copy {
+    display: none;
+  }
+  .market-balance {
+    top: 12px;
+    right: 10px;
+    width: 124px;
+  }
+  .market-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .market-filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .market-filters button {
+    justify-content: center;
+    padding: 0 4px;
+  }
+  .market-toolbar-status {
+    justify-content: space-between;
+  }
+  .market-products {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, minmax(155px, auto));
+  }
+  .market-product-card {
+    grid-template-columns: 105px minmax(0, 1fr) 66px;
+  }
+  .market-note {
+    min-height: 42px;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    padding-block: 8px;
+  }
+  .market-note em {
+    display: none;
   }
   .game-shell-page .missions-view {
     height: auto;
