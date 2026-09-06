@@ -87,6 +87,8 @@ type Screen = 'home' | 'register' | 'login' | 'game';
 type AppearanceKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'outfit' | 'skin';
 type Appearance = Record<AppearanceKey, number>;
 type AccountData = { email: string; password: string; confirmPassword: string };
+type Gender = 'male' | 'female';
+type World = 'central';
 type PrisonerType = 'bull' | 'rat' | 'fox' | 'wolf';
 const prisonerTypes: Array<{
   id: PrisonerType;
@@ -338,6 +340,7 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
   const setStep = (nextStep: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(4, nextStep)) }));
   const selectedType = prisonerTypes.find((type) => type.id === creator.prisonerType)!;
   const goNext = () => {
+    if (creator.step === 1 && !creator.nickname.trim()) { setCreator((current) => ({ ...current, nicknameError: 'Wpisz ksywę, zanim przejdziesz dalej.' })); return; }
     if (creator.step === 3) {
       if (!creator.account.email || !creator.account.password || !creator.account.confirmPassword) { setCreator((current) => ({ ...current, accountError: 'Uzupełnij wszystkie pola, aby przejść dalej.' })); return; }
       if (creator.account.password.length < 6) { setCreator((current) => ({ ...current, accountError: 'Hasło musi mieć co najmniej 6 znaków.' })); return; }
@@ -347,7 +350,12 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
   };
   const changeStep = (next: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(4, next)), nicknameError: '', accountError: '' }));
   return <RegistrationShell step={creator.step} onNavigate={onNavigate} onStepChange={changeStep} onNext={goNext} onCreate={() => onNavigate('game')}>
-    {creator.step === 1 && <section className="type-selection-stage">
+    {creator.step === 1 && <section className={`type-selection-stage gender-${creator.gender}`}>
+      <div className="type-selection-controls">
+        <div className="type-selection-gender-toggle" role="group" aria-label="Wybierz płeć postaci"><span>PŁEĆ POSTACI</span><div><button type="button" className={creator.gender === 'male' ? 'active' : ''} onClick={() => setCreator((current) => ({ ...current, gender: 'male' }))} aria-pressed={creator.gender === 'male'} data-testid="button-gender-male">MĘŻCZYZNA</button><button type="button" className={creator.gender === 'female' ? 'active' : ''} onClick={() => setCreator((current) => ({ ...current, gender: 'female' }))} aria-pressed={creator.gender === 'female'} data-testid="button-gender-female">KOBIETA</button></div></div>
+        <label className="type-selection-control-field"><span>KSYWA</span><div><UserRound size={15} /><input value={creator.nickname} onChange={(event) => setCreator((current) => ({ ...current, nickname: event.target.value, nicknameError: '' }))} placeholder="Wpisz swoją ksywę..." maxLength={18} data-testid="input-register-nickname" /></div>{creator.nicknameError && <small>{creator.nicknameError}</small>}</label>
+        <label className="type-selection-control-field"><span>ŚWIAT</span><div><Flag size={15} /><select value={creator.world} onChange={(event) => setCreator((current) => ({ ...current, world: event.target.value as World }))} data-testid="select-world"><option value="central">ŚWIAT GŁÓWNY</option></select></div></label>
+      </div>
       <div className="type-selection-cards">
         {prisonerTypes.map((type) => <button type="button" key={type.id} className={`type-selection-card ${creator.prisonerType === type.id ? 'selected' : ''}`} onClick={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} aria-pressed={creator.prisonerType === type.id} data-testid={`button-prisoner-type-${type.id}`}>
           <div className={`type-selection-card-art type-art-${type.id}`}><img src={type.id === 'bull' ? bullAsset : type.id === 'rat' ? ratAsset : type.id === 'fox' ? foxAsset : wolfAsset} alt="" /></div>
@@ -362,8 +370,8 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
   </RegistrationShell>;
 }
 
-type CreatorState = { step: number; nickname: string; nicknameError: string; prisonerType: PrisonerType; appearance: Appearance; account: AccountData; accountError: string };
-const initialCreator: CreatorState = { step: 1, nickname: '', nicknameError: '', prisonerType: 'bull', appearance: { face: 0, hair: 0, beard: 1, tattoo: 1, outfit: 0, skin: 1 }, account: { email: '', password: '', confirmPassword: '' }, accountError: '' };
+type CreatorState = { step: number; nickname: string; nicknameError: string; gender: Gender; world: World; prisonerType: PrisonerType; appearance: Appearance; account: AccountData; accountError: string };
+const initialCreator: CreatorState = { step: 1, nickname: '', nicknameError: '', gender: 'male', world: 'central', prisonerType: 'bull', appearance: { face: 0, hair: 0, beard: 1, tattoo: 1, outfit: 0, skin: 1 }, account: { email: '', password: '', confirmPassword: '' }, accountError: '' };
 
 function AuthScreen({ mode, onNavigate }: { mode: 'login' | 'register'; onNavigate: (screen: Screen) => void }) {
   const [email, setEmail] = useState('');
