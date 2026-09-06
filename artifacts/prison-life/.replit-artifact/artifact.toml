@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Prison Life"
+description = "A cinematic, responsive landing page for Prison Life, a browser strategy game set inside a brutal prison world."
+version = "1.0.0"
+id = "artifacts/prison-life"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18501
+
+[services.development]
+run = "pnpm --filter @workspace/prison-life run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/prison-life", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/prison-life/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18501"
+BASE_PATH = "/"

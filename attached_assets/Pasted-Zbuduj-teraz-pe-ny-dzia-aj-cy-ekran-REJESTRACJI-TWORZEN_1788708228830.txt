@@ -1,0 +1,489 @@
+Zbuduj teraz pełny, działający ekran REJESTRACJI / TWORZENIA POSTACI dla gry przeglądarkowej „PRISON LIFE”, korzystając z załączonego obrazu jako głównej referencji wizualnej.
+
+NAJWAŻNIEJSZE:
+- załączony obraz jest źródłem prawdy dla wyglądu i layoutu,
+- odtwórz go możliwie wiernie 1:1,
+- nie twórz własnego, generycznego layoutu,
+- nie upraszczaj projektu,
+- nie używaj modala,
+- rejestracja ma być osobnym pełnoekranowym ekranem,
+- wszystko ma być od razu działające i klikalne.
+
+==================================================
+PRZEJŚCIE Z HOME
+==================================================
+
+Na stronie głównej gry znajduje się przycisk „ZAREJESTRUJ SIĘ”.
+
+Po jego kliknięciu użytkownik ma przejść na osobny ekran rejestracji.
+
+NIE otwieraj formularza w modalu.
+NIE pokazuj formularza jako popupu nad stroną główną.
+
+Ma nastąpić normalna zmiana widoku / route:
+
+HOME
+→ REJESTRACJA
+
+Zachowaj możliwość powrotu do logowania.
+
+==================================================
+KONCEPCJA REJESTRACJI
+==================================================
+
+Rejestracja jest wieloetapowym procesem tworzenia więźnia.
+
+Kolejność:
+
+KROK 1 — WYGLĄD
+KROK 2 — TYP WIĘŹNIA
+KROK 3 — DANE KONTA
+KROK 4 — PODSUMOWANIE
+
+Użytkownik najpierw tworzy swoją postać, a dopiero na końcu podaje e-mail i hasło.
+
+Na górze ekranu pokaż progress:
+
+01 WYGLĄD
+02 TYP
+03 DANE
+04 GOTOWE
+
+Aktualny krok musi być wyraźnie zaznaczony.
+
+==================================================
+KROK 1 — WYGLĄD
+==================================================
+
+To jest najważniejszy ekran do wykonania w pierwszej kolejności.
+
+Zachowaj strukturę przedstawioną na referencji:
+
+HEADER
+↓
+PROGRESS
+↓
+GŁÓWNA SEKCJA KREATORA
+↓
+DOLNY PASEK
+↓
+FOOTER
+
+Główna sekcja powinna składać się z:
+
+LEWA CZĘŚĆ:
+tytuł + opcje personalizacji
+
+ŚRODEK:
+duży podgląd więźnia
+
+PRAWA CZĘŚĆ:
+wybór typu więźnia
+
+==================================================
+KREATOR POSTACI — RZECZYWISTA ZMIANA WYGLĄDU
+==================================================
+
+To jest ABSOLUTNIE KLUCZOWE.
+
+Centralna postać NIE może być tylko obrazkiem, obok którego znajdują się przyciski udające personalizację.
+
+Użytkownik musi rzeczywiście zmieniać wygląd więźnia.
+
+Zaimplementuj postać jako SYSTEM WARSTWOWY.
+
+Postać powinna składać się z niezależnych warstw:
+
+- BODY / SYLWETKA
+- SKÓRA
+- TWARZ
+- WŁOSY
+- ZAROST
+- TATUAŻE
+- UBRANIE
+- DODATKI
+
+Każda warstwa musi być rzeczywistym assetem graficznym albo rzeczywistą warstwą, którą można podmienić.
+
+Przykład:
+
+wybieram „FRYZURA 03”
+→ aktualna fryzura na centralnej postaci zostaje zastąpiona fryzurą 03.
+
+wybieram „ZAROST 02”
+→ zarost centralnej postaci faktycznie się zmienia.
+
+wybieram „TATUAŻ 04”
+→ tatuaż pojawia się na postaci.
+
+wybieram „UBRANIE 05”
+→ ubranie postaci zostaje zmienione.
+
+wybieram inny kolor skóry
+→ skóra postaci faktycznie zmienia kolor.
+
+NIE rób tego jako:
+- samego tekstu,
+- dropdownu bez wizualnego efektu,
+- zmiany nazwy wariantu,
+- zmiany koloru całego obrazka,
+- placeholderów, które niczego nie zmieniają.
+
+Każda zmiana musi być natychmiast widoczna na dużym centralnym podglądzie.
+
+Jeżeli potrzebujesz stworzyć assety dla prototypu, przygotuj spójny zestaw placeholderowych grafik postaci w dokładnie tym samym stylu wizualnym. Nie używaj przypadkowych zdjęć stockowych.
+
+==================================================
+OPCJE WYGLĄDU
+==================================================
+
+Dodaj kategorie:
+
+TWARZ
+FRYZURA
+ZAROST
+TATUAŻE
+UBRANIE
+KOLOR SKÓRY
+
+Każda kategoria powinna mieć kilka rzeczywistych wariantów.
+
+Warianty pokazuj jako małe wizualne kafelki.
+
+Po kliknięciu:
+- element zostaje wybrany,
+- kafelek otrzymuje aktywne obramowanie,
+- centralna postać natychmiast się zmienia.
+
+Dodaj możliwość przechodzenia pomiędzy wariantami za pomocą strzałek, jeśli wszystkie warianty nie mieszczą się jednocześnie.
+
+Nie pokazuj kilkudziesięciu elementów naraz.
+
+Interfejs ma pozostać elegancki i czytelny.
+
+==================================================
+CENTRALNA POSTAĆ
+==================================================
+
+Centralna postać ma być największym i najważniejszym elementem ekranu.
+
+Kierunek wizualny:
+
+- realistyczny,
+- lekko stylizowany,
+- mroczny,
+- więzienny,
+- industrialny,
+- zgodny z wyglądem strony głównej.
+
+Postać powinna wyglądać jak więzień znajdujący się w świecie gry.
+
+Tło:
+- betonowa ściana,
+- subtelne oznaczenia więzienne,
+- wysokościomierz / linie pomiarowe,
+- mocne boczne światło,
+- głębokie cienie.
+
+Nie twórz osobnego obrazu dla każdej kombinacji wyglądu.
+
+Wykorzystaj warstwowy system postaci, aby można było swobodnie łączyć elementy.
+
+System powinien być przygotowany tak, aby później można było dodawać nowe:
+- fryzury,
+- twarze,
+- zarosty,
+- tatuaże,
+- ubrania,
+- dodatki.
+
+==================================================
+KROK 2 — TYP WIĘŹNIA
+==================================================
+
+Po kliknięciu „DALEJ” przejdź do kroku 2.
+
+Pokaż cztery typy:
+
+BYK
+SIŁA • ŻYCIE
+
+SZCZUR
+SZYBKOŚĆ • UNIKI
+
+LIS
+TECHNIKA • TAKTYKA
+
+WILK
+BALANS
+
+Każdy typ ma:
+- własną grafikę,
+- nazwę,
+- krótki opis,
+- podstawowe statystyki,
+- informację o specjalizacji.
+
+Wybrany typ ma pomarańczowe obramowanie.
+
+Kliknięcie typu zmienia wybór.
+
+Nie twórz jeszcze całej mechaniki walki — na tym etapie wystarczy działający wybór i zapisanie stanu.
+
+==================================================
+KROK 3 — DANE KONTA
+==================================================
+
+Dopiero po przejściu dalej pokaż formularz:
+
+E-MAIL
+HASŁO
+POWTÓRZ HASŁO
+
+Opcjonalnie inne wymagane dane.
+
+To nadal jest OSOBNY PEŁNOEKRANOWY EKRAN.
+
+Nie używaj modala.
+
+Zachowaj ten sam design system.
+
+==================================================
+KROK 4 — PODSUMOWANIE
+==================================================
+
+Pokaż stworzonego więźnia:
+
+- pełny wygląd postaci,
+- wybrany typ,
+- podstawowe statystyki,
+- wybraną ksywę,
+- podsumowanie danych.
+
+Dodaj główny przycisk:
+
+UTWÓRZ WIĘŹNIA
+
+Po kliknięciu przejdź do właściwego panelu gry.
+
+==================================================
+KSYWA
+==================================================
+
+Dodaj wybór ksywy więźnia jako element procesu tworzenia postaci.
+
+Pole:
+
+KSYWA
+
+Placeholder:
+
+„Wpisz swoją ksywę...”
+
+Podczas wpisywania pokazuj ją w podglądzie postaci / karcie osadzonego.
+
+Przykład:
+
+KOSA
+#A-47291
+
+Niech wygląda jak identyfikator osadzonego, a nie zwykłe pole formularza.
+
+==================================================
+DOLNY PASEK
+==================================================
+
+Na dole ekranu zachowaj szeroki pasek nawigacyjny zgodny z referencją.
+
+Po lewej:
+
+MASZ JUŻ KONTO?
+
+[ ZALOGUJ SIĘ ]
+
+Kliknięcie przechodzi do ekranu logowania.
+
+Po prawej:
+
+[ DALEJ → ]
+
+Na kolejnych krokach:
+
+[ ← WSTECZ ]       [ DALEJ → ]
+
+Na ostatnim kroku:
+
+[ UTWÓRZ WIĘŹNIA ]
+
+Przyciski muszą rzeczywiście działać.
+
+==================================================
+DESIGN
+==================================================
+
+Trzymaj się załączonej referencji.
+
+Kierunek:
+
+REALISTYCZNY / MROCZNY / INDUSTRIALNY
+
+Materiały:
+
+BETON
+STAL
+KRATY
+ZUŻYTE POWIERZCHNIE
+RDZA
+MOKRY ASFALT
+STARE LAMPY
+GŁĘBOKIE CIENIE
+
+Kolorystyka:
+
+GRAFIT
+BRUDNA BIEL
+CIEMNA ZIELEŃ
+RDZAWY / POMARAŃCZOWY AKCENT
+
+Pomarańczowy ma być przede wszystkim kolorem:
+- CTA,
+- active state,
+- zaznaczeń,
+- obramowań,
+- ważnych elementów.
+
+Nie zalewaj całej strony pomarańczowym.
+
+==================================================
+TYPOGRAFIA
+==================================================
+
+Nagłówki:
+- mocne,
+- ciężkie,
+- skondensowane,
+- charakterystyczne,
+- lekko distressed, jeśli pasuje do referencji.
+
+Tekst:
+- czytelny,
+- jasny,
+- kontrastowy.
+
+Nie używaj przypadkowego systemowego fontu.
+
+==================================================
+INTERAKTYWNOŚĆ
+==================================================
+
+To ma być działający prototyp.
+
+Muszą działać:
+
+- przejście HOME → REJESTRACJA,
+- przejście REJESTRACJA → LOGOWANIE,
+- progress kroków,
+- wybór ksywy,
+- wybór twarzy,
+- wybór fryzury,
+- wybór zarostu,
+- wybór tatuażu,
+- wybór ubrania,
+- wybór koloru skóry,
+- wybór typu więźnia,
+- DALEJ,
+- WSTECZ,
+- podsumowanie.
+
+Stan wyborów ma być zachowany podczas przechodzenia pomiędzy krokami.
+
+Po powrocie do poprzedniego kroku wcześniejsze wybory muszą nadal być zaznaczone.
+
+==================================================
+RESPONSYWNOŚĆ
+==================================================
+
+Desktop jest główną referencją.
+
+Na desktopie zachowaj dokładnie układ referencji.
+
+Na mobile nie wciskaj trzech kolumn.
+
+Układ może przejść w:
+
+TYTUŁ
+↓
+POSTAĆ
+↓
+PERSONALIZACJA
+↓
+TYP WIĘŹNIA
+↓
+NAWIGACJA
+
+Ale zachowaj ten sam styl i hierarchię.
+
+Wszystkie elementy muszą być wygodne do obsługi dotykiem.
+
+==================================================
+ARCHITEKTURA
+==================================================
+
+Zbuduj komponenty w sposób umożliwiający późniejszą rozbudowę.
+
+Przykładowo:
+
+Registration
+CharacterCreator
+CharacterPreview
+AppearanceSelector
+CharacterTypeSelector
+RegistrationProgress
+RegistrationNavigation
+AccountForm
+RegistrationSummary
+
+Stan kreatora powinien być przechowywany centralnie, np.:
+
+characterAppearance
+nickname
+characterType
+accountData
+currentStep
+
+Nie hardcoduj całej logiki w jednym komponencie.
+
+==================================================
+WAŻNE — NIE TWÓRZ FAKE UI
+==================================================
+
+Jeżeli coś wygląda jak interaktywny element, ma być interaktywne.
+
+Jeżeli użytkownik wybiera element wyglądu, ma się on rzeczywiście zmienić.
+
+Jeżeli użytkownik przechodzi dalej, ma przejść dalej.
+
+Jeżeli wraca, jego wybory mają zostać zachowane.
+
+Nie twórz przycisków, które nic nie robią.
+
+Nie twórz „placeholder functionality”.
+
+==================================================
+NAJWAŻNIEJSZY PRIORYTET
+==================================================
+
+1. WIERNOŚĆ ZAŁĄCZONEJ REFERENCJI
+2. JAKOŚĆ WIZUALNA
+3. RZECZYWISTA ZMIANA WYGLĄDU POSTACI
+4. INTERAKTYWNOŚĆ
+5. RESPONSYWNOŚĆ
+6. CZYSTA ARCHITEKTURA KODU
+
+Nie przechodź teraz do budowania całej gry.
+
+Najpierw dopracuj KROK 1 — WYGLĄD tak, aby wyglądał jak prawdziwy, profesjonalny ekran tworzenia postaci.
+
+Następnie dopiero podłącz KROK 2, 3 i 4.
+
+Całość ma sprawiać wrażenie fragmentu gotowej, profesjonalnej gry przeglądarkowej, a nie formularza rejestracyjnego.

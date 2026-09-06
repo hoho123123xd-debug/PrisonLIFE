@@ -1,0 +1,378 @@
+Zbuduj kompletną, działającą stronę główną gry przeglądarkowej „PRISON LIFE” na podstawie ZAŁĄCZONEGO OBRAZU REFERENCYJNEGO.
+
+NAJWAŻNIEJSZE:
+Załączony obraz jest GŁÓWNĄ REFERENCJĄ WIZUALNĄ. Nie projektuj własnego layoutu i nie interpretuj go po swojemu. Chcę możliwie wierne odtworzenie przedstawionego projektu 1:1 jako działającej strony internetowej.
+
+Nie zmieniaj koncepcji, układu, proporcji, hierarchii ani charakteru projektu bez wyraźnej potrzeby technicznej.
+
+STRONA MA BYĆ:
+- działająca,
+- responsywna,
+- klikalna,
+- przygotowana jako fundament późniejszej gry,
+- napisana jako prawdziwy frontend, a nie statyczny mockup,
+- wizualnie możliwie najbliższa załączonej referencji.
+
+========================================
+1. TECHNOLOGIA
+========================================
+
+Użyj nowoczesnego stacku webowego odpowiedniego do późniejszego rozwoju gry.
+
+Preferowany:
+- React
+- TypeScript
+- Vite lub odpowiednia konfiguracja dostępna w Replit
+- CSS / CSS Modules lub dobrze uporządkowany system stylów
+
+Nie dodawaj niepotrzebnych bibliotek tylko po to, żeby odtworzyć prosty interfejs.
+
+Kod ma być uporządkowany i łatwy do dalszej rozbudowy.
+
+========================================
+2. REFERENCJA WIZUALNA — 1:1
+========================================
+
+Traktuj załączony obraz jako source of truth.
+
+Odtwórz:
+- układ strony,
+- szerokości sekcji,
+- wysokości sekcji,
+- marginesy,
+- odstępy,
+- wielkość elementów,
+- położenie tekstów,
+- wielkość nagłówków,
+- położenie przycisków,
+- karty,
+- linie podziału,
+- tła,
+- tekstury,
+- efekty świetlne,
+- cienie,
+- obramowania,
+- proporcje wszystkich elementów.
+
+Nie twórz typowego landing page'a.
+Nie stosuj gotowego template'u.
+Nie zamieniaj projektu na standardowy SaaS/website layout.
+
+To ma wyglądać jak strona prawdziwej gry.
+
+========================================
+3. CHARAKTER WIZUALNY
+========================================
+
+Zachowaj dokładnie kierunek z referencji:
+
+- realistyczny,
+- mroczny,
+- brutalny,
+- industrialny,
+- więzienny,
+- premium,
+- filmowy.
+
+Materiały:
+- beton,
+- stal,
+- stare metalowe elementy,
+- zużyte powierzchnie,
+- kraty,
+- ogrodzenia,
+- drut kolczasty,
+- mokry/asfaltowy klimat,
+- stare lampy,
+- mocne światło i głębokie cienie.
+
+Kolorystyka:
+- grafit,
+- bardzo ciemne szarości,
+- brudna biel,
+- ciemna zieleń,
+- rdzawy/orange accent.
+
+Orange ma być AKCENTEM, a nie dominującym kolorem całej strony.
+
+========================================
+4. HEADER
+========================================
+
+Na górze strony odtwórz header dokładnie według referencji.
+
+Po lewej:
+PRISON LIFE
+
+Pod logo:
+„TU ZACZYNA SIĘ PRAWDZIWA GRA”
+
+Nawigacja:
+- O GRZE
+- FUNKCJE
+- ŚWIAT GRY
+- SPOŁECZNOŚĆ
+- RANKINGI
+- MEDIA
+
+Po prawej:
+- ZALOGUJ SIĘ
+- ZAREJESTRUJ SIĘ
+
+Zachowaj wizualną hierarchię i proporcje z obrazu.
+
+„ZAREJESTRUJ SIĘ” jest głównym CTA.
+
+========================================
+5. HERO SECTION
+========================================
+
+Hero ma być największym elementem pierwszego ekranu.
+
+Tło:
+realistyczne więzienie, mur, ogrodzenie, wieża strażnicza, lampy, nocny/mroczny klimat.
+
+Po lewej znajduje się główny tekst:
+
+„WIĘCEJ NIŻ GRA.
+TO TWÓJ WYROK.”
+
+Pod nim opis gry:
+
+„Prison Life to przeglądarkowa gra strategiczna,
+w której trafiasz do więzienia i budujesz swoją legendę.
+Trenuj, walcz, pracuj, kombinuj i pokaż, na co Cię stać
+w świecie, gdzie liczy się tylko siła,
+spryt i lojalność.”
+
+Następnie dwa przyciski:
+- ZAREJESTRUJ SIĘ
+- ZALOGUJ SIĘ
+
+Po prawej stronie hero ma znajdować się główna postać więźnia w pomarańczowym stroju, widziana od tyłu, na tle więzienia.
+
+Postać ma wyglądać jak część świata gry, a nie jak przypadkowa ilustracja wklejona do strony.
+
+========================================
+6. STATYSTYKI
+========================================
+
+Pod hero odtwórz poziomy pasek statystyk widoczny na referencji:
+
+- 12 842 AKTYWNYCH WIĘŹNIÓW
+- 1 204 568 STOCZONYCH WALK
+- 587 321 DNI ZA KRATAMI
+- 5 LAT CIĄGŁEGO ROZWOJU
+
+Statystyki mają być wizualnie zintegrowane z hero.
+
+========================================
+7. SEKCJA FUNKCJI
+========================================
+
+Odtwórz pięć równych bloków:
+
+ROZWIJAJ POSTAĆ
+„Trenuj, zdobywaj umiejętności
+i zostań legendą.”
+
+WALCZ Z INNYMI
+„Sprawdź się w pojedynkach
+i zdobądź szacunek.”
+
+ZARABIAJ
+„Podejmuj pracę, handluj
+i buduj swój majątek.”
+
+DOŁĄCZ DO EKIPY
+„Twórz i rozwijaj frakcję.
+Razem możecie więcej.”
+
+ZDOBĄDŹ SZCZYT
+„Wspinaj się w rankingach
+i zapisz się w historii Prison Life.”
+
+Każdy blok powinien mieć ikonę zgodną stylistycznie z referencją.
+
+========================================
+8. SEKCJA WORLD / GAMEPLAY
+========================================
+
+Niżej odtwórz sekcję z dużym screenshotem/interfejsem gry po lewej oraz tekstem po prawej.
+
+Po lewej:
+wizualizacja panelu gry przedstawiająca celę i więźnia.
+
+Widoczne elementy:
+- Cela
+- Trening
+- Walka
+- Praca
+- Ekwipunek
+- Misje
+- Frakcja
+- Ranking
+
+Postać:
+Kosa
+Poziom 28
+
+Statystyki:
+Siła 85
+Kondycja 72
+Zręczność 46
+Technika 38
+Charakter 55
+
+Po prawej:
+
+„ŚWIAT PRISON LIFE”
+
+„ZA KRATAMI ZACZYNA SIĘ
+PRAWDZIWA GRA”
+
+Opis i przycisk:
+„ZOBACZ WIĘCEJ”
+
+Ta sekcja musi wyglądać jak element tej samej gry.
+
+========================================
+9. FOOTER
+========================================
+
+Na dole:
+logo PRISON LIFE
+
+Linki:
+- Regulamin
+- Polityka prywatności
+- FAQ
+- Kontakt
+
+Ikony społecznościowe.
+
+Hasło:
+„PRAWDZIWE HISTORIE
+ZACZYNAJĄ SIĘ W WIĘZIENIU...”
+
+Na samym dole:
+„© 2026 Prison Life. Wszystkie prawa zastrzeżone.”
+
+========================================
+10. INTERAKTYWNOŚĆ
+========================================
+
+To NIE może być tylko obraz strony.
+
+Wszystkie elementy, które wyglądają jak przyciski lub linki, mają działać.
+
+Zaimplementuj:
+
+ZAREJESTRUJ SIĘ
+→ przejście do ekranu rejestracji / kreatora więźnia.
+
+ZALOGUJ SIĘ
+→ przejście do ekranu logowania.
+
+Nawigacja
+→ działające anchor links lub routing do odpowiednich sekcji.
+
+Przyciski i elementy interfejsu powinny mieć:
+- hover,
+- active,
+- focus,
+- subtelne animacje.
+
+Nie przesadzaj z animacjami. Mają wyglądać jak profesjonalna gra, a nie strona marketingowa z efektami.
+
+========================================
+11. RESPONSYWNOŚĆ
+========================================
+
+Desktop jest NAJWAŻNIEJSZĄ REFERENCJĄ i musi być odtworzony możliwie wiernie.
+
+Dopiero później dostosuj layout do:
+- tabletów,
+- telefonów.
+
+Na mobile nie skaluj bezmyślnie całej strony.
+
+Przebuduj sekcje logicznie, zachowując:
+- kolejność,
+- hierarchię,
+- klimat,
+- typografię,
+- charakter projektu.
+
+========================================
+12. JAKOŚĆ
+========================================
+
+Nie używaj:
+- domyślnych fontów systemowych,
+- przypadkowych gradientów,
+- generycznych kart,
+- standardowych komponentów UI,
+- typowego hero z losowym obrazkiem,
+- białego tła,
+- „nowoczesnego SaaS look”.
+
+Każdy element powinien wyglądać jak część jednej gry.
+
+Szczególnie dopracuj:
+- typografię,
+- spacing,
+- kontrast,
+- tekstury,
+- obramowania,
+- przyciski,
+- ikony,
+- zdjęcie/ilustrację więzienia,
+- główną postać,
+- przejścia pomiędzy sekcjami.
+
+========================================
+13. BARDZO WAŻNE — NIE WYMYŚLAJ NOWEGO DESIGNu
+========================================
+
+Jeżeli czegoś nie wiesz, najpierw spójrz na referencję.
+
+Nie:
+„ulepszaj” projektu według własnego uznania.
+
+Nie:
+zmieniaj układu na bardziej standardowy.
+
+Nie:
+dodawaj sekcji tylko dlatego, że są popularne na landing page'ach.
+
+Nie:
+twórz kolejnej generycznej strony gamingowej.
+
+ZAŁĄCZONY OBRAZ JEST ŹRÓDŁEM PRAWDY DLA DESIGN SYSTEMU.
+
+Celem jest stworzenie działającej strony, która po otwarciu wygląda jak możliwie wierna, interaktywna wersja załączonego projektu.
+
+========================================
+14. PIERWSZY CEL
+========================================
+
+Najpierw doprowadź do perfekcji ekran strony głównej widoczny po wejściu na stronę.
+
+Nie przechodź od razu do budowania całej gry.
+
+Najpierw:
+1. header,
+2. hero,
+3. CTA,
+4. statystyki,
+5. sekcja funkcji,
+6. sekcja gameplay,
+7. footer.
+
+Uruchom projekt i sprawdź go wizualnie.
+
+Jeżeli coś odbiega od referencji, popraw to.
+
+Priorytet:
+WIZUALNA WIERNOŚĆ REFERENCJI > dodatkowe funkcje > szybkość implementacji.
