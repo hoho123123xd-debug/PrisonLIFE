@@ -976,7 +976,7 @@ const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shiel
   { id: 'work', label: 'PRACA', icon: BriefcaseBusiness },
   { id: 'equipment', label: 'EKWIPUNEK', icon: Backpack },
   { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
-  { id: 'quests', label: 'ZADANIA', icon: ScrollText },
+  { id: 'quests', label: 'MISJE', icon: ScrollText },
   { id: 'gang', label: 'GANG', icon: Users },
   { id: 'ranking', label: 'RANKING', icon: Trophy },
 ];
