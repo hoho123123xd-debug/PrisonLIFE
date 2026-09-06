@@ -1533,13 +1533,13 @@
 .gang-view {
   --gang-line: rgba(167, 184, 174, .2);
   --gang-muted: #8d9890;
-  height: 100%;
+  height: auto;
   min-height: 0;
   display: grid;
-  grid-template-rows: 111px 99px 38px minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto;
   gap: 7px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   isolation: isolate;
 }
 .gang-view::before {
@@ -1750,6 +1750,7 @@
 .gang-dashboard {
   min-width: 0;
   min-height: 0;
+  align-items: start;
   display: grid;
   grid-template-columns: minmax(0, 1.38fr) minmax(250px, .85fr) minmax(240px, .85fr);
   gap: 7px;
@@ -1761,10 +1762,11 @@
   min-height: 0;
   display: grid;
   gap: 7px;
+  align-content: start;
 }
-.gang-main-column { grid-template-rows: 88px minmax(0, 1fr); }
-.gang-middle-column { grid-template-rows: 88px minmax(0, 1fr); }
-.gang-side-column { grid-template-rows: minmax(0, 1fr) 139px 86px; }
+.gang-main-column { grid-template-rows: auto auto; }
+.gang-middle-column { grid-template-rows: auto auto; }
+.gang-side-column { grid-template-rows: auto auto auto; }
 .gang-panel {
   min-width: 0;
   min-height: 0;

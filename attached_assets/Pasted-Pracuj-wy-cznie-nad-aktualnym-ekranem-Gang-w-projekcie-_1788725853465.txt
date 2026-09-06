@@ -1,0 +1,65 @@
+Pracuj wyłącznie nad aktualnym ekranem **„Gang”** w projekcie PrisonLIFE.
+
+Cel: popraw obecny widok dla gracza, który jest **założycielem gangu**, aby był możliwie 1:1 zgodny z zaakceptowaną referencją PrisonLIFE: gęsty, czytelny, industrialny dashboard bez ogromnych pustych pól.
+
+Nietykalne elementy — absolutnie ich nie zmieniaj:
+
+- logo PRISON LIFE,
+- górny pasek HUD,
+- lewe menu nawigacyjne,
+- ich pozycje, wymiary, ikony, typografię, kolory i styl,
+- logikę gry oraz istniejące dane poza tym, co jest konieczne do ich prezentacji na widoku Gang.
+
+Przebuduj tylko główną zawartość po prawej stronie od menu.
+
+Układ docelowy:
+
+1. Nagłówek strony:
+   - mały label `GANG`,
+   - duży tytuł `GANG`,
+   - krótki opis w stylu istniejącego interfejsu.
+
+2. Zwarta karta gangu:
+   - emblemat po lewej,
+   - nazwa: `WILCZA PACZKA`,
+   - motto: `„Zawsze razem. Zawsze do końca.”`,
+   - metadane: `POZIOM 3`, `12 CZŁONKÓW`, `REPUTACJA: POZYTYWNA`,
+   - pasek XP z wartością `450 / 1000 XP`,
+   - informacja o założycielu po prawej: `F1QU`,
+   - opcjonalny przycisk rozwoju gangu, zgodny ze stylem UI.
+
+3. Pod kartą: niskie, zwarte zakładki:
+   `PRZEGLĄD | CZŁONKOWIE | ROZWÓJ | WOJNY | SKARBIEC | MISJE | USTAWIENIA`
+
+4. Dashboard pod zakładkami — bez `height: 100%`, `min-height: 100vh` ani wymuszania równej wysokości kolumn:
+
+   - lewa, szersza kolumna:
+     - `CZŁONKOWIE GANGU` jako konkretna tabela:
+       `# | GRACZ | RANGA | POZIOM | AKTYWNOŚĆ`
+     - przykładowi członkowie: F1QU, Kamil, StaryDozor, Beton, Malina itd.
+     - nie zostawiaj wielkiej pustej przestrzeni pod tabelą.
+
+   - środkowa kolumna:
+     - `STATYSTYKI GANGU` jako 4 małe kafle:
+       `12 CZŁONKÓW`, `3 POZIOM`, `145 PRESTIŻ`, `8 WOJNY`,
+     - `SKARBIEC GANGU`:
+       saldo `12 450 $`, przyciski `WPŁAĆ` i `WYPŁAĆ`, kilka ostatnich transakcji,
+     - `KORZYŚCI GANGU` albo `ROZBUDUJ SWÓJ GANG` jako krótki, zwarty panel.
+
+   - prawa kolumna:
+     - `AKTUALNE WYDARZENIA` z krótką listą zdarzeń,
+     - `MISJA GANGOWA` z nazwą, statusem aktywna, opisem, postępem, nagrodą oraz CTA,
+     - panel rozwoju gangu.
+
+Najważniejsze zasady wizualne:
+
+- Nie twórz trzech pionowych, rozciągniętych paneli.
+- Nie zostawiaj pustej połowy ekranu pod treścią.
+- Karty mają mieć wysokość wynikającą z treści; używaj zwartego gridu i niewielkich odstępów.
+- Zachowaj istniejącą paletę: ciemne więzienne tło, biały tekst, pomarańczowe akcenty, cienkie industrialne obramowania.
+- Zachowaj charakter istniejącej typografii i ikon.
+- Na desktopie dashboard ma być gęsty i wypełniać przestrzeń treścią, ale bez sztucznego rozciągania.
+- Na mniejszych ekranach kolumny mają przechodzić pod siebie, bez poziomego przewijania i bez wychodzenia elementów poza viewport.
+- Nie dodawaj nowych funkcji, backendu ani sztucznych mechanik — pracuj na aktualnych komponentach i danych.
+
+Po zmianach uruchom aplikację i sprawdź ekran Gang na szerokim desktopie oraz mniejszym ekranie. Zweryfikuj szczególnie, że logo, HUD i lewe menu nie uległy żadnej zmianie.
