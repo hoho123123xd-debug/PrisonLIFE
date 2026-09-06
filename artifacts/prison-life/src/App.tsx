@@ -29,6 +29,7 @@ import {
   Flag,
   Gamepad2,
   Heart,
+  Info,
   Instagram,
   Lightbulb,
   KeyRound,
@@ -39,6 +40,7 @@ import {
   MessageSquare,
   PanelRight,
   Plus,
+  Scale,
   ScrollText,
   Send,
   Shield,
@@ -442,7 +444,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -476,7 +478,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : ''}`}>
+       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
@@ -484,7 +486,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -737,6 +739,115 @@ function CellDevelopmentView({ onNotice }: { onNotice: (message: string) => void
         </section>
       </aside>
     </div>
+  </section>;
+}
+
+type FightStatKey = 'sila' | 'kondycja' | 'zrecznosc' | 'technika' | 'charakter';
+type FightDifficulty = 'ŁATWY' | 'ŚREDNI' | 'TRUDNY' | 'B. TRUDNY';
+type FightOpponentId = 'rat' | 'bull' | 'fox' | 'wolf' | 'kosa';
+type FightOpponent = {
+  id: FightOpponentId;
+  name: string;
+  level: number;
+  difficulty: FightDifficulty;
+  className: string;
+  asset: string;
+  stats: Record<FightStatKey, number>;
+  rewardMoney: [number, number];
+  rewardXp: [number, number];
+};
+
+const fightStatMeta: Array<{ key: FightStatKey; label: string; icon: typeof Dumbbell }> = [
+  { key: 'sila', label: 'SIŁA', icon: Dumbbell },
+  { key: 'kondycja', label: 'KONDYCJA', icon: Heart },
+  { key: 'zrecznosc', label: 'ZRĘCZNOŚĆ', icon: Crosshair },
+  { key: 'technika', label: 'TECHNIKA', icon: Settings },
+  { key: 'charakter', label: 'CHARAKTER', icon: Crown },
+];
+
+const fightDifficultyTone: Record<FightDifficulty, string> = { 'ŁATWY': 'easy', 'ŚREDNI': 'medium', 'TRUDNY': 'hard', 'B. TRUDNY': 'brutal' };
+
+const fightPlayerClassNames: Record<PrisonerType, string> = { bull: 'WOJOWNIK', rat: 'SZYBKI', fox: 'TAKTYK', wolf: 'UNIWERSALNY' };
+
+const fightOpponents: FightOpponent[] = [
+  { id: 'rat', name: 'SZCZUR', level: 2, difficulty: 'ŁATWY', className: 'SZYBKI', asset: ratAsset, stats: { sila: 7, kondycja: 8, zrecznosc: 14, technika: 9, charakter: 6 }, rewardMoney: [40, 70], rewardXp: [20, 40] },
+  { id: 'bull', name: 'BYK', level: 5, difficulty: 'TRUDNY', className: 'SIŁACZ', asset: bullAsset, stats: { sila: 19, kondycja: 17, zrecznosc: 6, technika: 8, charakter: 9 }, rewardMoney: [90, 160], rewardXp: [60, 110] },
+  { id: 'fox', name: 'LIS', level: 4, difficulty: 'ŚREDNI', className: 'TAKTYK', asset: foxAsset, stats: { sila: 10, kondycja: 11, zrecznosc: 12, technika: 16, charakter: 10 }, rewardMoney: [70, 120], rewardXp: [45, 85] },
+  { id: 'wolf', name: 'WILK', level: 6, difficulty: 'TRUDNY', className: 'UNIWERSALNY', asset: wolfAsset, stats: { sila: 15, kondycja: 14, zrecznosc: 13, technika: 13, charakter: 12 }, rewardMoney: [100, 170], rewardXp: [70, 120] },
+  { id: 'kosa', name: 'KOSA', level: 3, difficulty: 'ŚREDNI', className: 'WOJOWNIK', asset: prisonerAsset, stats: { sila: 12, kondycja: 11, zrecznosc: 9, technika: 10, charakter: 11 }, rewardMoney: [60, 100], rewardXp: [35, 65] },
+];
+
+const fightStatMax = 20;
+
+function FightView({ creator, gameData, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; onNotice: (message: string) => void; onReturn: () => void }) {
+  const [selectedId, setSelectedId] = useState<FightOpponentId>(fightOpponents[0].id);
+  const opponent = fightOpponents.find((item) => item.id === selectedId)!;
+  const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
+  const playerAsset = getPrisonerAsset(type, creator.gender);
+  const playerClassName = fightPlayerClassNames[type.id];
+  const playerStats: Record<FightStatKey, number> = { sila: gameStats[0].value, kondycja: gameStats[1].value, zrecznosc: gameStats[2].value, technika: gameStats[3].value, charakter: gameStats[4].value };
+  const statSum = (stats: Record<FightStatKey, number>) => fightStatMeta.reduce((total, { key }) => total + stats[key], 0);
+  const winChance = Math.max(5, Math.min(95, Math.round(50 + (statSum(playerStats) + gameData.level * 4 - statSum(opponent.stats) - opponent.level * 4) * 1.5)));
+
+  const handleAttack = () => onNotice(`Rozpoczynasz walkę z: ${opponent.name}. Szanse na wygraną: ${winChance}%.`);
+
+  return <section className="fight-view" data-testid="fight-view">
+    <header className="fight-header">
+      <div><span className="eyebrow">WALKA</span><h1>WYBIERZ <span>PRZECIWNIKA</span></h1></div>
+      <p>Porównaj statystyki, oceń ryzyko i sprawdź, czy jesteś gotowy na walkę.</p>
+    </header>
+
+    <div className="fight-opponent-row">{fightOpponents.map((item) => {
+      const active = item.id === selectedId;
+      return <button className={`fight-opponent-card ${active ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)} data-testid={`fight-opponent-${item.id}`}>
+        <span className="fight-opponent-photo" style={{ backgroundImage: `url("${item.asset}")` }} />
+        <span className="fight-opponent-name">{item.name}</span>
+        <span className="fight-opponent-meta"><b>POZIOM {item.level}</b><i className={`fight-difficulty fight-difficulty-${fightDifficultyTone[item.difficulty]}`}>{item.difficulty}</i></span>
+      </button>;
+    })}</div>
+
+    <div className="fight-compare">
+      <div className="fight-side fight-side-player">
+        <span className="fight-side-photo" style={{ backgroundImage: `url("${playerAsset}")` }} />
+        <div className="fight-side-body">
+          <span className="fight-side-tag">GRACZ</span>
+          <h2>{gameData.nickname.toUpperCase()}</h2>
+          <span className="fight-side-meta">POZIOM {gameData.level} | KLASA: {playerClassName}</span>
+          <div className="fight-side-stats">{fightStatMeta.map(({ key, label, icon: Icon }) => <div className="fight-stat-row" key={key}><span className="fight-stat-label"><Icon size={13} /> {label}</span><b>{playerStats[key]}</b><div className="fight-stat-bar"><i style={{ width: `${Math.min(100, (playerStats[key] / fightStatMax) * 100)}%` }} /></div></div>)}</div>
+        </div>
+      </div>
+
+      <div className="fight-center">
+        <span className="fight-vs">VS</span>
+        <div className="fight-chance">
+          <span className="fight-chance-label"><Scale size={14} /> TWOJE SZANSE</span>
+          <strong>{winChance}%</strong>
+          <div className="fight-chance-bar"><i style={{ width: `${winChance}%` }} /></div>
+        </div>
+        <div className="fight-rewards">
+          <span className="fight-rewards-title">MOŻLIWE NAGRODY</span>
+          <div className="fight-reward-row"><CircleDollarSign size={13} /><span>{opponent.rewardMoney[0]}–{opponent.rewardMoney[1]}</span></div>
+          <div className="fight-reward-row"><Award size={13} /><span>{opponent.rewardXp[0]}–{opponent.rewardXp[1]} XP</span></div>
+          <div className="fight-reward-row"><Plus size={13} /><span>Reputacja</span></div>
+        </div>
+      </div>
+
+      <div className="fight-side fight-side-opponent">
+        <div className="fight-side-body">
+          <span className="fight-side-tag">PRZECIWNIK</span>
+          <h2>{opponent.name}</h2>
+          <span className="fight-side-meta">POZIOM {opponent.level} | KLASA: {opponent.className}</span>
+          <div className="fight-side-stats">{fightStatMeta.map(({ key, label, icon: Icon }) => <div className="fight-stat-row" key={key}><span className="fight-stat-label"><Icon size={13} /> {label}</span><b>{opponent.stats[key]}</b><div className="fight-stat-bar"><i style={{ width: `${Math.min(100, (opponent.stats[key] / fightStatMax) * 100)}%` }} /></div></div>)}</div>
+        </div>
+        <span className="fight-side-photo" style={{ backgroundImage: `url("${opponent.asset}")` }} />
+      </div>
+    </div>
+
+    <footer className="fight-actions">
+      <button className="fight-back" onClick={onReturn}><ArrowLeft size={16} /> POWRÓT</button>
+      <button className="fight-attack" onClick={handleAttack} data-testid="fight-attack-button"><Swords size={19} /><span>ATAKUJ<small>ROZPOCZNIJ WALKĘ</small></span></button>
+      <p className="fight-hint"><Info size={14} /> Wynik walki zależy od statystyk, poziomu, klasy postaci i aktualnej formy. Silniejszy przeciwnik to większe ryzyko, ale też lepsze nagrody.</p>
+    </footer>
   </section>;
 }
 
