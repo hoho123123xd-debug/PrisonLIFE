@@ -6,8 +6,11 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
   Archive,
+  Award,
   Backpack,
+  BarChart3,
   Bell,
   BriefcaseBusiness,
   Building2,
@@ -21,6 +24,7 @@ import {
   Droplets,
   Dumbbell,
   BedDouble,
+  Eye,
   Facebook,
   Flag,
   Gamepad2,
@@ -33,6 +37,7 @@ import {
   Menu,
   MessageSquare,
   PanelRight,
+  Plus,
   ScrollText,
   Send,
   Shield,
@@ -390,7 +395,7 @@ function AuthScreen({ mode, onNavigate }: { mode: 'login' | 'register'; onNaviga
   return <main className="auth-page" style={{ '--artwork-url': `url("${prisonArtwork}")` } as CSSProperties}><div className="auth-backdrop" /><header className="auth-header"><Brand onNavigate={onNavigate} /><button onClick={() => onNavigate('home')} className="auth-return"><ArrowLeft size={15} /> WRÓĆ NA STRONĘ GŁÓWNĄ</button></header><section className="auth-card"><div className="eyebrow">{register ? 'Nowy więzień' : 'Powrót za kraty'}</div><h1>{register ? 'ZAREJESTRUJ SIĘ' : 'ZALOGUJ SIĘ'}</h1><p>{register ? 'Stwórz swoją kartotekę i wybierz, jaką reputację zbudujesz za kratami.' : 'Wróć do swojej celi. Twoja reputacja nie poczeka.'}</p><form onSubmit={submit}><label><span><Mail size={15} /> ADRES E-MAIL</span><input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="więzień@prisonlife.pl" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="wpisz hasło" required minLength={6} /></label><button className="btn btn-primary" type="submit">{register ? 'OTWÓRZ KARTOTEKĘ' : 'WEJDŹ DO GRY'} <ArrowRight size={16} /></button></form>{notice && <div className="auth-notice">{notice}</div>}<button className="auth-switch" onClick={() => onNavigate(register ? 'login' : 'register')}>{register ? 'MASZ JUŻ KONTO? ' : 'NIE MASZ JESZCZE KONTA? '}<strong>{register ? 'ZALOGUJ SIĘ' : 'ZAREJESTRUJ SIĘ'}</strong></button></section><div className="auth-quote">„ZA KRATAMI NIE MA PRZYPADKÓW.<br /><span>SĄ TYLKO DECYZJE.</span>”</div></main>;
 }
 
-type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'equipment' | 'market' | 'quests' | 'gang' | 'ranking' | 'cell-development';
+type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'equipment' | 'market' | 'quests' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
   const [activeSection, setActiveSection] = useState<GameSection>(() => {
     const route = window.location.hash.replace('#', '');
@@ -433,7 +438,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-    if (section !== 'cell') showNotice(`${gameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -466,8 +471,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       <div className="game-header-actions"><button aria-label="Powiadomienia" className="header-icon-button notification-button" onClick={() => showNotice('Nie masz nowych powiadomień.')}><Bell size={18} /><b>3</b></button><button aria-label="Ustawienia" className="header-icon-button" onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')}><Settings size={18} /></button><button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /> WYLOGUJ SIĘ <ArrowRight size={15} /></button></div>
     </header>
     <div className="game-layout">
-      <aside className={`game-sidebar ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}</aside>
-      <div className="game-content">
+      <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
+       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
@@ -475,12 +480,12 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-        </div> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
-        <section className="game-bottom-grid">
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
           <section className="game-panel events-panel"><div className="panel-title"><span>OSTATNIE WYDARZENIA</span><button onClick={() => showNotice('Wyświetlasz pełną historię wydarzeń.')}>ZOBACZ WSZYSTKIE</button></div><div className="event-list">{gameEvents.map((event) => <div className="event-item" key={`${event.time}-${event.text}`}><time>{event.time}</time><span>{event.text}</span><b className={event.tone}>{event.result}</b></div>)}</div></section>
-        </section>
+         </section>}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -528,7 +533,7 @@ function CellHotspot({ id, label, description, icon: Icon, x, y, width, height, 
 }
 
 function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn: () => void }) {
-  const item = gameNavigation.find((entry) => entry.id === section)!;
+  const item = allGameNavigation.find((entry) => entry.id === section)!;
   const Icon = item.icon;
   const copy: Record<GameSection, string> = {
     cell: 'Wróć do swojej celi i sprawdź, co dzieje się na bloku.',
@@ -542,8 +547,114 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     gang: 'Dołącz do gangu i zbuduj swoją pozycję w oddziale.',
     ranking: 'Ranking bloku zostanie otwarty, gdy rozpoczniesz pierwszy dzień.',
     'cell-development': 'Rozbuduj swoją celę, odblokuj nowe wyposażenie i stwórz własną przewagę za kratami.',
+    achievements: 'Zdobywaj osiągnięcia za rozwój postaci i kolejne dni za kratami.',
+    statistics: 'Sprawdzaj swoje wyniki, postępy i najważniejsze liczby z pobytu.',
+    settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+type CellUpgradeId = 'bed' | 'locker' | 'table' | 'shelf' | 'tv' | 'sink' | 'training' | 'extras';
+type CellUpgrade = {
+  id: CellUpgradeId;
+  label: string;
+  level: number;
+  cost: number;
+  icon: typeof BedDouble;
+  currentBonus: string;
+  nextBonus: string;
+  thumbClass: string;
+};
+
+const cellUpgradeItems: CellUpgrade[] = [
+  { id: 'bed', label: 'ŁÓŻKO', level: 3, cost: 450, icon: BedDouble, currentBonus: '+15% regeneracji energii', nextBonus: '+20% regeneracji energii', thumbClass: 'thumb-bed' },
+  { id: 'locker', label: 'SZAFKA', level: 2, cost: 350, icon: Archive, currentBonus: '+10 miejsca w ekwipunku', nextBonus: '+15 miejsca w ekwipunku', thumbClass: 'thumb-locker' },
+  { id: 'table', label: 'STÓŁ', level: 1, cost: 300, icon: Table, currentBonus: '+5% zarobków z pracy', nextBonus: '+10% zarobków z pracy', thumbClass: 'thumb-table' },
+  { id: 'shelf', label: 'PÓŁKA', level: 2, cost: 320, icon: Archive, currentBonus: '+5% nauki techniki', nextBonus: '+10% nauki techniki', thumbClass: 'thumb-shelf' },
+  { id: 'tv', label: 'TELEWIZOR', level: 1, cost: 280, icon: Tv, currentBonus: '+10% morale', nextBonus: '+15% morale', thumbClass: 'thumb-tv' },
+  { id: 'sink', label: 'UMYWALKA', level: 1, cost: 300, icon: Droplets, currentBonus: '+5% szybsza regeneracja', nextBonus: '+10% szybsza regeneracja', thumbClass: 'thumb-sink' },
+  { id: 'training', label: 'KĄCIK TRENINGOWY', level: 1, cost: 400, icon: Dumbbell, currentBonus: '+5% efektywności treningu', nextBonus: '+10% efektywności treningu', thumbClass: 'thumb-training' },
+  { id: 'extras', label: 'DODATKI', level: 0, cost: 250, icon: Archive, currentBonus: 'Odblokuj dekoracje celi', nextBonus: '+5% komfortu i bezpieczeństwa', thumbClass: 'thumb-extras' },
+];
+
+const cellUpgradeMarkers: Array<{ id: CellUpgradeId; label: string; level: string; left: string; top: string }> = [
+  { id: 'shelf', label: 'PÓŁKA', level: 'Poziom 2', left: '8%', top: '33%' },
+  { id: 'tv', label: 'TELEWIZOR', level: 'Poziom 1', left: '91%', top: '17%' },
+  { id: 'locker', label: 'SZAFKA', level: 'Poziom 2', left: '64%', top: '35%' },
+  { id: 'sink', label: 'UMYWALKA', level: 'Poziom 1', left: '83%', top: '61%' },
+  { id: 'bed', label: 'ŁÓŻKO', level: 'Poziom 3', left: '11%', top: '76%' },
+  { id: 'training', label: 'KĄCIK TRENINGOWY', level: 'Poziom 1', left: '41%', top: '87%' },
+  { id: 'table', label: 'STÓŁ', level: 'Poziom 1', left: '82%', top: '82%' },
+];
+
+function CellDevelopmentView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [selectedId, setSelectedId] = useState<CellUpgradeId>('bed');
+  const selected = cellUpgradeItems.find((item) => item.id === selectedId)!;
+  const SelectedIcon = selected.icon;
+
+  return <section className="cell-development-view" data-testid="cell-development-view">
+    <header className="cell-development-header">
+      <div>
+        <span className="eyebrow">ROZWÓJ / CELA</span>
+        <h1>ROZWÓJ <span>CELI</span></h1>
+        <p>ULEPSZAJ WYPOSAŻENIE I BUDUJ SWOJĄ PRZEWAGĘ</p>
+      </div>
+      <blockquote>„CELA TO NIE TYLKO MIEJSCE.<br />TO TWÓJ FUNDAMENT.”</blockquote>
+      <div className="cell-development-resources"><span>TWOJE ŚRODKI</span><strong><CircleDollarSign size={20} /> 250</strong></div>
+    </header>
+
+    <div className="cell-development-grid">
+      <aside className="cell-development-items">
+        <div className="cell-development-panel-title">ELEMENTY CELI</div>
+        <div className="cell-development-item-list">{cellUpgradeItems.map((item) => {
+          const Icon = item.icon;
+          return <button className={`cell-development-item ${selectedId === item.id ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}><Icon size={20} /><span><strong>{item.label}</strong><small>Poziom {item.level}/20</small></span><ChevronRight size={15} /></button>;
+        })}</div>
+      </aside>
+
+      <div className="cell-development-center">
+        <div className="cell-development-scene">
+          <div className="scene-artwork" style={{ backgroundImage: `url("${cellBackground}")` }} aria-label="Widok celi do rozwoju" role="img" />
+          {cellUpgradeMarkers.map((marker) => <button className={`cell-development-marker ${selectedId === marker.id ? 'active' : ''}`} key={marker.id} style={{ left: marker.left, top: marker.top }} onClick={() => setSelectedId(marker.id)}><span className="cell-development-marker-dot"><Plus size={16} /></span><span className="cell-development-marker-label"><strong>{marker.label}</strong><small>{marker.level}</small></span></button>)}
+          <span className="cell-development-scene-hint">ⓘ KLIKNIJ NA ELEMENT, ABY ZOBACZYĆ SZCZEGÓŁY</span>
+          <button className="cell-development-preview-button" onClick={() => onNotice('Podgląd zmian jest dostępny dla wybranego elementu.')}><Eye size={14} /> PODGLĄD ZMIAN</button>
+        </div>
+        <section className="cell-level-preview">
+          <div className="cell-development-panel-title">PODGLĄD POZIOMÓW</div>
+          <div className="cell-level-cards">{[1, 2, 3, 4, 5].map((level) => <button className={`cell-level-card ${selected.level === level ? 'active' : ''}`} key={level} onClick={() => onNotice(`Podglądasz ${selected.label.toLowerCase()} na poziomie ${level}.`)}><span className={`cell-level-thumb ${selected.thumbClass}`} style={{ backgroundImage: `url("${cellBackground}")` }} /><small>Poziom {level}</small></button>)}</div>
+        </section>
+      </div>
+
+      <aside className="cell-development-details">
+        <section className="cell-development-detail-panel">
+          <div className="cell-development-selected-heading"><SelectedIcon size={28} /><div><h2>{selected.label}</h2><span>Poziom {selected.level}/20</span></div></div>
+          <p>Lepsze wyposażenie poprawia warunki życia na każdy kolejny dzień.</p>
+          <div className="cell-development-detail-label">AKTUALNY POZIOM</div>
+          <strong className="cell-development-level">Poziom {selected.level}</strong>
+          <div className="cell-development-progress"><i style={{ width: `${(selected.level / 20) * 100}%` }} /></div>
+          <div className="cell-development-bonus current">{selected.currentBonus}</div>
+          <div className="cell-development-detail-label">NASTĘPNY POZIOM</div>
+          <strong className="cell-development-level">Poziom {selected.level + 1}</strong>
+          <div className="cell-development-bonus">{selected.nextBonus}</div>
+          <div className="cell-development-bonus">+ nowy wygląd {selected.label.toLowerCase()}</div>
+          <div className="cell-development-detail-label">KOSZT ULEPSZENIA</div>
+          <strong className="cell-development-cost"><CircleDollarSign size={20} /> {selected.cost}</strong>
+          <button className="cell-development-upgrade" onClick={() => onNotice(`Ulepszenie ${selected.label.toLowerCase()} zostanie odblokowane po zebraniu ${selected.cost} $.`)}>ULEPSZ <ArrowUp size={16} /></button>
+        </section>
+        <section className="cell-development-stats">
+          <div className="cell-development-panel-title">STATYSTYKI CELI</div>
+          {[
+            ['Regeneracja energii', '+15%', Zap],
+            ['Pojemność ekwipunku', '+10', Backpack],
+            ['Efektywność pracy', '+5%', BriefcaseBusiness],
+            ['Efektywność treningu', '+5%', Dumbbell],
+            ['Morale', '+10%', Heart],
+            ['Bezpieczeństwo', '+0%', Shield],
+          ].map(([label, value, Icon]) => <div className="cell-development-stat" key={label as string}><Icon size={15} /><span>{label as string}</span><strong>{value as string}</strong></div>)}
+        </section>
+      </aside>
+    </div>
+  </section>;
 }
 
 const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shield }> = [
@@ -557,8 +668,16 @@ const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shiel
   { id: 'quests', label: 'ZADANIA', icon: ScrollText },
   { id: 'gang', label: 'GANG', icon: Users },
   { id: 'ranking', label: 'RANKING', icon: Trophy },
-  { id: 'cell-development', label: 'ROZWÓJ CELI', icon: Building2 },
 ];
+
+const gameSecondaryNavigation: Array<{ id: GameSection; label: string; icon: typeof Shield }> = [
+  { id: 'cell-development', label: 'ROZWÓJ CELI', icon: Building2 },
+  { id: 'achievements', label: 'OSIĄGNIĘCIA', icon: Award },
+  { id: 'statistics', label: 'STATYSTYKI', icon: BarChart3 },
+  { id: 'settings', label: 'USTAWIENIA', icon: Settings },
+];
+
+const allGameNavigation = [...gameNavigation, ...gameSecondaryNavigation];
 
 const cellSlots: CellSlot[] = [
   { id: 'bed', ...cellLayout.interactive_slots.bed, label: 'ŁÓŻKO', description: 'Odpocznij i odzyskaj siły', icon: BedDouble },
