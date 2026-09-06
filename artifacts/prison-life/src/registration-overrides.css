@@ -492,12 +492,12 @@
     padding-bottom: 8px;
   }
   .registration-page .registration-header-step-1 + .registration-body .type-selection-stage {
-    min-height: calc(100dvh - 215px);
+    min-height: calc(100dvh - 190px);
   }
   .registration-page .registration-header-step-1 ~ .registration-footer {
     display: none;
   }
   .registration-page .registration-header-step-1 + .registration-body .type-selection-card-art {
-    height: clamp(205px, 33dvh, 320px);
+    height: clamp(235px, 39dvh, 340px);
   }
 }
