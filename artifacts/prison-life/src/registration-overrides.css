@@ -1,7 +1,7 @@
 /* The creator follows the supplied intake mockup: identity, appearance,
    character preview, and prisoner type are four full-height columns. */
 .registration-page .registration-body .creator-screen {
-  grid-template-columns: minmax(205px, .8fr) minmax(300px, 1.14fr) minmax(420px, 1.34fr) minmax(285px, .9fr);
+  grid-template-columns: minmax(235px, .78fr) minmax(470px, 1.45fr) minmax(285px, .9fr);
   min-height: calc(100dvh - 170px);
   margin-top: 0;
   align-items: stretch;
@@ -100,59 +100,21 @@
 
 @media (max-width: 1050px) {
   .registration-page .registration-body .creator-screen {
-    grid-template-columns: minmax(160px, .8fr) minmax(220px, 1.14fr) minmax(280px, 1.34fr) minmax(180px, .9fr);
+    grid-template-columns: minmax(160px, .8fr) minmax(300px, 1.35fr) minmax(180px, .9fr);
     gap: 8px;
   }
   .registration-page .registration-body .creator-intro,
-  .registration-page .registration-body .creator-customize,
   .registration-page .registration-body .creator-screen > .character-preview-wrap,
   .registration-page .registration-body .creator-screen > .type-rail {
     grid-column: auto;
     grid-row: auto;
   }
   .registration-page .registration-body .creator-intro,
-  .registration-page .registration-body .creator-customize,
   .registration-page .registration-body .creator-screen > .character-preview-wrap {
     min-height: calc(100dvh - 170px);
   }
   .registration-page .registration-body .creator-screen > .type-rail {
     min-height: calc(100dvh - 170px);
-  }
-  .registration-page .registration-body .creator-customize {
-    padding: 14px 12px 12px;
-  }
-  .registration-page .registration-body .creator-customize .panel-heading {
-    font-size: 18px;
-    padding-bottom: 9px;
-  }
-  .registration-page .registration-body .creator-customize .panel-heading small {
-    margin-top: 3px;
-    font-size: 9px;
-  }
-  .registration-page .registration-body .appearance-list {
-    gap: 7px;
-    margin-top: 10px;
-  }
-  .registration-page .registration-body .appearance-row-heading {
-    margin-bottom: 4px;
-    font-size: 10px;
-  }
-  .registration-page .registration-body .appearance-row-heading small {
-    font-size: 9px;
-  }
-  .registration-page .registration-body .appearance-options {
-    grid-template-columns: 20px 1fr 20px;
-    gap: 4px;
-  }
-  .registration-page .registration-body .appearance-tiles {
-    gap: 4px;
-  }
-  .registration-page .registration-body .appearance-tile {
-    height: 34px;
-  }
-  .registration-page .registration-body .carousel-arrow {
-    width: 20px;
-    height: 31px;
   }
   .registration-page .registration-body .creator-screen > .type-rail .type-card {
     min-height: 88px;
@@ -193,7 +155,6 @@
     min-height: 0;
   }
   .registration-page .registration-body .creator-intro,
-  .registration-page .registration-body .creator-customize,
   .registration-page .registration-body .creator-screen > .character-preview-wrap {
     min-height: 0;
     height: auto;
