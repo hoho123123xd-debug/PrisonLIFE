@@ -1,35 +1,43 @@
-import { type CSSProperties, type FormEvent, useEffect, useState } from 'react';
+import { type CSSProperties, type Dispatch, type FormEvent, type ReactNode, type SetStateAction, useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
+  ArrowLeft,
   ArrowRight,
+  Backpack,
   BriefcaseBusiness,
-  Crown,
+  Check,
+  ChevronLeft,
+  ChevronRight,
   Coins,
+  Crosshair,
+  Crown,
   Dumbbell,
   Facebook,
+  Flag,
   Gamepad2,
+  Heart,
   Instagram,
+  KeyRound,
   LockKeyhole,
+  Mail,
   Menu,
+  ScrollText,
+  Shield,
   Swords,
   Trophy,
+  UserRound,
   Users,
   X,
   Youtube,
-  Shield,
-  Backpack,
-  Crosshair,
-  Flag,
-  ScrollText,
   Zap,
-  Heart,
 } from 'lucide-react';
 import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864145.png';
 
 const queryClient = new QueryClient();
+
 const featureItems = [
   { title: 'Rozwijaj postać', copy: 'Trenuj, zdobywaj umiejętności i zostań legendą.', icon: Dumbbell },
   { title: 'Walcz z innymi', copy: 'Sprawdź się w pojedynkach i zdobądź szacunek.', icon: Swords },
@@ -55,10 +63,77 @@ const barItems = [
   ['Charakter', '55', '58%'],
 ];
 
-type DialogMode = 'login' | 'register' | null;
+type Screen = 'home' | 'register' | 'login' | 'game';
+type AppearanceKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'outfit' | 'skin';
+type Appearance = Record<AppearanceKey, number>;
+type AccountData = { email: string; password: string; confirmPassword: string };
+type PrisonerType = 'bull' | 'rat' | 'fox' | 'wolf';
+type Option = { name: string; short: string; swatch: string };
 
-function Home() {
-  const [dialog, setDialog] = useState<DialogMode>(null);
+const appearanceOptions: Record<AppearanceKey, Option[]> = {
+  face: [
+    { name: 'Kanciasta', short: '01', swatch: 'face-one' },
+    { name: 'Blizna', short: '02', swatch: 'face-two' },
+    { name: 'Surowa', short: '03', swatch: 'face-three' },
+    { name: 'Zmęczona', short: '04', swatch: 'face-four' },
+  ],
+  hair: [
+    { name: 'Krótka', short: '01', swatch: 'hair-one' },
+    { name: 'Wygolona', short: '02', swatch: 'hair-two' },
+    { name: 'Gęsta', short: '03', swatch: 'hair-three' },
+    { name: 'Irokez', short: '04', swatch: 'hair-four' },
+  ],
+  beard: [
+    { name: 'Brak', short: '01', swatch: 'beard-none' },
+    { name: 'Cień', short: '02', swatch: 'beard-shadow' },
+    { name: 'Broda', short: '03', swatch: 'beard-full' },
+    { name: 'Wąs', short: '04', swatch: 'beard-mustache' },
+  ],
+  tattoo: [
+    { name: 'Brak', short: '01', swatch: 'tattoo-none' },
+    { name: 'Pająk', short: '02', swatch: 'tattoo-spider' },
+    { name: 'Czaszka', short: '03', swatch: 'tattoo-skull' },
+    { name: 'Litery', short: '04', swatch: 'tattoo-letters' },
+  ],
+  outfit: [
+    { name: 'Pomarańczowy', short: '01', swatch: 'outfit-orange' },
+    { name: 'Biały', short: '02', swatch: 'outfit-white' },
+    { name: 'Stalowy', short: '03', swatch: 'outfit-steel' },
+    { name: 'Kombinezon', short: '04', swatch: 'outfit-slate' },
+  ],
+  skin: [
+    { name: 'Jasna', short: '01', swatch: 'skin-light' },
+    { name: 'Oliwkowa', short: '02', swatch: 'skin-olive' },
+    { name: 'Brązowa', short: '03', swatch: 'skin-brown' },
+    { name: 'Ciemna', short: '04', swatch: 'skin-dark' },
+  ],
+};
+
+const prisonerTypes: Array<{
+  id: PrisonerType;
+  name: string;
+  specialty: string;
+  description: string;
+  stats: string[];
+}> = [
+  { id: 'bull', name: 'BYK', specialty: 'SIŁA • ŻYCIE', description: 'Brutalny i nieustępliwy. Zadaje dużo obrażeń i ma wysoką wytrzymałość.', stats: ['SIŁA 85', 'ŻYCIE 90'] },
+  { id: 'rat', name: 'SZCZUR', specialty: 'SZYBKOŚĆ • UNIKI', description: 'Szybki, sprytny, trudny do złapania. Zawsze znajdzie wyjście.', stats: ['ZWINNOŚĆ 88', 'UNIKI 82'] },
+  { id: 'fox', name: 'LIS', specialty: 'TECHNIKA • TAKTYKA', description: 'Myśli kilka kroków naprzód. Wykorzystuje słabości przeciwnika.', stats: ['TECHNIKA 86', 'TAKTYKA 79'] },
+  { id: 'wolf', name: 'WILK', specialty: 'BALANS', description: 'Uniwersalny styl gry. Dobry w każdej sytuacji.', stats: ['BALANS 80', 'INSTYNKT 78'] },
+];
+
+const stepLabels = ['WYGLĄD', 'TYP', 'DANE', 'GOTOWE'];
+
+function Brand({ onNavigate, compact = false }: { onNavigate: (screen: Screen) => void; compact?: boolean }) {
+  return (
+    <button className={`brand brand-button ${compact ? 'brand-compact' : ''}`} onClick={() => onNavigate('home')} data-testid="link-brand">
+      <span className="brand-name">PRISON<span className="crown">◆</span>LIFE</span>
+      {!compact && <span className="brand-tagline">TU ZACZYNA SIĘ PRAWDZIWA GRA</span>}
+    </button>
+  );
+}
+
+function Home({ onNavigate }: { onNavigate: (screen: Screen) => void }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notice, setNotice] = useState('');
 
@@ -74,10 +149,6 @@ function Home() {
     meta.setAttribute('content', description);
   }, []);
 
-  const openDialog = (mode: DialogMode) => {
-    setDialog(mode);
-    setMobileOpen(false);
-  };
   const showNotice = (message: string) => {
     setNotice(message);
     window.setTimeout(() => setNotice(''), 3500);
@@ -86,44 +157,34 @@ function Home() {
     setMobileOpen(false);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setDialog(null);
-    showNotice(dialog === 'register' ? 'Kreator więźnia będzie gotowy przy otwarciu serwera.' : 'Logowanie będzie dostępne przy otwarciu serwera.');
-  };
 
   return (
     <main className="prison-page" style={{ '--artwork-url': `url("${prisonArtwork}")` } as CSSProperties}>
       <header className="site-header" data-testid="header-main">
         <div className="prison-shell header-inner">
-          <a href="#top" className="brand" data-testid="link-brand" onClick={() => setMobileOpen(false)}>
-            <span className="brand-name">PRISON<span className="crown">◆</span>LIFE</span>
-            <span className="brand-tagline">TU ZACZYNA SIĘ PRAWDZIWA GRA</span>
-          </a>
+          <Brand onNavigate={onNavigate} />
           <nav className="nav-links" aria-label="Główna nawigacja">
-            <a href="#about" className="nav-link" data-testid="link-nav-about">O GRZE</a>
-            <a href="#features" className="nav-link" data-testid="link-nav-features">FUNKCJE</a>
-            <a href="#world" className="nav-link" data-testid="link-nav-world">ŚWIAT GRY</a>
-            <a href="#community" className="nav-link" data-testid="link-nav-community">SPOŁECZNOŚĆ</a>
-            <a href="#rankings" className="nav-link" data-testid="link-nav-rankings">RANKINGI</a>
-            <a href="#media" className="nav-link" data-testid="link-nav-media">MEDIA</a>
+            <button className="nav-link" onClick={() => scrollTo('about')}>O GRZE</button>
+            <button className="nav-link" onClick={() => scrollTo('features')}>FUNKCJE</button>
+            <button className="nav-link" onClick={() => scrollTo('world')}>ŚWIAT GRY</button>
+            <button className="nav-link" onClick={() => scrollTo('community')}>SPOŁECZNOŚĆ</button>
+            <button className="nav-link" onClick={() => scrollTo('rankings')}>RANKINGI</button>
+            <button className="nav-link" onClick={() => scrollTo('media')}>MEDIA</button>
           </nav>
           <div className="header-actions">
-            <button className="header-action" onClick={() => openDialog('login')} data-testid="button-header-login">ZALOGUJ SIĘ</button>
-            <button className="header-action register" onClick={() => openDialog('register')} data-testid="button-header-register">ZAREJESTRUJ SIĘ</button>
+            <button className="header-action" onClick={() => onNavigate('login')} data-testid="button-header-login">ZALOGUJ SIĘ</button>
+            <button className="header-action register" onClick={() => onNavigate('register')} data-testid="button-header-register">ZAREJESTRUJ SIĘ</button>
           </div>
           <button className="mobile-toggle" aria-label={mobileOpen ? 'Zamknij menu' : 'Otwórz menu'} onClick={() => setMobileOpen((open) => !open)} data-testid="button-mobile-menu">
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           <div className={`mobile-menu ${mobileOpen ? 'mobile-menu-open' : ''}`}>
-            <a href="#about" className="nav-link" onClick={() => setMobileOpen(false)} data-testid="link-mobile-about">O GRZE</a>
-            <a href="#features" className="nav-link" onClick={() => setMobileOpen(false)} data-testid="link-mobile-features">FUNKCJE</a>
-            <a href="#world" className="nav-link" onClick={() => setMobileOpen(false)} data-testid="link-mobile-world">ŚWIAT GRY</a>
-            <a href="#community" className="nav-link" onClick={() => setMobileOpen(false)} data-testid="link-mobile-community">SPOŁECZNOŚĆ</a>
-            <a href="#rankings" className="nav-link" onClick={() => setMobileOpen(false)} data-testid="link-mobile-rankings">RANKINGI</a>
+            {['about', 'features', 'world', 'community', 'rankings', 'media'].map((id, index) => (
+              <button key={id} className="nav-link" onClick={() => scrollTo(id)}>{['O GRZE', 'FUNKCJE', 'ŚWIAT GRY', 'SPOŁECZNOŚĆ', 'RANKINGI', 'MEDIA'][index]}</button>
+            ))}
             <div className="header-actions">
-              <button className="header-action" onClick={() => openDialog('login')} data-testid="button-mobile-login">ZALOGUJ SIĘ</button>
-              <button className="header-action register" onClick={() => openDialog('register')} data-testid="button-mobile-register">ZAREJESTRUJ SIĘ</button>
+              <button className="header-action" onClick={() => onNavigate('login')}>ZALOGUJ SIĘ</button>
+              <button className="header-action register" onClick={() => onNavigate('register')}>ZAREJESTRUJ SIĘ</button>
             </div>
           </div>
         </div>
@@ -134,12 +195,10 @@ function Home() {
           <div className="hero-content reveal" id="about">
             <div className="eyebrow">Więzienie. Zasady. Reputacja.</div>
             <h1 className="hero-title" data-testid="text-hero-title">Więcej niż gra.<span>To twój wyrok.</span></h1>
-            <p className="hero-copy" data-testid="text-hero-description">
-              Prison Life to przeglądarkowa gra strategiczna, w której trafiasz do więzienia i budujesz swoją legendę. Trenuj, walcz, pracuj, kombinuj i pokaż, na co Cię stać w świecie, gdzie liczy się tylko siła, spryt i lojalność.
-            </p>
+            <p className="hero-copy" data-testid="text-hero-description">Prison Life to przeglądarkowa gra strategiczna, w której trafiasz do więzienia i budujesz swoją legendę. Trenuj, walcz, pracuj, kombinuj i pokaż, na co Cię stać w świecie, gdzie liczy się tylko siła, spryt i lojalność.</p>
             <div className="hero-buttons">
-              <button className="btn btn-primary" onClick={() => openDialog('register')} data-testid="button-hero-register">ZAREJESTRUJ SIĘ <ArrowRight size={17} /></button>
-              <button className="btn btn-outline" onClick={() => openDialog('login')} data-testid="button-hero-login"><LockKeyhole size={16} /> ZALOGUJ SIĘ</button>
+              <button className="btn btn-primary" onClick={() => onNavigate('register')} data-testid="button-hero-register">ZAREJESTRUJ SIĘ <ArrowRight size={17} /></button>
+              <button className="btn btn-outline" onClick={() => onNavigate('login')} data-testid="button-hero-login"><LockKeyhole size={16} /> ZALOGUJ SIĘ</button>
             </div>
           </div>
         </div>
@@ -148,106 +207,212 @@ function Home() {
 
       <section className="stats-strip" aria-label="Statystyki gry" id="community" data-testid="section-stats">
         <div className="prison-shell stats-grid">
-          <div className="stat" data-testid="stat-active-prisoners"><strong className="stat-value">12 842</strong><span className="stat-label">Aktywnych więźniów</span></div>
-          <div className="stat" data-testid="stat-fights"><strong className="stat-value">1 204 568</strong><span className="stat-label">Stoczonych walk</span></div>
-          <div className="stat" data-testid="stat-days"><strong className="stat-value">587 321</strong><span className="stat-label">Dni za kratami</span></div>
-          <div className="stat" data-testid="stat-years"><strong className="stat-value">5 lat</strong><span className="stat-label">Ciągłego rozwoju</span></div>
+          <div className="stat"><strong className="stat-value">12 842</strong><span className="stat-label">Aktywnych więźniów</span></div>
+          <div className="stat"><strong className="stat-value">1 204 568</strong><span className="stat-label">Stoczonych walk</span></div>
+          <div className="stat"><strong className="stat-value">587 321</strong><span className="stat-label">Dni za kratami</span></div>
+          <div className="stat"><strong className="stat-value">5 lat</strong><span className="stat-label">Ciągłego rozwoju</span></div>
         </div>
       </section>
 
       <section className="features-section section-rule" id="features" data-testid="section-features">
         <div className="prison-shell features-grid">
-          {featureItems.map(({ title, copy, icon: Icon }, index) => (
-            <article className="feature" key={title} data-testid={`feature-card-${index}`}>
-              <Icon className="feature-icon" strokeWidth={1.5} aria-hidden="true" />
-              <h2 className="feature-title">{title}</h2>
-              <p className="feature-copy">{copy}</p>
-            </article>
-          ))}
+          {featureItems.map(({ title, copy, icon: Icon }) => <article className="feature" key={title}><Icon className="feature-icon" strokeWidth={1.5} /><h2 className="feature-title">{title}</h2><p className="feature-copy">{copy}</p></article>)}
         </div>
       </section>
 
       <section className="world-section section-rule" id="world" data-testid="section-world">
         <div className="prison-shell world-grid">
-          <div className="game-panel" id="media" aria-label="Podgląd panelu gry" data-testid="gameplay-panel">
+          <div className="game-panel" id="media" aria-label="Podgląd panelu gry">
             <div className="panel-top"><span><Coins /> 12 450</span><span><Zap /> 78</span><span><Heart /> 340</span></div>
-            <div className="panel-menu">
-              {panelItems.map(({ label, icon: Icon }, index) => (
-                <div id={label === 'Ranking' ? 'rankings' : undefined} className={`panel-menu-item ${index === 0 ? 'active' : ''}`} key={label} data-testid={`game-menu-${label.toLowerCase()}`}><Icon />{label}</div>
-              ))}
-            </div>
-            <div className="player-card">
-              <div className="player-avatar" data-testid="img-player-kosa" role="img" aria-label="Kosa w swojej celi" />
-              <div>
-                <div className="player-name" data-testid="text-player-name">Kosa</div>
-                <div className="player-level" data-testid="text-player-level">Poziom 28</div>
-                <div className="stat-bars">
-                  {barItems.map(([label, value, width]) => (
-                    <div className="bar-line" key={label} data-testid={`player-stat-${label.toLowerCase()}`}><span>{label}</span><div className="bar"><i style={{ width }} /></div><b>{value}</b></div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <div className="panel-menu">{panelItems.map(({ label, icon: Icon }, index) => <div id={label === 'Ranking' ? 'rankings' : undefined} className={`panel-menu-item ${index === 0 ? 'active' : ''}`} key={label}><Icon />{label}</div>)}</div>
+            <div className="player-card"><div className="player-avatar" role="img" aria-label="Kosa w swojej celi" /><div><div className="player-name">Kosa</div><div className="player-level">Poziom 28</div><div className="stat-bars">{barItems.map(([label, value, width]) => <div className="bar-line" key={label}><span>{label}</span><div className="bar"><i style={{ width }} /></div><b>{value}</b></div>)}</div></div></div>
           </div>
-          <div className="world-copy-block">
-            <div className="world-kicker">Świat Prison Life</div>
-            <h2 className="world-title" data-testid="text-world-title">Za kratami zaczyna się <span>prawdziwa gra</span></h2>
-            <p className="world-copy">Poznaj brutalny, ale pełen możliwości świat więzienia. Każda decyzja ma znaczenie, a każdy dzień to nowa szansa, by stać się kimś więcej.</p>
-            <button className="btn btn-outline world-cta" onClick={() => showNotice('Pełny widok świata pojawi się już wkrótce.')} data-testid="button-world-more">ZOBACZ WIĘCEJ <ArrowRight size={16} /></button>
-          </div>
+          <div className="world-copy-block"><div className="world-kicker">Świat Prison Life</div><h2 className="world-title">Za kratami zaczyna się <span>prawdziwa gra</span></h2><p className="world-copy">Poznaj brutalny, ale pełen możliwości świat więzienia. Każda decyzja ma znaczenie, a każdy dzień to nowa szansa, by stać się kimś więcej.</p><button className="btn btn-outline world-cta" onClick={() => showNotice('Pełny widok świata pojawi się już wkrótce.')}>ZOBACZ WIĘCEJ <ArrowRight size={16} /></button></div>
         </div>
       </section>
 
-      <footer className="footer" id="footer-main" data-testid="footer-main">
-        <div className="prison-shell footer-main">
-          <a href="#top" className="brand" data-testid="link-footer-brand"><span className="brand-name">PRISON<span className="crown">◆</span>LIFE</span></a>
-          <nav className="footer-links" aria-label="Linki informacyjne">
-            <a href="#rules" className="footer-link" onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')} data-testid="link-footer-rules">Regulamin</a>
-            <a href="#privacy" className="footer-link" onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')} data-testid="link-footer-privacy">Polityka prywatności</a>
-            <a href="#faq" className="footer-link" onClick={() => showNotice('Sekcja FAQ jest w przygotowaniu.')} data-testid="link-footer-faq">FAQ</a>
-            <a href="mailto:kontakt@prisonlife.pl" className="footer-link" data-testid="link-footer-contact">Kontakt</a>
-          </nav>
-          <div className="social-links" aria-label="Media społecznościowe">
-            <a href="#discord" className="social-link" aria-label="Discord" onClick={() => showNotice('Społeczność Prison Life wkrótce otworzy serwer Discord.')} data-testid="link-social-discord"><Gamepad2 size={17} /></a>
-            <a href="#facebook" className="social-link" aria-label="Facebook" data-testid="link-social-facebook"><Facebook size={17} /></a>
-            <a href="#youtube" className="social-link" aria-label="YouTube" data-testid="link-social-youtube"><Youtube size={17} /></a>
-            <a href="#instagram" className="social-link" aria-label="Instagram" data-testid="link-social-instagram"><Instagram size={17} /></a>
-          </div>
-          <div className="footer-motto">PRAWDZIWE HISTORIE<br />ZACZYNAJĄ SIĘ W WIĘZIENIU...</div>
-        </div>
-        <div className="prison-shell footer-bottom"><span data-testid="text-copyright">© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><span>Więcej niż gra.</span></div>
-      </footer>
-
-      {dialog && (
-        <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setDialog(null); }} data-testid="dialog-backdrop">
-          <section className="dialog-panel" role="dialog" aria-modal="true" aria-labelledby="dialog-title" data-testid={`dialog-${dialog}`}>
-            <button className="dialog-close" onClick={() => setDialog(null)} aria-label="Zamknij" data-testid="button-dialog-close"><X size={20} /></button>
-            <div className="eyebrow">{dialog === 'register' ? 'Nowy więzień' : 'Powrót za kraty'}</div>
-            <h2 className="dialog-title" id="dialog-title">{dialog === 'register' ? 'Zarejestruj się' : 'Zaloguj się'}</h2>
-            <p className="dialog-copy">{dialog === 'register' ? 'Stwórz swoją kartotekę i wybierz, jaką reputację zbudujesz za kratami.' : 'Wróć do swojej celi. Twoja reputacja nie poczeka.'}</p>
-            <form className="dialog-form" onSubmit={handleSubmit}>
-              {dialog === 'register' && <label className="dialog-label">Pseudonim<input className="dialog-input" required placeholder="np. Kosa" data-testid="input-register-nickname" /></label>}
-              <label className="dialog-label">Adres e-mail<input type="email" className="dialog-input" required placeholder="więzień@prisonlife.pl" data-testid="input-auth-email" /></label>
-              <label className="dialog-label">Hasło<input type="password" className="dialog-input" required minLength={6} placeholder="wpisz hasło" data-testid="input-auth-password" /></label>
-              <button className="btn btn-primary dialog-submit" type="submit" data-testid="button-dialog-submit">{dialog === 'register' ? 'OTWÓRZ KARTOTEKĘ' : 'WEJDŹ DO GRY'} <ArrowRight size={16} /></button>
-            </form>
-          </section>
-        </div>
-      )}
-      {notice && <div className="notice" role="status" data-testid="status-notice">{notice}</div>}
+      <PublicFooter onNavigate={onNavigate} onNotice={showNotice} />
+      {notice && <div className="notice" role="status">{notice}</div>}
     </main>
   );
 }
 
-function App() {
+function PublicFooter({ onNavigate, onNotice }: { onNavigate: (screen: Screen) => void; onNotice: (message: string) => void }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ErrorBoundary resetKey="prison-life"><Home /></ErrorBoundary>
-        <Toaster />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <footer className="footer" id="footer-main">
+      <div className="prison-shell footer-main">
+        <Brand onNavigate={onNavigate} compact />
+        <nav className="footer-links" aria-label="Linki informacyjne">
+          <button className="footer-link" onClick={() => onNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button>
+          <button className="footer-link" onClick={() => onNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button>
+          <button className="footer-link" onClick={() => onNotice('Sekcja FAQ jest w przygotowaniu.')}>FAQ</button>
+          <a href="mailto:kontakt@prisonlife.pl" className="footer-link">Kontakt</a>
+        </nav>
+        <div className="social-links" aria-label="Media społecznościowe"><button className="social-link" aria-label="Discord"><Gamepad2 size={17} /></button><button className="social-link" aria-label="Facebook"><Facebook size={17} /></button><button className="social-link" aria-label="YouTube"><Youtube size={17} /></button><button className="social-link" aria-label="Instagram"><Instagram size={17} /></button></div>
+        <div className="footer-motto">PRAWDZIWE HISTORIE<br />ZACZYNAJĄ SIĘ W WIĘZIENIU...</div>
+      </div>
+      <div className="prison-shell footer-bottom"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><span>Więcej niż gra.</span></div>
+    </footer>
   );
+}
+
+function RegistrationProgress({ step }: { step: number }) {
+  return <div className="registration-progress" aria-label="Postęp rejestracji">{stepLabels.map((label, index) => <div className={`progress-step ${step === index + 1 ? 'current' : ''} ${step > index + 1 ? 'complete' : ''}`} key={label}><span className="progress-number">{step > index + 1 ? <Check size={14} /> : `0${index + 1}`}</span><span>{label}</span></div>)}</div>;
+}
+
+function AppearanceSelector({ appearance, onChange }: { appearance: Appearance; onChange: (key: AppearanceKey, value: number) => void }) {
+  const categories: Array<[AppearanceKey, string]> = [['face', 'TWARZ'], ['hair', 'FRYZURA'], ['beard', 'ZAROST'], ['tattoo', 'TATUAŻE'], ['outfit', 'UBRANIE'], ['skin', 'KOLOR SKÓRY']];
+  return (
+    <div className="appearance-list">
+      {categories.map(([key, label]) => {
+        const selected = appearance[key];
+        const options = appearanceOptions[key];
+        return <div className="appearance-row" key={key}>
+          <div className="appearance-row-heading"><span>{label}</span><small>{options[selected].name}</small></div>
+          <div className="appearance-options">
+            <button className="carousel-arrow" onClick={() => onChange(key, (selected - 1 + options.length) % options.length)} aria-label={`Poprzednia opcja: ${label}`}><ChevronLeft size={16} /></button>
+            <div className="appearance-tiles">{options.map((option, index) => <button key={option.name} className={`appearance-tile ${option.swatch} ${selected === index ? 'selected' : ''}`} onClick={() => onChange(key, index)} aria-label={`${label}: ${option.name}`} aria-pressed={selected === index}><span>{option.short}</span></button>)}</div>
+            <button className="carousel-arrow" onClick={() => onChange(key, (selected + 1) % options.length)} aria-label={`Następna opcja: ${label}`}><ChevronRight size={16} /></button>
+          </div>
+        </div>;
+      })}
+    </div>
+  );
+}
+
+function CharacterPreview({ appearance, nickname, type }: { appearance: Appearance; nickname: string; type: PrisonerType }) {
+  const skinColors = ['#bd8060', '#9e6047', '#754532', '#4c2c26'];
+  const skin = skinColors[appearance.skin];
+  const outfitColors = ['#c96022', '#b9b3a4', '#53646a', '#283d43'];
+  const outfit = outfitColors[appearance.outfit];
+  const displayName = nickname.trim() || 'NOWY WIĘZIEŃ';
+  return (
+    <div className="character-preview-wrap">
+      <div className="preview-ruler" aria-hidden="true"><span>180</span><span>170</span><span>160</span><span>150</span><span>140</span></div>
+      <div className="character-preview" data-testid="character-preview">
+        <div className="preview-stamp">PRISON LIFE<br /><b>INTAKE / 2026</b></div>
+        <svg className="character-svg" viewBox="0 0 360 620" role="img" aria-label={`Podgląd więźnia ${displayName}`}>
+          <defs><linearGradient id="skinGradient" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={skin} /><stop offset=".6" stopColor={skin} stopOpacity=".96" /><stop offset="1" stopColor="#3d2420" /></linearGradient><linearGradient id="clothGradient" x1="0" x2="1"><stop stopColor={outfit} /><stop offset=".52" stopColor={outfit} stopOpacity=".92" /><stop offset="1" stopColor="#1d2425" /></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="7" stdDeviation="6" floodColor="#000" floodOpacity=".5" /></filter></defs>
+          <ellipse cx="180" cy="595" rx="115" ry="16" fill="#000" opacity=".5" />
+          <g filter="url(#shadow)">
+            <path d="M126 334 Q93 365 76 492 L92 527 124 505 137 406 223 406 237 505 269 527 284 492 Q268 366 235 334Z" fill="url(#clothGradient)" />
+            <path d="M126 353 Q96 376 78 473 L95 486 130 414Z" fill={skin} opacity=".96" /><path d="M234 353 Q264 376 282 473 L265 486 230 414Z" fill={skin} opacity=".96" />
+            <path d="M91 482 Q82 494 92 525 L109 526 119 494Z" fill={skin} /><path d="M269 482 Q278 494 268 525 L251 526 241 494Z" fill={skin} />
+            <path d="M134 307 L136 357 Q180 382 224 357 L226 307Z" fill="url(#skinGradient)" />
+            <path d="M121 351 Q180 377 239 351 L256 397 220 424 140 424 104 397Z" fill="url(#clothGradient)" />
+            {appearance.outfit === 0 && <><path d="M180 371 L168 419 180 431 192 419Z" fill="#182023" /><path d="M126 365 L151 382 160 428 142 426Z" fill="#11191c" opacity=".65" /><path d="M234 365 L209 382 200 428 218 426Z" fill="#11191c" opacity=".65" /></>}
+            {appearance.outfit === 1 && <path d="M180 372 L168 424 180 430 192 424Z" fill="#4b5657" />}
+            {appearance.outfit === 2 && <path d="M134 351 L148 425 168 424 180 376 192 424 212 425 226 351 239 363 221 437 139 437 121 363Z" fill="#273a3e" opacity=".8" />}
+            {appearance.outfit === 3 && <path d="M124 353 L146 429 214 429 236 353 253 377 225 460 135 460 107 377Z" fill="#1c2a2e" opacity=".86" />}
+            <path d="M155 383 L180 400 205 383" fill="none" stroke="#d6aa7b" strokeWidth="2" opacity=".55" />
+            <rect x="192" y="387" width="36" height="21" rx="1" fill="#d6c5a5" /><text x="198" y="402" fontSize="10" fontFamily="Barlow Condensed" fill="#252729" fontWeight="700">A-7421</text>
+            <ellipse cx="180" cy="235" rx={appearance.face === 1 ? 52 : 56} ry="75" fill="url(#skinGradient)" />
+            {appearance.face === 0 && <path d="M136 218 Q148 185 180 183 Q213 185 224 218 L213 198 Q180 210 147 198Z" fill="#30221f" opacity=".4" />}
+            {appearance.face === 1 && <path d="M150 188 Q180 177 211 190 L223 221 211 239 Q180 252 149 239 L137 220Z" fill="#49302a" opacity=".38" />}
+            {appearance.face === 2 && <path d="M132 226 L146 185 180 177 214 185 228 226 214 270 180 288 146 270Z" fill="#4a2b25" opacity=".32" />}
+            {appearance.face === 3 && <path d="M142 200 Q180 180 218 200 L225 252 Q180 276 135 252Z" fill="#211c1b" opacity=".2" />}
+            <path d="M149 226 Q160 219 169 225" stroke="#231b19" strokeWidth="5" fill="none" /><path d="M191 225 Q200 219 211 226" stroke="#231b19" strokeWidth="5" fill="none" />
+            <ellipse cx="160" cy="234" rx="4" ry="5" fill="#111" /><ellipse cx="200" cy="234" rx="4" ry="5" fill="#111" />
+            <path d="M180 234 L174 258 184 260" fill="none" stroke="#633b30" strokeWidth="3" /><path d="M157 274 Q180 284 203 274" fill="none" stroke="#321d1b" strokeWidth="4" />
+            {appearance.face === 1 && <path d="M207 197 L215 236" stroke="#c48f72" strokeWidth="3" opacity=".8" />}
+            {appearance.hair === 0 && <path d="M126 224 Q124 168 180 157 Q236 168 234 224 L219 214 211 184 Q180 174 149 184 L141 214Z" fill="#171718" />}
+            {appearance.hair === 1 && <path d="M129 210 Q126 169 180 156 Q234 169 231 210 L215 198 207 175 Q180 166 153 175 L145 198Z" fill="#242326" />}
+            {appearance.hair === 2 && <><path d="M123 226 Q114 169 180 144 Q247 169 237 226 L220 204 212 174 Q180 157 148 174 L140 207Z" fill="#121314" /><path d="M148 169 Q180 131 212 169" fill="none" stroke="#303032" strokeWidth="13" /></>}
+            {appearance.hair === 3 && <path d="M147 211 L143 165 164 180 180 139 196 180 218 165 213 211 201 193 180 175 159 193Z" fill="#141516" />}
+            {appearance.beard === 1 && <path d="M145 267 Q180 285 215 267 L206 297 Q180 311 154 297Z" fill="#272122" opacity=".55" />}
+            {appearance.beard === 2 && <path d="M143 265 Q180 285 217 265 L210 315 Q180 335 150 315Z" fill="#211b1c" />}
+            {appearance.beard === 3 && <path d="M151 273 Q180 284 209 273 L204 289 Q180 299 156 289Z" fill="#211b1c" />}
+            {appearance.tattoo === 1 && <path d="M99 399 q20-28 42 0 l-21 35Z M261 399 q-20-28-42 0 l21 35Z" fill="none" stroke="#191a19" strokeWidth="5" opacity=".8" />}
+            {appearance.tattoo === 2 && <><circle cx="116" cy="418" r="15" fill="none" stroke="#17191a" strokeWidth="5" /><path d="M105 431 l11-12 11 12 M105 407 l11 12 11-12" fill="none" stroke="#17191a" strokeWidth="3" /></>}
+            {appearance.tattoo === 3 && <path d="M103 409 H136 M101 421 H132 M224 409 H257 M228 421 H260" stroke="#16191a" strokeWidth="4" />}
+            {appearance.tattoo === 0 && <path d="M97 403 Q113 386 130 403 M230 403 Q247 386 263 403" fill="none" stroke="#5c3830" strokeWidth="2" opacity=".35" />}
+            <path d="M136 353 Q180 367 224 353" fill="none" stroke="#11191b" strokeWidth="5" opacity=".55" />
+            {type === 'bull' && <path d="M142 356 L180 370 218 356" fill="none" stroke="#ec8234" strokeWidth="2" opacity=".65" />}
+            {type === 'rat' && <path d="M146 356 L180 367 214 356" fill="none" stroke="#b5b5a3" strokeWidth="2" opacity=".5" />}
+            {appearance.outfit === 2 && <path d="M153 385 Q180 400 207 385" stroke="#d6a454" fill="none" strokeWidth="2" />}
+          </g>
+          {appearance.outfit === 0 && <path d="M165 430 L159 570 180 589 201 570 195 430Z" fill="#c65b22" opacity=".95" />}
+          {appearance.outfit !== 0 && <path d="M159 425 L151 570 177 590 180 438 183 590 209 570 201 425Z" fill={outfit} opacity=".95" />}
+        </svg>
+        <div className="preview-id"><span className="id-name">{displayName.toUpperCase()}</span><span className="id-number">#A-47291</span></div>
+      </div>
+    </div>
+  );
+}
+
+function TypeCard({ type, selected, onSelect, compact = false }: { type: typeof prisonerTypes[number]; selected: boolean; onSelect: () => void; compact?: boolean }) {
+  return <button className={`type-card ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={onSelect} aria-pressed={selected}><span className={`type-avatar type-${type.id}`}><span>{type.name.slice(0, 1)}</span></span><span className="type-card-content"><strong>{type.name}</strong><em>{type.specialty}</em>{!compact && <><small>{type.description}</small><i>{type.stats.join('  /  ')}</i></>}</span>{selected && <Check className="type-check" size={17} />}</button>;
+}
+
+function TypeRail({ selectedType, onSelect, heading = 'WYBIERZ TYP WIĘŹNIA', compact = false }: { selectedType: PrisonerType; onSelect: (type: PrisonerType) => void; heading?: string; compact?: boolean }) {
+  return <aside className={`type-rail ${compact ? 'type-rail-compact' : ''}`}><div className="section-kicker">{heading}</div><p className="rail-hint">KAŻDY TYP TO INNA DROGA. WYBIERZ MĄDRZE.</p><div className="type-cards">{prisonerTypes.map((type) => <TypeCard key={type.id} type={type} selected={selectedType === type.id} onSelect={() => onSelect(type.id)} compact={compact} />)}</div></aside>;
+}
+
+function RegistrationShell({ step, children, onNavigate, onStepChange, onNext, onCreate }: {
+  step: number; children: ReactNode; onNavigate: (screen: Screen) => void; onStepChange: (step: number) => void; onNext: () => void; onCreate: () => void;
+}) {
+  return <main className="registration-page" style={{ '--artwork-url': `url("${prisonArtwork}")` } as CSSProperties}>
+    <header className="registration-header"><div className="prison-shell registration-header-inner"><Brand onNavigate={onNavigate} /><RegistrationProgress step={step} /><div className="registration-login"><span>MASZ JUŻ KONTO?</span><button onClick={() => onNavigate('login')} data-testid="button-registration-login">ZALOGUJ SIĘ</button></div></div></header>
+    <div className="prison-shell registration-body">{step === 1 && <button className="back-home" onClick={() => onNavigate('home')}><ArrowLeft size={14} /> POWRÓT NA STRONĘ GŁÓWNĄ</button>}{children}</div>
+    <div className="registration-action-bar"><div className="prison-shell registration-actions">{step > 1 ? <button className="btn btn-outline" onClick={() => onStepChange(step - 1)}><ArrowLeft size={16} /> WSTECZ</button> : <div className="registration-account-link">MASZ JUŻ KONTO? <button onClick={() => onNavigate('login')}>ZALOGUJ SIĘ</button></div>}{step === 4 ? <button className="btn btn-primary" onClick={onCreate} data-testid="button-create-prisoner">UTWÓRZ WIĘŹNIA <ArrowRight size={17} /></button> : <button className="btn btn-primary" onClick={onNext} data-testid="button-registration-next">DALEJ <ArrowRight size={17} /></button>}</div></div>
+    <footer className="registration-footer"><div className="prison-shell registration-footer-inner"><Brand onNavigate={onNavigate} compact /><span>REGULAMIN</span><span>POLITYKA PRYWATNOŚCI</span><span>FAQ</span><span>KONTAKT</span><div className="registration-social"><Gamepad2 size={15} /><Facebook size={15} /><Youtube size={15} /><Instagram size={15} /></div><em>PRAWDZIWE HISTORIE<br />ZACZYNAJĄ SIĘ W WIĘZIENIU...</em></div></footer>
+  </main>;
+}
+
+function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen: Screen) => void; creator: CreatorState; setCreator: Dispatch<SetStateAction<CreatorState>> }) {
+  const updateAppearance = (key: AppearanceKey, value: number) => setCreator((current) => ({ ...current, appearance: { ...current.appearance, [key]: value } }));
+  const setStep = (nextStep: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(4, nextStep)) }));
+  const selectedType = prisonerTypes.find((type) => type.id === creator.prisonerType)!;
+  const goNext = () => {
+    if (creator.step === 1 && !creator.nickname.trim()) { setCreator((current) => ({ ...current, nicknameError: 'Wpisz ksywę, zanim przejdziesz dalej.' })); return; }
+    if (creator.step === 3) {
+      if (!creator.account.email || !creator.account.password || !creator.account.confirmPassword) { setCreator((current) => ({ ...current, accountError: 'Uzupełnij wszystkie pola, aby przejść dalej.' })); return; }
+      if (creator.account.password.length < 6) { setCreator((current) => ({ ...current, accountError: 'Hasło musi mieć co najmniej 6 znaków.' })); return; }
+      if (creator.account.password !== creator.account.confirmPassword) { setCreator((current) => ({ ...current, accountError: 'Hasła muszą być identyczne.' })); return; }
+    }
+    setCreator((current) => ({ ...current, step: Math.min(4, current.step + 1), nicknameError: '', accountError: '' }));
+  };
+  const changeStep = (next: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(4, next)), nicknameError: '', accountError: '' }));
+  return <RegistrationShell step={creator.step} onNavigate={onNavigate} onStepChange={changeStep} onNext={goNext} onCreate={() => onNavigate('game')}>
+    {creator.step === 1 && <section className="creator-screen">
+      <div className="creator-intro"><div className="eyebrow">Krok 01 / Tożsamość</div><h1>STWÓRZ<br /><span>SWOJEGO WIĘŹNIA</span></h1><p>Wybierz styl, nadaj mu tożsamość i rozpocznij swoją drogę za kratami. Pamiętaj — to nie jest tylko postać. To Twoja legenda.</p><label className="nickname-field"><span>KSYWA</span><div><UserRound size={17} /><input value={creator.nickname} onChange={(event) => setCreator((current) => ({ ...current, nickname: event.target.value, nicknameError: '' }))} placeholder="Wpisz swoją ksywę..." maxLength={18} data-testid="input-register-nickname" /></div>{creator.nicknameError && <small>{creator.nicknameError}</small>}</label></div>
+      <div className="creator-customize"><div className="panel-heading"><span>WYGLĄD</span><small>Wybierz elementy wyglądu</small></div><AppearanceSelector appearance={creator.appearance} onChange={updateAppearance} /></div>
+      <CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} />
+      <TypeRail selectedType={creator.prisonerType} onSelect={(type) => setCreator((current) => ({ ...current, prisonerType: type }))} compact />
+    </section>}
+    {creator.step === 2 && <section className="step-screen type-step"><div className="step-heading"><div className="eyebrow">Krok 02 / Specjalizacja</div><h1>WYBIERZ <span>SWOJĄ DROGĘ</span></h1><p>Każdy typ więźnia otwiera inną ścieżkę rozwoju. Wybierz specjalizację, która pasuje do Twojej strategii.</p></div><div className="type-selection-grid">{prisonerTypes.map((type) => <TypeCard key={type.id} type={type} selected={creator.prisonerType === type.id} onSelect={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} />)}</div><div className="mini-summary"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div><span>WYBRANY TYP</span><strong>{selectedType.name}</strong><p>{selectedType.description}</p></div></div></section>}
+    {creator.step === 3 && <section className="step-screen account-step"><div className="step-heading"><div className="eyebrow">Krok 03 / Kartoteka</div><h1>DANE <span>WIĘŹNIA</span></h1><p>Twoja kartoteka jest prawie gotowa. Podaj dane, których użyjesz, aby wrócić do swojej historii.</p></div><form className="account-form" onSubmit={(event) => { event.preventDefault(); goNext(); }}><label><span><Mail size={15} /> E-MAIL</span><input type="email" autoComplete="email" value={creator.account.email} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, email: event.target.value }, accountError: '' }))} placeholder="więzień@prisonlife.pl" data-testid="input-auth-email" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="new-password" minLength={6} value={creator.account.password} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, password: event.target.value }, accountError: '' }))} placeholder="minimum 6 znaków" data-testid="input-auth-password" required /></label><label><span><KeyRound size={15} /> POWTÓRZ HASŁO</span><input type="password" autoComplete="new-password" value={creator.account.confirmPassword} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, confirmPassword: event.target.value }, accountError: '' }))} placeholder="powtórz hasło" data-testid="input-auth-confirm" required /></label>{creator.accountError && <div className="form-error">{creator.accountError}</div>}<button type="submit" className="account-form-submit">SPRAWDŹ DANE <ArrowRight size={16} /></button></form><div className="account-side-note"><span>IDENTYFIKATOR</span><strong>{creator.nickname.toUpperCase() || 'NOWY WIĘZIEŃ'}</strong><small>#A-47291 / INTAKE</small><p>Dane konta są używane wyłącznie do logowania do Prison Life.</p></div></section>}
+    {creator.step === 4 && <section className="step-screen summary-step"><div className="step-heading"><div className="eyebrow">Krok 04 / Kontrola</div><h1>WSZYSTKO <span>GOTOWE</span></h1><p>Sprawdź swoją kartotekę. Możesz cofnąć się i zmienić dowolny wybór.</p></div><div className="summary-grid"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div className="summary-details"><div className="summary-block"><span className="summary-label">KSYWA</span><strong>{creator.nickname.toUpperCase()}</strong><button onClick={() => changeStep(1)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-block"><span className="summary-label">TYP WIĘŹNIA</span><strong>{selectedType.name}</strong><em>{selectedType.specialty}</em><button onClick={() => changeStep(2)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-stats">{selectedType.stats.map((stat) => <span key={stat}>{stat}</span>)}</div><div className="summary-block account-summary"><span className="summary-label">DANE KONTA</span><strong>{creator.account.email}</strong><small>Hasło zabezpieczone</small><button onClick={() => changeStep(3)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-appearance"><span className="summary-label">WYGLĄD</span>{Object.entries(creator.appearance).map(([key, value]) => <span key={key}>{appearanceOptions[key as AppearanceKey][value].name}</span>)}</div></div></div></section>}
+  </RegistrationShell>;
+}
+
+type CreatorState = { step: number; nickname: string; nicknameError: string; prisonerType: PrisonerType; appearance: Appearance; account: AccountData; accountError: string };
+const initialCreator: CreatorState = { step: 1, nickname: '', nicknameError: '', prisonerType: 'bull', appearance: { face: 0, hair: 0, beard: 1, tattoo: 1, outfit: 0, skin: 1 }, account: { email: '', password: '', confirmPassword: '' }, accountError: '' };
+
+function AuthScreen({ mode, onNavigate }: { mode: 'login' | 'register'; onNavigate: (screen: Screen) => void }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [notice, setNotice] = useState('');
+  const register = mode === 'register';
+  const submit = (event: FormEvent) => { event.preventDefault(); setNotice('Tryb demonstracyjny: logowanie będzie dostępne przy otwarciu serwera.'); };
+  return <main className="auth-page" style={{ '--artwork-url': `url("${prisonArtwork}")` } as CSSProperties}><div className="auth-backdrop" /><header className="auth-header"><Brand onNavigate={onNavigate} /><button onClick={() => onNavigate('home')} className="auth-return"><ArrowLeft size={15} /> WRÓĆ NA STRONĘ GŁÓWNĄ</button></header><section className="auth-card"><div className="eyebrow">{register ? 'Nowy więzień' : 'Powrót za kraty'}</div><h1>{register ? 'ZAREJESTRUJ SIĘ' : 'ZALOGUJ SIĘ'}</h1><p>{register ? 'Stwórz swoją kartotekę i wybierz, jaką reputację zbudujesz za kratami.' : 'Wróć do swojej celi. Twoja reputacja nie poczeka.'}</p><form onSubmit={submit}><label><span><Mail size={15} /> ADRES E-MAIL</span><input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="więzień@prisonlife.pl" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="wpisz hasło" required minLength={6} /></label><button className="btn btn-primary" type="submit">{register ? 'OTWÓRZ KARTOTEKĘ' : 'WEJDŹ DO GRY'} <ArrowRight size={16} /></button></form>{notice && <div className="auth-notice">{notice}</div>}<button className="auth-switch" onClick={() => onNavigate(register ? 'login' : 'register')}>{register ? 'MASZ JUŻ KONTO? ' : 'NIE MASZ JESZCZE KONTA? '}<strong>{register ? 'ZALOGUJ SIĘ' : 'ZAREJESTRUJ SIĘ'}</strong></button></section><div className="auth-quote">„ZA KRATAMI NIE MA PRZYPADKÓW.<br /><span>SĄ TYLKO DECYZJE.</span>”</div></main>;
+}
+
+function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
+  const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
+  return <main className="game-shell-page"><header className="game-header"><Brand onNavigate={onNavigate} compact /><div className="game-resources"><span><Coins size={15} /> 0</span><span><Zap size={15} /> 100</span><span><Heart size={15} /> 100</span><button onClick={() => onNavigate('home')}>WYJDŹ</button></div></header><div className="game-layout"><aside className="game-sidebar">{panelItems.map(({ label, icon: Icon }, index) => <button className={index === 0 ? 'active' : ''} key={label}><Icon size={17} />{label}</button>)}</aside><section className="game-main"><div className="game-welcome"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>WITAJ, <span>{creator.nickname.toUpperCase() || 'WIĘŹNIU'}</span></h1><p>Twoja historia zaczyna się tutaj. Zbuduj reputację i przetrwaj za kratami.</p></div><div className="game-type-badge"><span className={`type-avatar type-${type.id}`}><span>{type.name[0]}</span></span><strong>{type.name}</strong><small>{type.specialty}</small></div></div><div className="game-dashboard-grid"><div className="game-cel"><div className="dashboard-label">TWOJA CELA / A-47291</div><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /></div><div className="game-status-card"><div className="dashboard-label">AKTUALNY STATUS</div><h2>NOWY NA BLOKU</h2>{['Siła', 'Kondycja', 'Zręczność', 'Technika'].map((label, index) => <div className="status-line" key={label}><span>{label}</span><div><i style={{ width: `${[62, 48, 31, 25][index]}%` }} /></div><b>{[62, 48, 31, 25][index]}</b></div>)}<button className="btn btn-primary">ROZPOCZNIJ DZIEŃ <ArrowRight size={15} /></button></div></div></section></div></main>;
+}
+
+function App() {
+  const [screen, setScreen] = useState<Screen>(() => {
+    const route = window.location.hash.replace('#', '');
+    return route === 'register' || route === 'login' || route === 'game' ? route : 'home';
+  });
+  const [creator, setCreator] = useState<CreatorState>(initialCreator);
+  const navigate = (next: Screen) => { setScreen(next); window.history.pushState({}, '', next === 'home' ? `${window.location.pathname}` : `#${next}`); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  useEffect(() => { const handlePop = () => { const route = window.location.hash.replace('#', ''); setScreen(route === 'register' || route === 'login' || route === 'game' ? route : 'home'); }; window.addEventListener('popstate', handlePop); window.addEventListener('hashchange', handlePop); return () => { window.removeEventListener('popstate', handlePop); window.removeEventListener('hashchange', handlePop); }; }, []);
+  useEffect(() => { document.title = screen === 'home' ? 'Prison Life — Więcej niż gra. To Twój wyrok.' : screen === 'register' ? 'Stwórz swojego więźnia — Prison Life' : screen === 'login' ? 'Zaloguj się — Prison Life' : 'Panel więźnia — Prison Life'; }, [screen]);
+  return <QueryClientProvider client={queryClient}><TooltipProvider><ErrorBoundary resetKey="prison-life">{screen === 'home' && <Home onNavigate={navigate} />}{screen === 'register' && <Registration onNavigate={navigate} creator={creator} setCreator={setCreator} />}{screen === 'login' && <AuthScreen mode="login" onNavigate={navigate} />}{screen === 'game' && <GameShell creator={creator} onNavigate={navigate} />}</ErrorBoundary><Toaster /></TooltipProvider></QueryClientProvider>;
 }
 
 export default App;
