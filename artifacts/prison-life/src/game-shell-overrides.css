@@ -3106,6 +3106,274 @@
   }
 }
 
+/* Missions card reference screen. */
+.game-shell-page .missions-cards-view {
+  position: relative;
+  display: grid;
+  grid-template-rows: 88px 430px 62px;
+  align-content: start;
+  gap: var(--game-space);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.missions-cards-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(90deg, rgba(5, 10, 12, .94), rgba(5, 10, 12, .76)), var(--missions-cards-art) center / cover;
+  filter: saturate(.5) contrast(1.08);
+}
+.missions-cards-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.016) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+.missions-cards-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(88, 105, 98, .34);
+  background: linear-gradient(90deg, rgba(6, 12, 14, .9), rgba(7, 13, 15, .52));
+}
+.missions-cards-heading .eyebrow {
+  color: var(--game-orange-soft);
+  font-size: 10px;
+}
+.missions-cards-heading h1 {
+  margin: 1px 0 3px;
+  color: #f0ede4;
+  font: 700 clamp(35px, 4.2vw, 55px) / .86 'Oswald';
+}
+.missions-cards-heading p {
+  margin: 0;
+  color: #abb2aa;
+  font: 12px 'Barlow Condensed';
+}
+.missions-cards-slogan {
+  margin-right: 6%;
+  color: rgba(180, 187, 175, .14);
+  font: italic 700 18px / 1.05 'Oswald';
+  transform: rotate(-7deg);
+}
+.missions-cards-grid {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.mission-card-large {
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 11px 11px;
+  overflow: hidden;
+  border: 1px solid #34413e;
+  border-top: 3px solid #4d5c54;
+  background: linear-gradient(160deg, rgba(14, 24, 26, .97), rgba(7, 14, 16, .97));
+}
+.mission-card-large:hover,
+.mission-card-large:first-child {
+  border-color: var(--game-orange);
+  box-shadow: inset 0 0 25px rgba(229, 113, 31, .1), 0 0 13px rgba(229, 113, 31, .15);
+}
+.mission-card-large-easy { border-top-color: #45b67a; }
+.mission-card-large-medium { border-top-color: #d69b2d; }
+.mission-card-large-hard { border-top-color: #d54445; }
+.mission-card-large-special { border-top-color: #b260db; }
+.mission-card-large:first-child { border-top-color: var(--game-orange); }
+.mission-card-large-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 43px;
+  color: #c6ccc4;
+}
+.mission-card-large-top > svg {
+  color: #b9c1ba;
+}
+.mission-card-large h2 {
+  margin: 9px 0 6px;
+  color: #e8e7df;
+  font: 700 17px 'Oswald';
+}
+.mission-card-large p {
+  min-height: 48px;
+  margin: 0;
+  color: #9da69e;
+  font: 11px / 1.25 'Barlow Condensed';
+}
+.mission-card-large-facts {
+  display: grid;
+  gap: 3px;
+  margin-top: 6px;
+  padding: 7px 0;
+  border-block: 1px solid #293835;
+}
+.mission-card-large-facts > div {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  min-height: 23px;
+}
+.mission-card-large-facts svg {
+  color: var(--game-orange);
+}
+.mission-card-large-facts span,
+.mission-card-large-reward small,
+.mission-card-large-extra small {
+  color: #939d95;
+  font: 9px 'Barlow Condensed';
+}
+.mission-card-large-facts b {
+  color: #e1e2da;
+  font: 12px 'Barlow Condensed';
+}
+.mission-card-large-reward {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 7px 0 4px;
+}
+.mission-card-large-reward strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #efb54b;
+  font: 700 17px 'Oswald';
+}
+.mission-card-large-reward strong svg {
+  color: #d7d9d1;
+}
+.mission-card-large-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 9px;
+}
+.mission-card-large-extra span {
+  display: flex;
+  gap: 12px;
+  color: #aab0a8;
+}
+.mission-card-large button {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: auto;
+  border: 1px solid #f1842d;
+  color: #21140c;
+  background: linear-gradient(90deg, #ed7728, #ed963b);
+  cursor: pointer;
+  font: 700 12px 'Oswald';
+}
+.mission-card-large button:hover {
+  background: #ffad4f;
+}
+.missions-cards-footer {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 175px 180px minmax(0, 1fr);
+  gap: 10px;
+}
+.missions-card-timer,
+.missions-cards-footer > button,
+.missions-cards-footer > p {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  border: 1px solid #35423f;
+  color: #a9b0a8;
+  background: rgba(8, 16, 18, .88);
+  font: 10px 'Barlow Condensed';
+}
+.missions-card-timer > svg {
+  color: #aeb7ae;
+}
+.missions-card-timer span {
+  display: flex;
+  flex-direction: column;
+}
+.missions-card-timer small {
+  color: #9ba49b;
+  font: 8px 'Barlow Condensed';
+}
+.missions-card-timer strong {
+  color: #e98632;
+  font: 700 19px 'Oswald';
+}
+.missions-cards-footer > button {
+  justify-content: center;
+  cursor: pointer;
+}
+.missions-cards-footer > button:hover {
+  border-color: var(--game-orange);
+  color: #f1a75d;
+}
+.missions-cards-footer > button b {
+  margin-left: auto;
+  padding: 3px 5px;
+  color: #eaae57;
+  border: 1px solid #805629;
+}
+.missions-cards-footer > p {
+  margin: 0;
+  line-height: 1.25;
+}
+.missions-cards-footer > p svg {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .game-shell-page .missions-cards-view {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    grid-template-rows: 100px auto auto;
+  }
+  .missions-cards-heading {
+    padding: 9px 10px;
+  }
+  .missions-cards-heading h1 {
+    font-size: 38px;
+  }
+  .missions-cards-heading p {
+    max-width: 260px;
+    font-size: 10px;
+  }
+  .missions-cards-slogan {
+    display: none;
+  }
+  .missions-cards-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(360px, auto);
+  }
+  .missions-card-large {
+    min-height: 360px;
+  }
+  .missions-cards-footer {
+    grid-template-columns: 1fr;
+    grid-auto-rows: minmax(54px, auto);
+  }
+  .missions-cards-footer > p {
+    min-height: 50px;
+  }
+}
+
 /* Equipment screen — dense item management layout based on the supplied reference. */
 .missions-view::before {
   content: '';

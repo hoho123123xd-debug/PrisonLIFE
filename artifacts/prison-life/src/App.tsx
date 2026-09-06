@@ -496,7 +496,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE MISJE</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsReferenceView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -813,6 +813,58 @@ function MissionsReferenceView({ onNotice }: { onNotice: (message: string) => vo
         <div className="missions-reference-help"><Eye size={15} /> Wynik misji zależy od Twoich statystyk, wyposażenia i aktualnej sytuacji w więzieniu.</div>
       </aside>
     </div>
+  </section>;
+}
+
+type MissionCard = {
+  id: string;
+  title: string;
+  description: string;
+  risk: string;
+  riskTone: 'easy' | 'medium' | 'hard' | 'special';
+  energy: number;
+  chance: number;
+  reward: string;
+  extra: string;
+  icon: typeof Archive;
+};
+
+const missionCards: MissionCard[] = [
+  { id: 'handoff', title: 'PRZEKAŻ', description: 'Dostarcz wiadomość do wskazanej osoby z bloku B. Nikt nie może się dowiedzieć.', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 82, reward: '+120 EXP', extra: '$ / punkty / losowo', icon: Mail },
+  { id: 'smuggle-card', title: 'PRZEMYT', description: 'Przenieś małą paczkę z magazynu do celi 214. Uważaj na kontrolę.', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 64, reward: '+250 EXP', extra: '$ / punkty / losowo', icon: Archive },
+  { id: 'settlement', title: 'ROZLICZENIE', description: 'Daj nauczkę wskazanemu więźniowi z bloku C. Ma to wyglądać na przypadek.', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 48, reward: '+400 EXP', extra: '$ / punkty / losowo', icon: Users },
+  { id: 'evidence', title: 'ZDOBĄDŹ DOWODY', description: 'Zdobądź dokumenty ze strzeżonego biura. Wysokie ryzyko, duża nagroda.', risk: 'SPECJALNA', riskTone: 'special', energy: 40, chance: 32, reward: '+750 EXP', extra: '$ / punkty / losowo', icon: ScrollText },
+];
+
+function MissionsCardsView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [startedId, setStartedId] = useState<string | null>(null);
+  return <section className="missions-cards-view" style={{ '--missions-cards-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-cards-view">
+    <header className="missions-cards-heading">
+      <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WYBIERZ MISJĘ I PODEJMIJ RYZYKO. KAŻDA DECYZJA MA KONSEKWENCJE.</p></div>
+      <div className="missions-cards-slogan">TU NIE MA<br />PRZYPADKÓW</div>
+    </header>
+    <div className="missions-cards-grid">
+      {missionCards.map((mission) => {
+        const MissionIcon = mission.icon;
+        return <article className={`mission-card-large mission-card-large-${mission.riskTone}`} key={mission.id}>
+          <div className="mission-card-large-top"><MissionIcon size={36} /><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></div>
+          <h2>{mission.title}</h2>
+          <p>{mission.description}</p>
+          <div className="mission-card-large-facts">
+            <div><Zap size={16} /><span>KOSZT ENERGII</span><b>{mission.energy}</b></div>
+            <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b></div>
+          </div>
+          <div className="mission-card-large-reward"><small>NAGRODA (EXP)</small><strong><Award size={18} /> {mission.reward}</strong></div>
+          <div className="mission-card-large-extra"><small>MOŻLIWE DODATKOWO</small><span><CircleDollarSign size={17} /> <Archive size={17} /> ?</span></div>
+          <button onClick={() => { setStartedId(mission.id); onNotice(`Rozpoczynasz misję: ${mission.title.toLowerCase()}.`); }}><ArrowRight size={17} /> {startedId === mission.id ? 'MISJA W TOKU' : 'ROZPOCZNIJ MISJĘ'}</button>
+        </article>;
+      })}
+    </div>
+    <footer className="missions-cards-footer">
+      <div className="missions-card-timer"><Archive size={26} /><span><small>NOWE MISJE ZA:</small><strong>01:58:27</strong></span></div>
+      <button onClick={() => onNotice('Wylosowano nową pulę misji.')}><ArrowRight size={17} /> LOSOWE MISJE <b>50 $</b></button>
+      <p><Eye size={16} /> Po ukończeniu misji otrzymasz nowe do wyboru. Dostępne misje zmieniają się automatycznie z czasem lub po użyciu opcji losowania.</p>
+    </footer>
   </section>;
 }
 
