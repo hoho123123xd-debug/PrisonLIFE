@@ -12,6 +12,7 @@ import {
   Backpack,
   BarChart3,
   Bell,
+  Brain,
   BriefcaseBusiness,
   Building2,
   Check,
@@ -488,20 +489,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-        <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <div className="game-board">
-           <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
-          <aside className="game-right-column">
-            <section className="game-panel prisoner-panel"><div className="panel-title"><span>MÓJ WIĘZIEŃ</span><button onClick={() => showNotice('Edycja więźnia będzie dostępna wkrótce.')}><UserRoundPen size={12} /> EDYTUJ</button></div><div className="prisoner-profile"><div><h2>{gameData.nickname.toUpperCase()}</h2><span>#A-7421</span><strong>POZIOM {gameData.level}</strong><div className="profile-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div><GamePortrait creator={creator} small /></div><div className="prisoner-stats">{gameStats.map(({ label, value, icon: Icon, color }) => <div className="prisoner-stat" key={label}><Icon size={16} className={`stat-${color}`} /><span>{label}</span><div><i style={{ width: `${value * 10}%` }} /></div><b>{value}</b></div>)}</div><div className="reputation-row"><div><span>REPUTACJA</span><strong>{gameData.reputation}</strong></div><div><span>RANGA</span><strong>{gameData.rank}</strong></div></div><blockquote>„ZA KRATAMI WSZYSCY<br />JESTEŚMY RÓWNI...<br /><em>ALE NIE NA DŁUGO.”</em></blockquote></section>
-            <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE MISJE</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
-              <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
-          </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
-         {activeSection === 'cell' && <section className="game-bottom-grid">
-          <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
-          <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
-          <section className="game-panel events-panel"><div className="panel-title"><span>OSTATNIE WYDARZENIA</span><button onClick={() => showNotice('Wyświetlasz pełną historię wydarzeń.')}>ZOBACZ WSZYSTKIE</button></div><div className="event-list">{gameEvents.map((event) => <div className="event-item" key={`${event.time}-${event.text}`}><time>{event.time}</time><span>{event.text}</span><b className={event.tone}>{event.result}</b></div>)}</div></section>
-         </section>}
+         <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
+         {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -568,6 +557,67 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState; gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string }; onNotice: (message: string) => void }) {
+  const [stats, setStats] = useState([
+    { label: 'SIŁA', value: 5, cost: 250, icon: Dumbbell, tone: 'orange' },
+    { label: 'KONDYCJA', value: 5, cost: 250, icon: FootprintsIcon, tone: 'orange' },
+    { label: 'ZRĘCZNOŚĆ', value: 4, cost: 200, icon: Wind, tone: 'orange' },
+    { label: 'TECHNIKA', value: 3, cost: 150, icon: Crosshair, tone: 'orange' },
+    { label: 'CHARAKTER', value: 3, cost: 150, icon: Users, tone: 'orange' },
+  ]);
+  const [availablePoints, setAvailablePoints] = useState(3);
+  const displayName = gameData.nickname.toUpperCase();
+  const increaseStat = (label: string) => {
+    if (!availablePoints) {
+      onNotice('Brak dostępnych punktów rozwoju.');
+      return;
+    }
+    setStats((current) => current.map((stat) => stat.label === label ? { ...stat, value: stat.value + 1 } : stat));
+    setAvailablePoints((current) => current - 1);
+    onNotice(`Rozwinięto statystykę: ${label.toLowerCase()}.`);
+  };
+  const decreaseStat = (label: string) => {
+    setStats((current) => current.map((stat) => stat.label === label && stat.value > 1 ? { ...stat, value: stat.value - 1 } : stat));
+  };
+  const bonuses = [
+    ['Premia gangowa', '+10% do zarobków za pracę', '2 dni', Crown],
+    ['Dobra kondycja', '+5% do regeneracji energii', '1 dzień', Heart],
+    ['Lepszy refleks', '+5% szansy na unik w walce', '6 godzin', Wind],
+    ['Szacunek na dzielni', '+5% do reputacji', '3 dni', Users],
+  ] as const;
+  const perks = [
+    ['TWARDZIEL', '+5% do obrażeń w walce', 'ODBLOKOWANO', Dumbbell],
+    ['ODBLOKUJ', 'Odblokuj na poziomie 10', '', LockKeyhole],
+    ['ODBLOKUJ', 'Odblokuj na poziomie 15', '', LockKeyhole],
+    ['ODBLOKUJ', 'Odblokuj na poziomie 20', '', LockKeyhole],
+  ] as const;
+  const progress = [
+    ['Osiągnij poziom 10', '8 / 10', 80, BarChart3],
+    ['Podnieś siłę do 7', '5 / 7', 71, Dumbbell],
+    ['Dołącz do gangu', '1 / 1', 100, Users],
+    ['Wygraj 10 walk', '3 / 10', 30, Trophy],
+  ] as const;
+  return <section className="character-view" data-testid="character-view">
+    <header className="character-heading">
+      <div><span className="eyebrow">TWOJA POSTAĆ</span><h1>TWOJA POSTAĆ</h1><p>ROZWIJAJ SIĘ. STAWAJ SIĘ SILNIEJSZY. ZDOBYWAJ PRZEWAGĘ.</p></div>
+      <blockquote>„To nie liczby się liczą.<br />Liczy się kim się stajesz.”</blockquote>
+      <strong>LEPSZY<br />WIĘZIEŃ<br />SILNIEJSZA<br />WERSJA<br /><em>CIEBIE</em></strong>
+    </header>
+    <div className="character-dashboard">
+      <div className="character-left">
+        <section className="character-panel character-profile"><h2>POSTAĆ</h2><div className="character-profile-content"><div className="character-large-portrait"><img src={prisonerAsset} alt={`Portret więźnia ${displayName}`} /><span>„Siła to wybór, nie okoliczność.”</span></div><div className="character-identity"><h3>{displayName}<button onClick={() => onNotice('Edycja profilu będzie dostępna wkrótce.')} aria-label="Edytuj profil"><UserRoundPen size={16} /></button></h3><strong>POZIOM {gameData.level}</strong><div className="character-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div><dl><div><dt><Crown size={13} /> GANG</dt><dd>Wilcza Paczka <small>Założyciel</small></dd></div><div><dt><Award size={13} /> REPUTACJA</dt><dd className="positive">Pozytywna</dd></div><div><dt><CircleDollarSign size={13} /> GOTÓWKA</dt><dd>{gameData.gold} $</dd></div><div><dt><Gem size={13} /> PUNKTY PRESTIŻU</dt><dd>{gameData.points}</dd></div></dl></div></div></section>
+        <section className="character-panel character-status"><h2>STATUS</h2>{[['ZDROWIE', gameData.hp, Heart, 'health'], ['ENERGIA', gameData.energy, Zap, 'energy'], ['PSYCHIKA', 85, Brain, 'mind']].map(([label, value, Icon, tone]) => <div className="character-status-row" key={String(label)}><Icon size={18} className={`status-${tone}`} /><span>{String(label)}</span><div><i className={`status-fill-${tone}`} style={{ width: `${Number(value)}%` }} /></div><b>{value} / 100</b></div>)}</section>
+      </div>
+      <section className="character-panel character-stats"><div className="character-panel-heading"><h2>STATYSTYKI</h2><span>DOSTĘPNE PUNKTY: <b>{availablePoints}</b></span></div>{stats.map(({ label, value, cost, icon: Icon, tone }) => <div className="character-stat-row" key={label}><Icon size={19} className={`stat-${tone}`} /><strong>{label}</strong><button onClick={() => decreaseStat(label)} aria-label={`Zmniejsz ${label}`}><span>−</span></button><b>{value}</b><button className="character-stat-plus" onClick={() => increaseStat(label)} aria-label={`Zwiększ ${label}`}><Plus size={17} /></button><small>Koszt:<br /><b>{cost} $</b></small></div>)}<p className="character-stats-note"><Info size={14} /> Zwiększaj statystyki, aby być skuteczniejszym w walce, pracy, misjach i na czarnym rynku.</p></section>
+      <div className="character-right">
+        <section className="character-panel character-bonuses"><div className="character-panel-heading"><h2>AKTYWNE BONUSY <Info size={13} /></h2></div>{bonuses.map(([name, copy, time, Icon]) => <div className="character-bonus" key={name}><Icon size={19} /><span><strong>{name}</strong><small>{copy}</small></span><time>{time}</time></div>)}</section>
+        <section className="character-panel character-perks"><div className="character-panel-heading"><h2>ATUTY / UMIEJĘTNOŚCI</h2><button onClick={() => onNotice('Lista wszystkich atutów będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div><div className="character-perk-grid">{perks.map(([name, copy, status, Icon], index) => <button className={`character-perk ${index === 0 ? 'unlocked' : ''}`} key={`${name}-${index}`} onClick={() => onNotice(index === 0 ? 'Atut Twardziel jest aktywny.' : copy)}><Icon size={21} /><strong>{index === 0 ? name : <LockKeyhole size={14} />}</strong><small>{index === 0 ? copy : copy}</small>{status && <em>{status}</em>}</button>)}</div></section>
+      </div>
+    </div>
+    <section className="character-panel character-progress"><div className="character-panel-heading"><h2>POSTĘP ROZWOJU</h2></div><div className="character-progress-grid">{progress.map(([label, value, percent, Icon]) => <div className="character-progress-card" key={label}><Icon size={21} /><span><strong>{label}</strong><div><i style={{ width: `${percent}%` }} /></div></span><small>{value}</small></div>)}</div></section>
+  </section>;
 }
 
 function GangView({ onNotice }: { onNotice: (message: string) => void }) {
