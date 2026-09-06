@@ -560,12 +560,16 @@
 }
 .cell-development-center {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) 162px;
+  grid-template-rows: minmax(0, 1fr) 144px;
   gap: 8px;
 }
 .cell-development-scene {
   min-height: 0;
   position: relative;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  align-self: start;
   overflow: hidden;
   border: 1px solid #53625d;
   background: #0b1113;
@@ -897,7 +901,7 @@
     grid-template-rows: minmax(0, 1fr);
   }
   .cell-development-center {
-    grid-template-rows: minmax(0, 1fr) 130px;
+    grid-template-rows: minmax(0, 1fr) 90px;
   }
   .cell-development-item {
     min-height: 43px;
@@ -910,7 +914,7 @@
     min-height: 0;
   }
   .cell-level-card {
-    flex-basis: 70px;
+    flex-basis: 62px;
   }
   .cell-development-details {
     grid-template-rows: minmax(0, 1fr) 134px;
