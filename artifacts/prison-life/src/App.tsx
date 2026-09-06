@@ -40,6 +40,7 @@ import {
   Swords,
   Table,
   Trophy,
+  Tv,
   UserRound,
   UserRoundPen,
   Users,
@@ -50,6 +51,7 @@ import {
 import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864145.png';
 import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
 import prisonerAsset from '@assets/generated_images/prisoner-realistic-cutout.png';
+import gameSceneArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_50_39_1788709841559.png';
 
 const queryClient = new QueryClient();
 
@@ -479,7 +481,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setChatMessage('');
   };
 
-  return <main className="game-shell-page">
+  return <main className="game-shell-page" style={{ '--game-scene-artwork': `url("${gameSceneArtwork}")` } as CSSProperties}>
     <header className="game-header">
       <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
@@ -515,16 +517,24 @@ function App() {
     const route = window.location.hash.replace('#', '');
     return route === 'register' || route === 'login' || route === 'game' || route.startsWith('game/') ? 'game' : 'home';
   });
-  const [creator, setCreator] = useState<CreatorState>(initialCreator);
+  const [creator, setCreator] = useState<CreatorState>(() => {
+    try {
+      const saved = window.localStorage.getItem('prison-life-creator');
+      return saved ? { ...initialCreator, ...JSON.parse(saved) } : initialCreator;
+    } catch {
+      return initialCreator;
+    }
+  });
   const navigate = (next: Screen) => { setScreen(next); window.history.pushState({}, '', next === 'home' ? `${window.location.pathname}` : `#${next}`); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   useEffect(() => { const handlePop = () => { const route = window.location.hash.replace('#', ''); setScreen(route === 'register' || route === 'login' || route === 'game' || route.startsWith('game/') ? 'game' : 'home'); }; window.addEventListener('popstate', handlePop); window.addEventListener('hashchange', handlePop); return () => { window.removeEventListener('popstate', handlePop); window.removeEventListener('hashchange', handlePop); }; }, []);
+  useEffect(() => { window.localStorage.setItem('prison-life-creator', JSON.stringify(creator)); }, [creator]);
   useEffect(() => { document.title = screen === 'home' ? 'Prison Life — Więcej niż gra. To Twój wyrok.' : screen === 'register' ? 'Stwórz swojego więźnia — Prison Life' : screen === 'login' ? 'Zaloguj się — Prison Life' : 'Panel więźnia — Prison Life'; }, [screen]);
   return <QueryClientProvider client={queryClient}><TooltipProvider><ErrorBoundary resetKey="prison-life">{screen === 'home' && <Home onNavigate={navigate} />}{screen === 'register' && <Registration onNavigate={navigate} creator={creator} setCreator={setCreator} />}{screen === 'login' && <AuthScreen mode="login" onNavigate={navigate} />}{screen === 'game' && <GameShell creator={creator} onNavigate={navigate} />}</ErrorBoundary><Toaster /></TooltipProvider></QueryClientProvider>;
 }
 
 export default App;
 
-type HotspotId = 'bed' | 'locker' | 'table' | 'training';
+type HotspotId = 'bed' | 'locker' | 'table' | 'training' | 'tv' | 'stash';
 
 function CellHotspot({ id, label, description, icon: Icon, onClick, active }: { id: HotspotId; label: string; description: string; icon: typeof BedDouble; onClick: () => void; active: boolean }) {
   return <button className={`cell-hotspot hotspot-${id} ${active ? 'visited' : ''}`} onClick={onClick} data-testid={`button-hotspot-${id}`}><span className="hotspot-icon"><Icon size={17} /></span><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={14} /></button>;
@@ -561,25 +571,15 @@ const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shiel
   { id: 'ranking', label: 'RANKING', icon: Trophy },
 ];
 
-function CellScene({ creator, visited, onHotspot }: { creator: CreatorState; visited: Set<HotspotId>; onHotspot: (id: HotspotId) => void }) {
+function CellScene({ visited, onHotspot }: { visited: Set<HotspotId>; onHotspot: (id: HotspotId) => void }) {
   return <div className="cell-scene" data-testid="cell-scene">
-    <div className="cell-window"><span className="window-light" /><i /><i /><i /><i /><b>BLOCK A</b></div>
-    <div className="cell-graffiti graffiti-one">TU ZACZYNA SIĘ<br /><em>TWOJA HISTORIA</em></div>
-    <div className="cell-graffiti graffiti-two">SZACUNEK<br />SIŁA<br />PRZETRWANIE</div>
-    <div className="cell-lamp lamp-left" /><div className="cell-lamp lamp-right" />
-    <div className="cell-bed"><span className="bed-mattress" /><span className="bed-pillow" /><span className="bed-frame" /></div>
-    <div className="cell-locker"><span /><i /><b>17</b></div>
-    <div className="cell-tv"><span>NO SIGNAL</span></div>
-    <div className="cell-table"><i /><i /><span /></div>
-    <div className="cell-stool"><i /><i /><span /></div>
-    <div className="cell-dumbbells"><i /><i /><b /><b /></div>
-    <div className="cell-floor" />
-    <GamePortrait creator={creator} />
-    <div className="scene-label">TWOJA CELA <span>/</span> BLOK A <b>A-47291</b></div>
+    <div className="scene-artwork" aria-label="Widok celi więźnia" role="img" />
     <CellHotspot id="bed" label="ŁÓŻKO" description="Odpocznij i odzyskaj siły" icon={BedDouble} onClick={() => onHotspot('bed')} active={visited.has('bed')} />
     <CellHotspot id="locker" label="SZAFKA" description="Przechowuj swoje rzeczy" icon={Archive} onClick={() => onHotspot('locker')} active={visited.has('locker')} />
     <CellHotspot id="table" label="STÓŁ" description="Wykonuj zadania" icon={Table} onClick={() => onHotspot('table')} active={visited.has('table')} />
     <CellHotspot id="training" label="TRENING" description="Popraw swoje statystyki" icon={Dumbbell} onClick={() => onHotspot('training')} active={visited.has('training')} />
+    <CellHotspot id="tv" label="TELEWIZOR" description="Sprawdź najnowsze wiadomości" icon={Tv} onClick={() => onHotspot('tv')} active={visited.has('tv')} />
+    <CellHotspot id="stash" label="SKRYTKA" description="Otwórz ukryty schowek" icon={LockKeyhole} onClick={() => onHotspot('stash')} active={visited.has('stash')} />
   </div>;
 }
 

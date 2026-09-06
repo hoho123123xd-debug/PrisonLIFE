@@ -1,0 +1,154 @@
+Nie projektuj tego ekranu od nowa.
+
+Masz załączony gotowy mockup docelowego ekranu PRISON LIFE.
+Traktuj go jako bezpośredni SOURCE OF TRUTH.
+
+Chcę, żebyś przebudował obecny ekran tak, aby wizualnie był maksymalnie zbliżony do tego mockupu.
+
+WAŻNE:
+Nie próbuj odtwarzać całej sceny więzienia za pomocą CSS, gradientów, prostokątów i placeholderów.
+
+Gotową grafikę sceny wykorzystaj jako rzeczywisty asset w aplikacji.
+
+Centralna scena ma być jednym dużym obrazem zajmującym centralny obszar ekranu.
+
+Na obrazie umieść prawdziwe interaktywne elementy HTML/React jako przezroczyste lub stylizowane hotspoty.
+
+Przykładowo:
+
+ŁÓŻKO
+SZAFKA
+STÓŁ
+TRENING
+TELEWIZOR
+SKRYTKA
+
+Hotspoty mają być pozycjonowane względem sceny i reagować na:
+- hover
+- kliknięcie
+- aktywny stan
+
+Po kliknięciu mają wykonywać prawdziwe akcje aplikacji.
+
+NIE twórz drugiej, własnej wersji sceny.
+
+==================================================
+LAYOUT
+==================================================
+
+Zachowaj układ z referencji:
+
+LEWE MENU | CENTRALNA SCENA | PRAWY PANEL
+
+Na dole:
+
+WIADOMOŚCI | CZAT | OSTATNIE WYDARZENIA
+
+Centralna scena ma być największym elementem ekranu.
+
+Nie zmniejszaj jej do małego panelu.
+
+Nie twórz ogromnych pustych marginesów.
+
+Na ekranie desktop scena ma wykorzystywać większość dostępnej przestrzeni.
+
+==================================================
+WAŻNE — POSTAĆ
+==================================================
+
+Postać widoczna w scenie musi być duża.
+
+Nie używaj małej ikonki postaci.
+
+Jeżeli obecna grafika sceny zawiera postać, zachowaj ją jako część sceny na tym etapie.
+
+Docelowo architektura ma pozwolić zastąpić ją dynamiczną postacią gracza.
+
+==================================================
+PRAWE MENU
+==================================================
+
+Prawy panel:
+
+MÓJ WIĘZIEŃ
+
+KOSA
+#A-7421
+
+POZIOM 1
+
+120 / 500 XP
+
+STATYSTYKI:
+
+SIŁA
+KONDYCJA
+ZRĘCZNOŚĆ
+TECHNIKA
+CHARAKTER
+
+REPUTACJA
+RANGA
+
+Poniżej:
+
+AKTUALNE ZADANIA
+
+==================================================
+LEWE MENU
+==================================================
+
+Dokładnie:
+
+CELA
+WIADOMOŚCI
+WALKA
+TRENING
+PRACA
+EKWIPUNEK
+CZARNY RYNEK
+ZADANIA
+GANG
+RANKING
+
+Nie używaj:
+EKIPA
+SKLEP
+
+WIADOMOŚCI musi mieć badge z liczbą nieprzeczytanych wiadomości.
+
+==================================================
+FUNKCJONALNOŚĆ
+==================================================
+
+To nie jest screenshot ani prototyp.
+
+To ma być prawdziwy działający interfejs.
+
+Każdy element menu ma być klikalny.
+
+Hotspoty celi mają być klikalne.
+
+Stan gracza ma być przechowywany.
+
+Ksywa, typ więźnia, wygląd postaci, poziom, XP, statystyki itd. mają pochodzić z danych gracza.
+
+==================================================
+NAJWAŻNIEJSZE
+==================================================
+
+Najpierw doprowadź ekran do wizualnej zgodności z załączonym mockupem.
+
+Nie ulepszaj projektu według własnego uznania.
+
+Nie twórz własnego layoutu.
+
+Nie skaluj całego interfejsu w dół.
+
+Nie próbuj zastępować grafiki sceny prostymi CSS-owymi elementami.
+
+Użyj dostarczonej grafiki jako głównego assetu wizualnego sceny.
+
+Dopiero na tej scenie buduj interaktywną warstwę aplikacji.
+
+Po wykonaniu sprawdź ekran w rozdzielczości desktopowej i popraw skalowanie, tak aby scena, menu i prawy panel wykorzystały cały viewport.
