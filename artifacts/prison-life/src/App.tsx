@@ -97,6 +97,14 @@ const prisonerTypes: Array<{
   { id: 'wolf', name: 'WILK', specialty: 'BALANS', description: 'Uniwersalny styl gry. Dobry w każdej sytuacji.', stats: ['BALANS 80', 'INSTYNKT 78'] },
 ];
 
+const typeStatLabels = ['SIŁA', 'WYTRZYMAŁOŚĆ', 'SZYBKOŚĆ', 'TECHNIKA', 'UNIKI'];
+const typeStatValues: Record<PrisonerType, number[]> = {
+  bull: [88, 96, 46, 28, 18],
+  rat: [48, 36, 94, 42, 88],
+  fox: [58, 44, 62, 94, 70],
+  wolf: [76, 78, 70, 66, 62],
+};
+
 const stepLabels = ['POSTAĆ', 'TYP', 'DANE', 'GOTOWE'];
 
 function Brand({ onNavigate, compact = false }: { onNavigate: (screen: Screen) => void; compact?: boolean }) {
@@ -315,7 +323,7 @@ function RegistrationShell({ step, children, onNavigate, onStepChange, onNext, o
   step: number; children: ReactNode; onNavigate: (screen: Screen) => void; onStepChange: (step: number) => void; onNext: () => void; onCreate: () => void;
 }) {
   return <main className="registration-page" style={{ '--artwork-url': `url("${prisonArtwork}")`, '--registration-artwork-url': `url("${registrationEnvironment}")` } as CSSProperties}>
-    <header className="registration-header"><div className="prison-shell registration-header-inner"><Brand onNavigate={onNavigate} /><RegistrationProgress step={step} onStepChange={onStepChange} /><div className="registration-login"><span>MASZ JUŻ KONTO?</span><button onClick={() => onNavigate('login')} data-testid="button-registration-login">ZALOGUJ SIĘ</button></div></div></header>
+    <header className={`registration-header registration-header-step-${step}`}><div className="prison-shell registration-header-inner"><Brand onNavigate={onNavigate} /><RegistrationProgress step={step} onStepChange={onStepChange} /><div className="registration-login"><span>MASZ JUŻ KONTO?</span><button onClick={() => onNavigate('login')} data-testid="button-registration-login">ZALOGUJ SIĘ</button></div></div></header>
     <div className="prison-shell registration-body">{step === 1 && <button className="back-home" onClick={() => onNavigate('home')}><ArrowLeft size={14} /> POWRÓT NA STRONĘ GŁÓWNĄ</button>}{children}</div>
     <div className="registration-action-bar"><div className="prison-shell registration-actions">{step > 1 ? <button className="btn btn-outline" onClick={() => onStepChange(step - 1)}><ArrowLeft size={16} /> WSTECZ</button> : <div className="registration-account-link">MASZ JUŻ KONTO? <button onClick={() => onNavigate('login')}>ZALOGUJ SIĘ</button></div>}{step === 4 ? <button className="btn btn-primary" onClick={onCreate} data-testid="button-create-prisoner">UTWÓRZ WIĘŹNIA <ArrowRight size={17} /></button> : <button className="btn btn-primary" onClick={onNext} data-testid="button-registration-next">DALEJ <ArrowRight size={17} /></button>}</div></div>
     <footer className="registration-footer"><div className="prison-shell registration-footer-inner"><Brand onNavigate={onNavigate} compact /><span>REGULAMIN</span><span>POLITYKA PRYWATNOŚCI</span><span>FAQ</span><span>KONTAKT</span><div className="registration-social"><Gamepad2 size={15} /><Facebook size={15} /><Youtube size={15} /><Instagram size={15} /></div><em>PRAWDZIWE HISTORIE<br />ZACZYNAJĄ SIĘ W WIĘZIENIU...</em></div></footer>
@@ -326,7 +334,6 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
   const setStep = (nextStep: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(4, nextStep)) }));
   const selectedType = prisonerTypes.find((type) => type.id === creator.prisonerType)!;
   const goNext = () => {
-    if (creator.step === 1 && !creator.nickname.trim()) { setCreator((current) => ({ ...current, nicknameError: 'Wpisz ksywę, zanim przejdziesz dalej.' })); return; }
     if (creator.step === 3) {
       if (!creator.account.email || !creator.account.password || !creator.account.confirmPassword) { setCreator((current) => ({ ...current, accountError: 'Uzupełnij wszystkie pola, aby przejść dalej.' })); return; }
       if (creator.account.password.length < 6) { setCreator((current) => ({ ...current, accountError: 'Hasło musi mieć co najmniej 6 znaków.' })); return; }
@@ -336,10 +343,14 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
   };
   const changeStep = (next: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(4, next)), nicknameError: '', accountError: '' }));
   return <RegistrationShell step={creator.step} onNavigate={onNavigate} onStepChange={changeStep} onNext={goNext} onCreate={() => onNavigate('game')}>
-    {creator.step === 1 && <section className="creator-screen">
-      <div className="creator-intro"><div className="eyebrow">Krok 01 / Tożsamość</div><h1>STWÓRZ<br /><span>SWOJEGO WIĘŹNIA</span></h1><p>Wybierz styl, nadaj mu tożsamość i rozpocznij swoją drogę za kratami. Pamiętaj — to nie jest tylko postać. To Twoja legenda.</p><label className="nickname-field"><span>KSYWA</span><div><UserRound size={17} /><input value={creator.nickname} onChange={(event) => setCreator((current) => ({ ...current, nickname: event.target.value, nicknameError: '' }))} placeholder="Wpisz swoją ksywę..." maxLength={18} data-testid="input-register-nickname" /></div>{creator.nicknameError && <small>{creator.nicknameError}</small>}</label></div>
-      <CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} />
-       <TypeRail selectedType={creator.prisonerType} onSelect={(type) => setCreator((current) => ({ ...current, prisonerType: type }))} compact />
+    {creator.step === 1 && <section className="type-selection-stage">
+      <div className="type-selection-cards">
+        {prisonerTypes.map((type) => <button type="button" key={type.id} className={`type-selection-card ${creator.prisonerType === type.id ? 'selected' : ''}`} onClick={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} aria-pressed={creator.prisonerType === type.id} data-testid={`button-prisoner-type-${type.id}`}>
+          <div className={`type-selection-card-art type-art-${type.id}`} style={{ backgroundImage: `url("${prisonerAsset}")` }}><span className="type-selection-ruler">200<br />190<br />180<br />170<br />160<br />150</span><span className="type-selection-note">{type.id === 'bull' ? 'SIŁA<br />OTWIERA<br />DRZWI.' : type.id === 'rat' ? 'ZAWSZE<br />ZNAJDĘ<br />DROGĘ.' : type.id === 'fox' ? 'PLAN<br />ZAWSZE<br />WYGRYWA.' : 'RÓWNOWAGA<br />TO SIŁA.'}</span></div>
+          <div className="type-selection-card-body"><h2>{type.name}</h2><strong>{type.specialty}</strong><p>{type.description}</p><div className="type-selection-stats">{typeStatLabels.map((label, index) => <div className="type-selection-stat" key={label}><span>{label}</span><div><i style={{ width: `${typeStatValues[type.id][index]}%` }} /></div></div>)}</div></div>
+        </button>)}
+      </div>
+      <div className="type-selection-footer-copy"><span>WYBIERZ TYP WIĘŹNIA</span><small>KAŻDY TYP TO INNA DROGA. WYBIERZ MĄDRZE.</small></div>
     </section>}
     {creator.step === 2 && <section className="step-screen type-step"><div className="step-heading"><div className="eyebrow">Krok 02 / Specjalizacja</div><h1>WYBIERZ <span>SWOJĄ DROGĘ</span></h1><p>Każdy typ więźnia otwiera inną ścieżkę rozwoju. Wybierz specjalizację, która pasuje do Twojej strategii.</p></div><div className="type-selection-grid">{prisonerTypes.map((type) => <TypeCard key={type.id} type={type} selected={creator.prisonerType === type.id} onSelect={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} />)}</div><div className="mini-summary"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div><span>WYBRANY TYP</span><strong>{selectedType.name}</strong><p>{selectedType.description}</p></div></div></section>}
     {creator.step === 3 && <section className="step-screen account-step"><div className="step-heading"><div className="eyebrow">Krok 03 / Kartoteka</div><h1>DANE <span>WIĘŹNIA</span></h1><p>Twoja kartoteka jest prawie gotowa. Podaj dane, których użyjesz, aby wrócić do swojej historii.</p></div><form className="account-form" onSubmit={(event) => { event.preventDefault(); goNext(); }}><label><span><Mail size={15} /> E-MAIL</span><input type="email" autoComplete="email" value={creator.account.email} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, email: event.target.value }, accountError: '' }))} placeholder="więzień@prisonlife.pl" data-testid="input-auth-email" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="new-password" minLength={6} value={creator.account.password} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, password: event.target.value }, accountError: '' }))} placeholder="minimum 6 znaków" data-testid="input-auth-password" required /></label><label><span><KeyRound size={15} /> POWTÓRZ HASŁO</span><input type="password" autoComplete="new-password" value={creator.account.confirmPassword} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, confirmPassword: event.target.value }, accountError: '' }))} placeholder="powtórz hasło" data-testid="input-auth-confirm" required /></label>{creator.accountError && <div className="form-error">{creator.accountError}</div>}<button type="submit" className="account-form-submit">SPRAWDŹ DANE <ArrowRight size={16} /></button></form><div className="account-side-note"><span>IDENTYFIKATOR</span><strong>{creator.nickname.toUpperCase() || 'NOWY WIĘZIEŃ'}</strong><small>#A-47291 / INTAKE</small><p>Dane konta są używane wyłącznie do logowania do Prison Life.</p></div></section>}

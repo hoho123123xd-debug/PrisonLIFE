@@ -190,3 +190,198 @@
     top: 62px;
   }
 }
+
+/* Full-screen prisoner type selector. The card art is intentionally kept as a
+   replaceable layer so the four final character assets can be dropped in
+   without changing the layout. */
+.registration-page .registration-body .type-selection-stage {
+  width: 100%;
+  min-height: calc(100dvh - 170px);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 14px;
+}
+.registration-page .registration-body .type-selection-cards {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+.registration-page .registration-body .type-selection-card {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(143, 157, 151, .36);
+  color: #e9e5db;
+  background: rgba(7, 13, 16, .94);
+  cursor: pointer;
+  text-align: left;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.registration-page .registration-body .type-selection-card:hover,
+.registration-page .registration-body .type-selection-card:focus-visible {
+  border-color: rgba(234, 137, 67, .8);
+  transform: translateY(-3px);
+  outline: none;
+}
+.registration-page .registration-body .type-selection-card.selected {
+  border-color: var(--prison-orange);
+  box-shadow: inset 0 0 0 2px rgba(225,122,46,.6), 0 12px 28px rgba(0,0,0,.35);
+}
+.registration-page .registration-body .type-selection-card-art {
+  min-height: 300px;
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+  background-color: #151d20;
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position: center 24%;
+  border-bottom: 1px solid rgba(173, 184, 174, .25);
+}
+.registration-page .registration-body .type-selection-card-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(3,7,9,.12), transparent 50%, rgba(2,5,6,.76));
+  pointer-events: none;
+}
+.registration-page .registration-body .type-art-rat { background-position: 50% 20%; filter: saturate(.88) contrast(1.04); }
+.registration-page .registration-body .type-art-fox { background-position: 50% 18%; filter: saturate(.94) contrast(1.03); }
+.registration-page .registration-body .type-art-wolf { background-position: 50% 16%; filter: saturate(.86) contrast(1.06); }
+.registration-page .registration-body .type-selection-ruler {
+  position: absolute;
+  z-index: 1;
+  top: 10px;
+  left: 9px;
+  color: rgba(218, 215, 194, .5);
+  font: 9px/1.52 'Barlow Condensed';
+  white-space: pre;
+}
+.registration-page .registration-body .type-selection-note {
+  position: absolute;
+  z-index: 1;
+  top: 34px;
+  right: 10px;
+  color: rgba(224, 214, 190, .56);
+  font: italic 13px/1.15 'Oswald';
+  text-align: right;
+  transform: rotate(-7deg);
+}
+.registration-page .registration-body .type-selection-card-body {
+  min-height: 205px;
+  padding: 11px 13px 13px;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, rgba(19, 27, 29, .96), rgba(7, 13, 16, .98));
+}
+.registration-page .registration-body .type-selection-card-body h2 {
+  margin: 0;
+  color: #eee9de;
+  font: 700 clamp(24px, 2.4vw, 34px)/1 'Oswald';
+  letter-spacing: .03em;
+  text-align: center;
+}
+.registration-page .registration-body .type-selection-card-body > strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--prison-orange-light);
+  font: 11px 'Barlow Condensed';
+  letter-spacing: .15em;
+  text-align: center;
+}
+.registration-page .registration-body .type-selection-card-body > p {
+  min-height: 36px;
+  margin: 10px 0 9px;
+  color: #9ca49e;
+  font: 11px/1.25 'Barlow Condensed';
+}
+.registration-page .registration-body .type-selection-stats {
+  display: grid;
+  gap: 4px;
+}
+.registration-page .registration-body .type-selection-stat {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  align-items: center;
+  gap: 6px;
+  color: #c3c7bc;
+  font: 9px 'Barlow Condensed';
+  letter-spacing: .04em;
+}
+.registration-page .registration-body .type-selection-stat > div {
+  height: 6px;
+  overflow: hidden;
+  background: repeating-linear-gradient(90deg, #242d2e 0 9px, transparent 9px 12px);
+}
+.registration-page .registration-body .type-selection-stat i {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(90deg, var(--prison-orange) 0 9px, transparent 9px 12px);
+}
+.registration-page .registration-body .type-selection-footer-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #e4dfd3;
+  font: 700 16px 'Oswald';
+  letter-spacing: .14em;
+  text-align: center;
+}
+.registration-page .registration-body .type-selection-footer-copy small {
+  margin-top: 4px;
+  color: #77817c;
+  font: 9px 'Barlow Condensed';
+  letter-spacing: .12em;
+}
+.registration-page .registration-header-step-1 .registration-progress,
+.registration-page .registration-header-step-1 .registration-login {
+  display: none;
+}
+.registration-page .registration-header-step-1 .registration-header-inner {
+  position: relative;
+  grid-template-columns: 1fr;
+}
+.registration-page .registration-header-step-1 .registration-header-inner::after {
+  content: 'RÓŻNI LUDZIE. TE SAME KRATY.';
+  position: absolute;
+  right: 0;
+  top: 20px;
+  color: rgba(220, 214, 193, .46);
+  font: 10px 'Oswald';
+  letter-spacing: .18em;
+}
+.registration-page .registration-header-step-1 + .registration-body + .registration-action-bar .registration-account-link {
+  font-size: 0;
+}
+.registration-page .registration-header-step-1 + .registration-body + .registration-action-bar .registration-account-link::before {
+  content: '←  WRÓĆ DO STRONY GŁÓWNEJ';
+  color: #8d9690;
+  font: 11px 'Barlow Condensed';
+  letter-spacing: .1em;
+}
+.registration-page .registration-header-step-1 + .registration-body + .registration-action-bar .registration-account-link button {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .registration-page .registration-body .type-selection-stage {
+    min-height: 0;
+  }
+  .registration-page .registration-body .type-selection-cards {
+    grid-template-columns: 1fr;
+  }
+  .registration-page .registration-body .type-selection-card {
+    min-height: 540px;
+  }
+  .registration-page .registration-body .type-selection-card-art {
+    min-height: 340px;
+  }
+  .registration-page .registration-body .type-selection-card-body {
+    min-height: 190px;
+  }
+}
