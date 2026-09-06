@@ -24,6 +24,7 @@ import {
   Droplets,
   Dumbbell,
   BedDouble,
+  Gem,
   Eye,
   Facebook,
   Flag,
@@ -421,6 +422,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     xp: 120,
     xpMax: 500,
     gold: 250,
+    points: 3,
     energy: 100,
     hp: 100,
     reputation: 0,
@@ -473,7 +475,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
        <div className="game-player-summary"><img className="game-header-avatar" src={prisonerAsset} alt="" /><div className="game-player-name"><strong>{gameData.nickname.toUpperCase()}</strong><span>POZIOM {gameData.level}</span><div className="game-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div></div>
-      <div className="game-resources"><span className="resource-money"><CircleDollarSign size={18} /> {gameData.gold}</span><span className="resource-energy"><Zap size={18} /> {gameData.energy} / 100</span><span className="resource-health"><Heart size={18} /> {gameData.hp} / 100</span></div>
+       <div className="game-resources"><span className="resource-money"><CircleDollarSign size={18} /> {gameData.gold}</span><span className="resource-points"><Gem size={18} /><span className="resource-points-copy"><b>{gameData.points}</b><small>PUNKTY</small></span></span><span className="resource-energy"><Zap size={18} /> {gameData.energy} / 100</span><span className="resource-health"><Heart size={18} /> {gameData.hp} / 100</span></div>
       <div className="game-header-actions"><button aria-label="Powiadomienia" className="header-icon-button notification-button" onClick={() => showNotice('Nie masz nowych powiadomień.')}><Bell size={18} /><b>3</b></button><button aria-label="Ustawienia" className="header-icon-button" onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')}><Settings size={18} /></button><button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /> WYLOGUJ SIĘ <ArrowRight size={15} /></button></div>
     </header>
     <div className="game-layout">
