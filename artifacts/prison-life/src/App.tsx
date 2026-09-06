@@ -6,15 +6,20 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   ArrowLeft,
   ArrowRight,
+  Archive,
   Backpack,
+  Bell,
   BriefcaseBusiness,
   Check,
+  CheckCircle2,
+  CircleDollarSign,
   ChevronLeft,
   ChevronRight,
   Coins,
   Crosshair,
   Crown,
   Dumbbell,
+  BedDouble,
   Facebook,
   Flag,
   Gamepad2,
@@ -22,13 +27,21 @@ import {
   Instagram,
   KeyRound,
   LockKeyhole,
+  LogOut,
   Mail,
   Menu,
+  MessageSquare,
+  PanelRight,
   ScrollText,
+  Send,
   Shield,
+  Settings,
+  ShoppingCart,
   Swords,
+  Table,
   Trophy,
   UserRound,
+  UserRoundPen,
   Users,
   X,
   Youtube,
@@ -408,21 +421,190 @@ function AuthScreen({ mode, onNavigate }: { mode: 'login' | 'register'; onNaviga
   return <main className="auth-page" style={{ '--artwork-url': `url("${prisonArtwork}")` } as CSSProperties}><div className="auth-backdrop" /><header className="auth-header"><Brand onNavigate={onNavigate} /><button onClick={() => onNavigate('home')} className="auth-return"><ArrowLeft size={15} /> WRÓĆ NA STRONĘ GŁÓWNĄ</button></header><section className="auth-card"><div className="eyebrow">{register ? 'Nowy więzień' : 'Powrót za kraty'}</div><h1>{register ? 'ZAREJESTRUJ SIĘ' : 'ZALOGUJ SIĘ'}</h1><p>{register ? 'Stwórz swoją kartotekę i wybierz, jaką reputację zbudujesz za kratami.' : 'Wróć do swojej celi. Twoja reputacja nie poczeka.'}</p><form onSubmit={submit}><label><span><Mail size={15} /> ADRES E-MAIL</span><input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="więzień@prisonlife.pl" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="wpisz hasło" required minLength={6} /></label><button className="btn btn-primary" type="submit">{register ? 'OTWÓRZ KARTOTEKĘ' : 'WEJDŹ DO GRY'} <ArrowRight size={16} /></button></form>{notice && <div className="auth-notice">{notice}</div>}<button className="auth-switch" onClick={() => onNavigate(register ? 'login' : 'register')}>{register ? 'MASZ JUŻ KONTO? ' : 'NIE MASZ JESZCZE KONTA? '}<strong>{register ? 'ZALOGUJ SIĘ' : 'ZAREJESTRUJ SIĘ'}</strong></button></section><div className="auth-quote">„ZA KRATAMI NIE MA PRZYPADKÓW.<br /><span>SĄ TYLKO DECYZJE.</span>”</div></main>;
 }
 
+type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'equipment' | 'market' | 'quests' | 'gang' | 'ranking';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
+  const [activeSection, setActiveSection] = useState<GameSection>(() => {
+    const route = window.location.hash.replace('#', '');
+    return (route.startsWith('game/') ? route.split('/')[1] : 'cell') as GameSection;
+  });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [chatTab, setChatTab] = useState<'ODDZIAŁ A' | 'GLOBALNY' | 'GANG'>('ODDZIAŁ A');
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatLines, setChatLines] = useState([{ time: '18:24', name: 'Kosa', text: 'Ktoś idzie na stołówkę?' }, { time: '18:25', name: 'Rychu', text: 'Ja o 19' }, { time: '18:25', name: 'Beton', text: 'Dawaj, łatwiej w ekipie.' }, { time: '18:26', name: 'Młody', text: 'Gdzie dokładnie?' }, { time: '18:27', name: 'Rychu', text: 'Plac, sektor B' }]);
+  const [visited, setVisited] = useState<Set<HotspotId>>(new Set());
+  const [newMessageOpen, setNewMessageOpen] = useState(false);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
-  return <main className="game-shell-page"><header className="game-header"><Brand onNavigate={onNavigate} compact /><div className="game-resources"><span><Coins size={15} /> 0</span><span><Zap size={15} /> 100</span><span><Heart size={15} /> 100</span><button onClick={() => onNavigate('home')}>WYJDŹ</button></div></header><div className="game-layout"><aside className="game-sidebar">{panelItems.map(({ label, icon: Icon }, index) => <button className={index === 0 ? 'active' : ''} key={label}><Icon size={17} />{label}</button>)}</aside><section className="game-main"><div className="game-welcome"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>WITAJ, <span>{creator.nickname.toUpperCase() || 'WIĘŹNIU'}</span></h1><p>Twoja historia zaczyna się tutaj. Zbuduj reputację i przetrwaj za kratami.</p></div><div className="game-type-badge"><span className={`type-avatar type-${type.id}`}><span>{type.name[0]}</span></span><strong>{type.name}</strong><small>{type.specialty}</small></div></div><div className="game-dashboard-grid"><div className="game-cel"><div className="dashboard-label">TWOJA CELA / A-47291</div><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /></div><div className="game-status-card"><div className="dashboard-label">AKTUALNY STATUS</div><h2>NOWY NA BLOKU</h2>{['Siła', 'Kondycja', 'Zręczność', 'Technika'].map((label, index) => <div className="status-line" key={label}><span>{label}</span><div><i style={{ width: `${[62, 48, 31, 25][index]}%` }} /></div><b>{[62, 48, 31, 25][index]}</b></div>)}<button className="btn btn-primary">ROZPOCZNIJ DZIEŃ <ArrowRight size={15} /></button></div></div></section></div></main>;
+  const gameData = {
+    nickname: creator.nickname.trim() || 'KOSA',
+    level: 1,
+    xp: 120,
+    xpMax: 500,
+    gold: 250,
+    energy: 100,
+    hp: 100,
+    reputation: 0,
+    rank: 'NOWY',
+  };
+
+  useEffect(() => {
+    const handleGameRoute = () => {
+      const route = window.location.hash.replace('#', '');
+      if (route.startsWith('game/')) setActiveSection(route.split('/')[1] as GameSection);
+    };
+    window.addEventListener('hashchange', handleGameRoute);
+    return () => window.removeEventListener('hashchange', handleGameRoute);
+  }, []);
+
+  const showNotice = (message: string) => {
+    setNotice(message);
+    window.setTimeout(() => setNotice(''), 3200);
+  };
+  const navigateSection = (section: GameSection) => {
+    setActiveSection(section);
+    setMobileMenuOpen(false);
+    window.history.pushState({}, '', `#game/${section}`);
+    if (section !== 'cell') showNotice(`${gameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+  };
+  const activateHotspot = (id: HotspotId) => {
+    setVisited((current) => new Set(current).add(id));
+    if (id === 'training') navigateSection('training');
+    else showNotice(id === 'bed' ? 'Łóżko: odpoczynek przywróci energię.' : id === 'locker' ? 'Szafka: schowek jest gotowy na Twój ekwipunek.' : 'Stół: tutaj rozpoczniesz zadania.');
+  };
+  const sendChat = (event: FormEvent) => {
+    event.preventDefault();
+    const value = chatMessage.trim();
+    if (!value) return;
+    setChatLines((lines) => [...lines, { time: 'teraz', name: gameData.nickname, text: value }]);
+    setChatMessage('');
+  };
+
+  return <main className="game-shell-page">
+    <header className="game-header">
+      <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
+      <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
+      <div className="game-player-summary"><GamePortrait creator={creator} small /><div className="game-player-name"><strong>{gameData.nickname.toUpperCase()}</strong><span>POZIOM {gameData.level}</span><div className="game-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div></div>
+      <div className="game-resources"><span className="resource-money"><CircleDollarSign size={18} /> {gameData.gold}</span><span className="resource-energy"><Zap size={18} /> {gameData.energy} / 100</span><span className="resource-health"><Heart size={18} /> {gameData.hp} / 100</span></div>
+      <div className="game-header-actions"><button aria-label="Powiadomienia" className="header-icon-button notification-button" onClick={() => showNotice('Nie masz nowych powiadomień.')}><Bell size={18} /><b>3</b></button><button aria-label="Ustawienia" className="header-icon-button" onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')}><Settings size={18} /></button><button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /> WYLOGUJ SIĘ <ArrowRight size={15} /></button></div>
+    </header>
+    <div className="game-layout">
+      <aside className={`game-sidebar ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}</aside>
+      <div className="game-content">
+        {activeSection === 'cell' ? <div className="game-board">
+          <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene creator={creator} visited={visited} onHotspot={activateHotspot} /></section>
+          <aside className="game-right-column">
+            <section className="game-panel prisoner-panel"><div className="panel-title"><span>MÓJ WIĘZIEŃ</span><button onClick={() => showNotice('Edycja więźnia będzie dostępna wkrótce.')}><UserRoundPen size={12} /> EDYTUJ</button></div><div className="prisoner-profile"><div><h2>{gameData.nickname.toUpperCase()}</h2><span>#A-7421</span><strong>POZIOM {gameData.level}</strong><div className="profile-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div><GamePortrait creator={creator} small /></div><div className="prisoner-stats">{gameStats.map(({ label, value, icon: Icon, color }) => <div className="prisoner-stat" key={label}><Icon size={16} className={`stat-${color}`} /><span>{label}</span><div><i style={{ width: `${value * 10}%` }} /></div><b>{value}</b></div>)}</div><div className="reputation-row"><div><span>REPUTACJA</span><strong>{gameData.reputation}</strong></div><div><span>RANGA</span><strong>{gameData.rank}</strong></div></div><blockquote>„ZA KRATAMI WSZYSCY<br />JESTEŚMY RÓWNI...<br /><em>ALE NIE NA DŁUGO.”</em></blockquote></section>
+            <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${visited.size * 25}%` }} /></div></div><b>{visited.size} / 4</b></div></div></section>
+              <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
+          </aside>
+        </div> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        <section className="game-bottom-grid">
+          <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
+          <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
+          <section className="game-panel events-panel"><div className="panel-title"><span>OSTATNIE WYDARZENIA</span><button onClick={() => showNotice('Wyświetlasz pełną historię wydarzeń.')}>ZOBACZ WSZYSTKIE</button></div><div className="event-list">{gameEvents.map((event) => <div className="event-item" key={`${event.time}-${event.text}`}><time>{event.time}</time><span>{event.text}</span><b className={event.tone}>{event.result}</b></div>)}</div></section>
+        </section>
+      </div>
+    </div>
+    <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
+    {notice && <div className="notice game-notice" role="status">{notice}</div>}
+  </main>;
 }
 
 function App() {
   const [screen, setScreen] = useState<Screen>(() => {
     const route = window.location.hash.replace('#', '');
-    return route === 'register' || route === 'login' || route === 'game' ? route : 'home';
+    return route === 'register' || route === 'login' || route === 'game' || route.startsWith('game/') ? 'game' : 'home';
   });
   const [creator, setCreator] = useState<CreatorState>(initialCreator);
   const navigate = (next: Screen) => { setScreen(next); window.history.pushState({}, '', next === 'home' ? `${window.location.pathname}` : `#${next}`); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  useEffect(() => { const handlePop = () => { const route = window.location.hash.replace('#', ''); setScreen(route === 'register' || route === 'login' || route === 'game' ? route : 'home'); }; window.addEventListener('popstate', handlePop); window.addEventListener('hashchange', handlePop); return () => { window.removeEventListener('popstate', handlePop); window.removeEventListener('hashchange', handlePop); }; }, []);
+  useEffect(() => { const handlePop = () => { const route = window.location.hash.replace('#', ''); setScreen(route === 'register' || route === 'login' || route === 'game' || route.startsWith('game/') ? 'game' : 'home'); }; window.addEventListener('popstate', handlePop); window.addEventListener('hashchange', handlePop); return () => { window.removeEventListener('popstate', handlePop); window.removeEventListener('hashchange', handlePop); }; }, []);
   useEffect(() => { document.title = screen === 'home' ? 'Prison Life — Więcej niż gra. To Twój wyrok.' : screen === 'register' ? 'Stwórz swojego więźnia — Prison Life' : screen === 'login' ? 'Zaloguj się — Prison Life' : 'Panel więźnia — Prison Life'; }, [screen]);
   return <QueryClientProvider client={queryClient}><TooltipProvider><ErrorBoundary resetKey="prison-life">{screen === 'home' && <Home onNavigate={navigate} />}{screen === 'register' && <Registration onNavigate={navigate} creator={creator} setCreator={setCreator} />}{screen === 'login' && <AuthScreen mode="login" onNavigate={navigate} />}{screen === 'game' && <GameShell creator={creator} onNavigate={navigate} />}</ErrorBoundary><Toaster /></TooltipProvider></QueryClientProvider>;
 }
 
 export default App;
+
+type HotspotId = 'bed' | 'locker' | 'table' | 'training';
+
+function CellHotspot({ id, label, description, icon: Icon, onClick, active }: { id: HotspotId; label: string; description: string; icon: typeof BedDouble; onClick: () => void; active: boolean }) {
+  return <button className={`cell-hotspot hotspot-${id} ${active ? 'visited' : ''}`} onClick={onClick} data-testid={`button-hotspot-${id}`}><span className="hotspot-icon"><Icon size={17} /></span><span><strong>{label}</strong><small>{description}</small></span><ChevronRight size={14} /></button>;
+}
+
+function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn: () => void }) {
+  const item = gameNavigation.find((entry) => entry.id === section)!;
+  const Icon = item.icon;
+  const copy: Record<GameSection, string> = {
+    cell: 'Wróć do swojej celi i sprawdź, co dzieje się na bloku.',
+    messages: 'Twoja skrzynka wiadomości jest gotowa na pierwsze rozmowy.',
+    fight: 'Przygotuj się do walki. System pojedynków zostanie podłączony w następnym etapie.',
+    training: 'Wybierz trening, aby rozwijać siłę, kondycję i pozostałe statystyki.',
+    work: 'Znajdź pracę i zacznij zarabiać. Lista stanowisk jest w przygotowaniu.',
+    equipment: 'Tutaj znajdzie się Twój ekwipunek i przedmioty zebrane za kratami.',
+    market: 'Czarny rynek jest zamknięty. Wróć później po świeżą dostawę.',
+    quests: 'Twoje zadania są widoczne w panelu po prawej stronie.',
+    gang: 'Dołącz do gangu i zbuduj swoją pozycję w oddziale.',
+    ranking: 'Ranking bloku zostanie otwarty, gdy rozpoczniesz pierwszy dzień.',
+  };
+  return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shield }> = [
+  { id: 'cell', label: 'CELA', icon: Shield },
+  { id: 'messages', label: 'WIADOMOŚCI', icon: MessageSquare },
+  { id: 'fight', label: 'WALKA', icon: Swords },
+  { id: 'training', label: 'TRENING', icon: Dumbbell },
+  { id: 'work', label: 'PRACA', icon: BriefcaseBusiness },
+  { id: 'equipment', label: 'EKWIPUNEK', icon: Backpack },
+  { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
+  { id: 'quests', label: 'ZADANIA', icon: ScrollText },
+  { id: 'gang', label: 'GANG', icon: Users },
+  { id: 'ranking', label: 'RANKING', icon: Trophy },
+];
+
+function CellScene({ creator, visited, onHotspot }: { creator: CreatorState; visited: Set<HotspotId>; onHotspot: (id: HotspotId) => void }) {
+  return <div className="cell-scene" data-testid="cell-scene">
+    <div className="cell-window"><span className="window-light" /><i /><i /><i /><i /><b>BLOCK A</b></div>
+    <div className="cell-graffiti graffiti-one">TU ZACZYNA SIĘ<br /><em>TWOJA HISTORIA</em></div>
+    <div className="cell-graffiti graffiti-two">SZACUNEK<br />SIŁA<br />PRZETRWANIE</div>
+    <div className="cell-lamp lamp-left" /><div className="cell-lamp lamp-right" />
+    <div className="cell-bed"><span className="bed-mattress" /><span className="bed-pillow" /><span className="bed-frame" /></div>
+    <div className="cell-locker"><span /><i /><b>17</b></div>
+    <div className="cell-tv"><span>NO SIGNAL</span></div>
+    <div className="cell-table"><i /><i /><span /></div>
+    <div className="cell-stool"><i /><i /><span /></div>
+    <div className="cell-dumbbells"><i /><i /><b /><b /></div>
+    <div className="cell-floor" />
+    <GamePortrait creator={creator} />
+    <div className="scene-label">TWOJA CELA <span>/</span> BLOK A <b>A-47291</b></div>
+    <CellHotspot id="bed" label="ŁÓŻKO" description="Odpocznij i odzyskaj siły" icon={BedDouble} onClick={() => onHotspot('bed')} active={visited.has('bed')} />
+    <CellHotspot id="locker" label="SZAFKA" description="Przechowuj swoje rzeczy" icon={Archive} onClick={() => onHotspot('locker')} active={visited.has('locker')} />
+    <CellHotspot id="table" label="STÓŁ" description="Wykonuj zadania" icon={Table} onClick={() => onHotspot('table')} active={visited.has('table')} />
+    <CellHotspot id="training" label="TRENING" description="Popraw swoje statystyki" icon={Dumbbell} onClick={() => onHotspot('training')} active={visited.has('training')} />
+  </div>;
+}
+
+function GamePortrait({ creator, small = false }: { creator: CreatorState; small?: boolean }) {
+  return <div className={`game-portrait ${small ? 'game-portrait-small' : ''}`}><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /></div>;
+}
+
+const gameMessages = [
+  { name: 'Rychu', text: 'Siema, będziesz dziś na dziedzińcu?', time: '18:24' },
+  { name: 'Beton', text: 'Załatwiłem temat. Odezwij się.', time: '17:11' },
+  { name: 'Szczur', text: 'Masz towar, o którym gadaliśmy?', time: '15:37' },
+];
+
+const gameEvents = [
+  { time: '18:20', text: 'Wygrałeś walkę z Grubym.', result: '+ 50 $', tone: 'positive' },
+  { time: '17:45', text: 'Zakończyłeś trening siły.', result: '+ 8 XP', tone: 'positive' },
+  { time: '16:30', text: 'Ktoś dołączył do oddziału A.', result: '', tone: '' },
+  { time: '15:12', text: 'Przegrałeś walkę z Szakalem.', result: '- 20 $', tone: 'negative' },
+  { time: '14:05', text: 'Otrzymałeś nową wiadomość.', result: '', tone: '' },
+];
+
+const gameStats = [
+  { label: 'SIŁA', value: 10, icon: Dumbbell, color: 'orange' },
+  { label: 'KONDYCJA', value: 10, icon: Heart, color: 'green' },
+  { label: 'ZRĘCZNOŚĆ', value: 10, icon: Crosshair, color: 'blue' },
+  { label: 'TECHNIKA', value: 10, icon: Settings, color: 'violet' },
+  { label: 'CHARAKTER', value: 10, icon: Crown, color: 'gold' },
+];
