@@ -489,7 +489,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE MISJE</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsView onNotice={showNotice} /> : activeSection === 'market' ? <BlackMarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsReferenceView onNotice={showNotice} /> : activeSection === 'market' ? <BlackMarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -723,6 +723,91 @@ function MissionsView({ onNotice }: { onNotice: (message: string) => void }) {
         <div className="mission-consequence"><Flag size={18} /><span><strong>KONSEKWENCJE PORAŻKI</strong>W przypadku niepowodzenia trafisz do izolatki.</span></div>
         <button className="mission-start-button" onClick={() => { setStartedMission(selectedMission.id); onNotice(`Rozpoczynasz misję: ${selectedMission.title.toLowerCase()}.`); }}><span>{startedMission === selectedMission.id ? 'MISJA W TOKU' : 'ROZPOCZNIJ MISJĘ'}</span><ChevronRight size={20} /></button>
       </aside>}
+    </div>
+  </section>;
+}
+
+type MissionCategory = 'ALL' | 'STORY' | 'URGENT' | 'GANG' | 'SPECIAL';
+
+type ReferenceMission = {
+  id: string;
+  title: string;
+  description: string;
+  detail: string;
+  category: Exclude<MissionCategory, 'ALL'>;
+  risk: string;
+  riskTone: 'easy' | 'medium' | 'hard' | 'special';
+  energy: number;
+  chance: number;
+  reward: string;
+  consequence: string;
+  requirement: string;
+  icon: typeof Archive;
+};
+
+const referenceMissions: ReferenceMission[] = [
+  { id: 'message', title: 'PRZEKAŻ WIADOMOŚĆ', description: 'Zanieś wiadomość do wskazanej celi. Szybka robota.', detail: 'Jeden z chłopaków z bloku B potrzebuje, żebyś przekazał wiadomość do celi 107. Prosta sprawa, nikt nie powinien zwrócić na to uwagi.', category: 'STORY', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 88, reward: '+100 EXP', consequence: 'Izolatka (1 - 3h)', requirement: 'Brak', icon: Mail },
+  { id: 'package', title: 'DORĘCZ PACZKĘ', description: 'Przenieś małą paczkę przez korytarz.', detail: 'Paczka musi trafić do właściwej celi, zanim zmieni się straż na korytarzu.', category: 'STORY', risk: 'ŁATWA', riskTone: 'easy', energy: 15, chance: 75, reward: '+150 EXP', consequence: 'Izolatka (1 - 3h)', requirement: 'Brak', icon: Archive },
+  { id: 'info', title: 'ZDOBĄDŹ DANE', description: 'Zdobądź informacje z biura strażników.', detail: 'Potrzebujemy informacji o zmianach strażników. Zajrzyj do biura i wróć z tym, co uda ci się usłyszeć.', category: 'URGENT', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 60, reward: '+250 EXP', consequence: 'Izolatka (2 - 4h)', requirement: 'Poziom 2', icon: ScrollText },
+  { id: 'recover-debt', title: 'ODZYSKAJ DŁUG', description: 'Odwiedź dłużnika z bloku C i odzyskaj kasę.', detail: 'Dług sam się nie spłaci. Znajdź wskazanego więźnia i odzyskaj należność dla swojego oddziału.', category: 'URGENT', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 58, reward: '+250 EXP', consequence: 'Izolatka (2 - 5h)', requirement: 'Siła 3', icon: CircleDollarSign },
+  { id: 'smuggle', title: 'PRZEMYĆ PRZEDMIOT', description: 'Przenieś zakazany przedmiot.', detail: 'Towar jest mały, ale kontrola na bloku jest dziś wyjątkowo dokładna. Nie daj się złapać.', category: 'GANG', risk: 'ŚREDNIA', riskTone: 'medium', energy: 25, chance: 55, reward: '+300 EXP', consequence: 'Izolatka (3 - 6h)', requirement: 'Gang', icon: LockKeyhole },
+  { id: 'blackmail', title: 'SZANTAŻUJ', description: 'Zdobądź kompromat na wskazaną osobę.', detail: 'Każdy ma coś do ukrycia. Znajdź słaby punkt wskazanej osoby i wykorzystaj go dla dobra oddziału.', category: 'GANG', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 45, reward: '+400 EXP', consequence: 'Izolatka (4 - 8h)', requirement: 'Reputacja 5', icon: Users },
+  { id: 'guard', title: 'ROZPROSZ STRAŻNIKA', description: 'Odciągnij uwagę strażnika w określonym miejscu.', detail: 'Zrób zamieszanie dokładnie wtedy, gdy reszta ekipy będzie tego potrzebować.', category: 'GANG', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 42, reward: '+400 EXP', consequence: 'Izolatka (4 - 8h)', requirement: 'Gang', icon: Crosshair },
+  { id: 'outside', title: 'DOSTAWA NA ZEWNĄTRZ', description: 'Przekaż paczkę podczas przepustki na dziedziniec.', detail: 'Paczka poczeka na zewnątrz. Twoim zadaniem jest przekazać ją bez wzbudzania podejrzeń.', category: 'SPECIAL', risk: 'TRUDNA', riskTone: 'hard', energy: 35, chance: 38, reward: '+500 EXP', consequence: 'Izolatka (6 - 12h)', requirement: 'Poziom 5', icon: Archive },
+  { id: 'escape', title: 'WYKONAJ WYROK', description: 'Pozbądź się wskazanego więźnia.', detail: 'To zlecenie zmieni układ sił na bloku. Zastanów się, czy jesteś gotowy ponieść konsekwencje.', category: 'SPECIAL', risk: 'BARDZO TRUDNA', riskTone: 'hard', energy: 40, chance: 25, reward: '+750 EXP', consequence: 'Izolatka (12 - 24h)', requirement: 'Reputacja 10', icon: Swords },
+  { id: 'big-job', title: 'WIELKA ROBOTA', description: 'Zrealizuj złożone zadanie dla wpływowej grupy.', detail: 'Największe zlecenia wymagają pełnego zaufania. Nagroda jest wysoka, ale cena porażki również.', category: 'SPECIAL', risk: 'SPECJALNA', riskTone: 'special', energy: 50, chance: 20, reward: '+1 000 EXP', consequence: 'Izolatka (24h)', requirement: 'Gang + poziom 8', icon: Crown },
+];
+
+function MissionsReferenceView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [category, setCategory] = useState<MissionCategory>('ALL');
+  const [selectedId, setSelectedId] = useState('message');
+  const selected = referenceMissions.find((mission) => mission.id === selectedId) ?? referenceMissions[0];
+  const visible = category === 'ALL' ? referenceMissions : referenceMissions.filter((mission) => mission.category === category);
+  const filters: Array<{ id: MissionCategory; label: string; icon: typeof Archive }> = [
+    { id: 'ALL', label: 'WSZYSTKIE', icon: Archive },
+    { id: 'STORY', label: 'FABUŁA', icon: Crown },
+    { id: 'URGENT', label: 'DORAŹNE', icon: Swords },
+    { id: 'GANG', label: 'GANGOWE', icon: Users },
+    { id: 'SPECIAL', label: 'SPECJALNE', icon: Award },
+  ];
+  return <section className="missions-reference-view" style={{ '--missions-reference-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-reference-view">
+    <header className="missions-reference-heading">
+      <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WIĘZIENIE DAJE MOŻLIWOŚCI. NIE WSZYSTKIE SĄ BEZPIECZNE.</p></div>
+      <div className="missions-reference-slogan">TU KAŻDA DECYZJA<br />MA KONSEKWENCJE</div>
+    </header>
+    <div className="missions-reference-toolbar">
+      <div className="missions-reference-filters" role="tablist">
+        {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={category === id ? 'active' : ''} onClick={() => { setCategory(id); const first = id === 'ALL' ? referenceMissions[0] : referenceMissions.find((mission) => mission.category === id); if (first) setSelectedId(first.id); }} role="tab" aria-selected={category === id}><FilterIcon size={14} />{label}</button>)}
+      </div>
+      <div className="missions-reference-refresh"><span>NOWE MISJE ZA: <b>03:17:26</b></span><button onClick={() => onNotice('Lista misji została odświeżona.')}><ArrowRight size={14} /> ODŚWIEŻ</button><strong>50 $</strong></div>
+    </div>
+    <div className="missions-reference-content">
+      <section className="missions-reference-table game-panel">
+        <div className="missions-reference-table-head"><span>NAZWA MISJI</span><span>ENERGIA</span><span>SZANSA</span><span>NAGRODA (EXP)</span></div>
+        <div className="missions-reference-rows">
+          {visible.map((mission) => {
+            const MissionIcon = mission.icon;
+            return <button key={mission.id} className={`missions-reference-row ${selected.id === mission.id ? 'selected' : ''} mission-row-${mission.riskTone}`} onClick={() => setSelectedId(mission.id)} data-testid={`reference-mission-${mission.id}`}>
+              <span className="missions-row-name"><MissionIcon size={19} /><span><strong>{mission.title}</strong><small>{mission.description}</small></span><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></span>
+              <b><Zap size={14} /> {mission.energy}</b><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b><b className="mission-reward">{mission.reward}</b>
+            </button>;
+          })}
+        </div>
+      </section>
+      <aside className="missions-reference-detail game-panel">
+        <div className="missions-detail-heading"><h2>{selected.title}</h2><em className={`mission-reference-risk risk-${selected.riskTone}`}>{selected.risk}</em></div>
+        <p>{selected.detail}</p>
+        <div className="missions-detail-facts">
+          <div><Zap size={17} /><span>KOSZT ENERGII</span><b>{selected.energy}</b></div>
+          <div><Crosshair size={17} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${selected.riskTone}`}>{selected.chance}%</b></div>
+          <div><Award size={17} /><span>NAGRODA (EXP)</span><b className="mission-reward">{selected.reward}</b></div>
+          <div><Archive size={17} /><span>MOŻLIWE DODATKOWO</span><b>$ / punkty (losowo)</b></div>
+          <div><Flag size={17} /><span>KONSEKWENCJA PORAŻKI</span><b>{selected.consequence}</b></div>
+          <div><Users size={17} /><span>WYMAGANIA</span><b>{selected.requirement}</b></div>
+        </div>
+        <button className="missions-reference-start" onClick={() => onNotice(`Rozpoczynasz misję: ${selected.title.toLowerCase()}.`)}><ArrowRight size={17} /> ROZPOCZNIJ MISJĘ</button>
+        <div className="missions-reference-help"><Eye size={15} /> Wynik misji zależy od Twoich statystyk, wyposażenia i aktualnej sytuacji w więzieniu.</div>
+      </aside>
     </div>
   </section>;
 }

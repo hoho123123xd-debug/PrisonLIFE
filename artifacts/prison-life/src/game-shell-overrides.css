@@ -2696,6 +2696,416 @@
   font: italic 14px 'Oswald';
 }
 
+/* Missions reference screen — compact table with a selected mission brief. */
+.game-shell-page .missions-reference-view {
+  position: relative;
+  display: grid;
+  grid-template-rows: 92px 46px minmax(0, 1fr);
+  gap: var(--game-space);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.missions-reference-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(90deg, rgba(5, 10, 12, .95), rgba(5, 10, 12, .78)), var(--missions-reference-art) center / cover;
+  filter: saturate(.52) contrast(1.08);
+}
+.missions-reference-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.016) 0 1px, transparent 1px 4px);
+  pointer-events: none;
+}
+.missions-reference-heading {
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  overflow: hidden;
+  border: 1px solid rgba(86, 103, 97, .3);
+  background: linear-gradient(90deg, rgba(7, 13, 15, .94), rgba(8, 15, 17, .68));
+}
+.missions-reference-heading h1 {
+  margin: 2px 0 3px;
+  color: #f0eee7;
+  font: 700 clamp(32px, 3.5vw, 48px) / .88 'Oswald';
+}
+.missions-reference-heading .eyebrow {
+  color: var(--game-orange-soft);
+  font-size: 10px;
+}
+.missions-reference-heading p {
+  margin: 0;
+  color: #abb2aa;
+  font: 12px 'Barlow Condensed';
+  letter-spacing: .04em;
+}
+.missions-reference-slogan {
+  margin-right: 5%;
+  color: rgba(176, 187, 178, .16);
+  font: italic 700 18px / 1.05 'Oswald';
+  transform: rotate(-6deg);
+}
+.missions-reference-toolbar {
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 10px;
+}
+.missions-reference-filters {
+  min-width: 0;
+  display: flex;
+  gap: 4px;
+}
+.missions-reference-filters button {
+  min-width: 92px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid #34413d;
+  color: #9ba39c;
+  background: rgba(8, 16, 18, .92);
+  cursor: pointer;
+  font: 11px 'Barlow Condensed';
+}
+.missions-reference-filters button:hover,
+.missions-reference-filters button.active {
+  border-color: var(--game-orange);
+  color: #21140d;
+  background: linear-gradient(90deg, #ed7628, #ed963a);
+}
+.missions-reference-refresh {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #98a19a;
+  font: 10px 'Barlow Condensed';
+}
+.missions-reference-refresh b {
+  color: #d2b96b;
+}
+.missions-reference-refresh button,
+.missions-reference-refresh strong {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1px solid #35423f;
+  color: #aab1aa;
+  background: rgba(8, 16, 18, .92);
+  font: 10px 'Barlow Condensed';
+}
+.missions-reference-refresh button {
+  cursor: pointer;
+}
+.missions-reference-refresh button:hover {
+  border-color: var(--game-orange);
+  color: #e9a35b;
+}
+.missions-reference-refresh strong {
+  border-color: #a86d32;
+  color: #efae5a;
+}
+.missions-reference-content {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(310px, .85fr);
+  gap: var(--game-space);
+}
+.missions-reference-table,
+.missions-reference-detail {
+  min-width: 0;
+  min-height: 0;
+  border-color: #33413e;
+  background: rgba(7, 14, 16, .94);
+}
+.missions-reference-table {
+  display: grid;
+  grid-template-rows: 34px minmax(0, 1fr);
+  overflow: hidden;
+}
+.missions-reference-table-head,
+.missions-reference-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px 78px 94px;
+  align-items: center;
+}
+.missions-reference-table-head {
+  padding: 0 10px;
+  border-bottom: 1px solid #3b4945;
+  color: #8c968e;
+  font: 10px 'Barlow Condensed';
+}
+.missions-reference-table-head span:nth-child(n+2) {
+  text-align: center;
+}
+.missions-reference-rows {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: repeat(10, minmax(0, 1fr));
+  overflow: auto;
+  padding: 4px 7px 7px;
+  gap: 2px;
+}
+.missions-reference-row {
+  min-width: 0;
+  position: relative;
+  padding: 0 7px;
+  border: 1px solid #283735;
+  border-left: 4px solid #4d5c54;
+  color: #b3bab3;
+  background: linear-gradient(90deg, rgba(17, 27, 28, .92), rgba(8, 15, 17, .92));
+  cursor: pointer;
+  text-align: left;
+}
+.missions-reference-row:hover,
+.missions-reference-row.selected {
+  border-color: var(--game-orange);
+  box-shadow: inset 0 0 18px rgba(230, 112, 31, .1);
+}
+.mission-row-easy { border-left-color: #2e9c68; }
+.mission-row-medium { border-left-color: #d19a2e; }
+.mission-row-hard { border-left-color: #d4423f; }
+.mission-row-special { border-left-color: #b55bda; }
+.missions-row-name {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.missions-row-name > svg {
+  flex: 0 0 auto;
+  color: #aab2aa;
+}
+.missions-row-name > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.missions-row-name strong {
+  overflow: hidden;
+  color: #e3e5dd;
+  font: 700 12px 'Oswald';
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.missions-row-name small {
+  overflow: hidden;
+  color: #8f9991;
+  font: 9px 'Barlow Condensed';
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mission-reference-risk {
+  width: max-content;
+  padding: 2px 5px;
+  border: 1px solid currentColor;
+  font: 8px 'Barlow Condensed';
+  font-style: normal;
+  white-space: nowrap;
+}
+.missions-row-name .mission-reference-risk {
+  margin-left: 4px;
+}
+.risk-easy { color: #55bc80; }
+.risk-medium { color: #e1ae3b; }
+.risk-hard { color: #e1544c; }
+.risk-special { color: #bd70dc; }
+.missions-reference-row > b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #d8ddd5;
+  font: 11px 'Barlow Condensed';
+}
+.missions-reference-row > b:first-of-type svg {
+  color: var(--game-orange);
+}
+.mission-chance.chance-easy { color: #55d286; }
+.mission-chance.chance-medium { color: #f0bd47; }
+.mission-chance.chance-hard { color: #e6534b; }
+.mission-chance.chance-special { color: #c676e3; }
+.mission-reward {
+  color: #f0bd54 !important;
+}
+.missions-reference-detail {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) 48px auto;
+  gap: 10px;
+  padding: 11px;
+  overflow: hidden;
+}
+.missions-detail-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.missions-detail-heading h2 {
+  margin: 0;
+  color: #efebe1;
+  font: 700 22px 'Oswald';
+}
+.missions-reference-detail > p {
+  margin: 0;
+  color: #a4aca4;
+  font: 11px / 1.4 'Barlow Condensed';
+}
+.missions-detail-facts {
+  min-height: 0;
+  display: grid;
+  grid-auto-rows: minmax(41px, 1fr);
+  overflow: auto;
+  border-top: 1px solid #34423f;
+}
+.missions-detail-facts > div {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 23px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+  padding: 0 5px;
+  border-bottom: 1px solid #2d3a37;
+}
+.missions-detail-facts svg {
+  color: #aeb6ae;
+}
+.missions-detail-facts span {
+  color: #919b93;
+  font: 10px 'Barlow Condensed';
+}
+.missions-detail-facts b {
+  color: #d8dcd4;
+  font: 11px 'Barlow Condensed';
+  text-align: right;
+}
+.missions-reference-start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #f18a30;
+  color: #21130a;
+  background: linear-gradient(90deg, #ed7728, #ed963b);
+  cursor: pointer;
+  font: 700 15px 'Oswald';
+}
+.missions-reference-start:hover {
+  background: #ffad4f;
+}
+.missions-reference-help {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px;
+  border: 1px solid #293734;
+  color: #8e9991;
+  font: 9px / 1.25 'Barlow Condensed';
+}
+.missions-reference-help svg {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 640px) {
+  .game-shell-page .missions-reference-view {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    grid-template-rows: 96px auto auto;
+  }
+  .missions-reference-heading {
+    padding: 8px 11px;
+  }
+  .missions-reference-heading h1 {
+    font-size: 37px;
+  }
+  .missions-reference-heading p {
+    max-width: 245px;
+    font-size: 10px;
+  }
+  .missions-reference-slogan {
+    display: none;
+  }
+  .missions-reference-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .missions-reference-filters {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 2px;
+  }
+  .missions-reference-filters button {
+    min-width: 0;
+    gap: 3px;
+    padding: 0 2px;
+    font-size: 9px;
+  }
+  .missions-reference-filters button svg {
+    display: none;
+  }
+  .missions-reference-refresh {
+    justify-content: space-between;
+  }
+  .missions-reference-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(640px, auto) minmax(560px, auto);
+  }
+  .missions-reference-table-head,
+  .missions-reference-row {
+    grid-template-columns: minmax(0, 1fr) 47px 53px 67px;
+  }
+  .missions-reference-table-head {
+    padding-inline: 5px;
+    font-size: 8px;
+  }
+  .missions-reference-rows {
+    grid-template-rows: repeat(10, minmax(58px, 1fr));
+    padding-inline: 4px;
+  }
+  .missions-reference-row {
+    padding-inline: 4px;
+  }
+  .missions-row-name {
+    gap: 4px;
+  }
+  .missions-row-name > svg {
+    width: 15px;
+  }
+  .missions-row-name strong {
+    font-size: 10px;
+  }
+  .missions-row-name small {
+    font-size: 8px;
+  }
+  .missions-row-name .mission-reference-risk {
+    display: none;
+  }
+  .missions-reference-row > b {
+    font-size: 9px;
+  }
+  .missions-reference-detail {
+    min-height: 560px;
+  }
+}
+
 /* Equipment screen — dense item management layout based on the supplied reference. */
 .missions-view::before {
   content: '';
