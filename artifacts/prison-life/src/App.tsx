@@ -50,7 +50,7 @@ import {
 } from 'lucide-react';
 import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864145.png';
 import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
-import prisonerAsset from '@assets/generated_images/prisoner-realistic-cutout.png';
+import prisonerAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_12_30_1788711187677.png';
 import gameSceneArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_50_39_1788709841559.png';
 
 const queryClient = new QueryClient();
@@ -521,7 +521,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
 function App() {
   const [screen, setScreen] = useState<Screen>(() => {
     const route = window.location.hash.replace('#', '');
-    return route === 'register' || route === 'login' || route === 'game' || route.startsWith('game/') ? 'game' : 'home';
+    return route === 'register' ? 'register' : route === 'login' ? 'login' : route === 'game' || route.startsWith('game/') ? 'game' : 'home';
   });
   const [creator, setCreator] = useState<CreatorState>(() => {
     try {
@@ -532,7 +532,7 @@ function App() {
     }
   });
   const navigate = (next: Screen) => { setScreen(next); window.history.pushState({}, '', next === 'home' ? `${window.location.pathname}` : `#${next}`); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  useEffect(() => { const handlePop = () => { const route = window.location.hash.replace('#', ''); setScreen(route === 'register' || route === 'login' || route === 'game' || route.startsWith('game/') ? 'game' : 'home'); }; window.addEventListener('popstate', handlePop); window.addEventListener('hashchange', handlePop); return () => { window.removeEventListener('popstate', handlePop); window.removeEventListener('hashchange', handlePop); }; }, []);
+  useEffect(() => { const handlePop = () => { const route = window.location.hash.replace('#', ''); setScreen(route === 'register' ? 'register' : route === 'login' ? 'login' : route === 'game' || route.startsWith('game/') ? 'game' : 'home'); }; window.addEventListener('popstate', handlePop); window.addEventListener('hashchange', handlePop); return () => { window.removeEventListener('popstate', handlePop); window.removeEventListener('hashchange', handlePop); }; }, []);
   useEffect(() => { window.localStorage.setItem('prison-life-creator', JSON.stringify(creator)); }, [creator]);
   useEffect(() => { document.title = screen === 'home' ? 'Prison Life — Więcej niż gra. To Twój wyrok.' : screen === 'register' ? 'Stwórz swojego więźnia — Prison Life' : screen === 'login' ? 'Zaloguj się — Prison Life' : 'Panel więźnia — Prison Life'; }, [screen]);
   return <QueryClientProvider client={queryClient}><TooltipProvider><ErrorBoundary resetKey="prison-life">{screen === 'home' && <Home onNavigate={navigate} />}{screen === 'register' && <Registration onNavigate={navigate} creator={creator} setCreator={setCreator} />}{screen === 'login' && <AuthScreen mode="login" onNavigate={navigate} />}{screen === 'game' && <GameShell creator={creator} onNavigate={navigate} />}</ErrorBoundary><Toaster /></TooltipProvider></QueryClientProvider>;

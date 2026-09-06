@@ -762,6 +762,23 @@ button { font: inherit; }
 .figure-skin-2 .character-photo { filter: sepia(.12) saturate(1.23) hue-rotate(-8deg) drop-shadow(0 16px 18px rgba(0,0,0,.72)); }
 .figure-skin-3 .character-photo { filter: sepia(.18) saturate(.78) brightness(.82) drop-shadow(0 16px 18px rgba(0,0,0,.72)); }
 
+/* The supplied full-body hero asset has a taller portrait crop than the
+   previous square cutout, so keep the optional appearance overlays aligned
+   to its head and upper arm instead of the old SVG proportions. */
+.character-figure .figure-hair { top: 4%; left: 39%; width: 22%; height: 8%; }
+.character-figure .figure-hair-2 { top: 3%; left: 37%; width: 26%; height: 7%; }
+.character-figure .figure-hair-3 { top: 2%; left: 35%; width: 30%; height: 10%; }
+.character-figure .figure-beard { top: 10%; left: 45%; width: 10%; height: 5%; }
+.character-figure .figure-beard-2 { top: 9%; left: 43%; width: 14%; height: 7%; }
+.character-figure .figure-beard-3 { top: 11%; left: 46%; width: 8%; height: 3%; }
+.character-figure .figure-scar { top: 8%; left: 53%; height: 7%; }
+.character-figure .figure-tattoo { top: 30%; left: 16%; width: 9%; height: 16%; }
+.character-figure .figure-hair,
+.character-figure .figure-beard,
+.character-figure .figure-scar,
+.character-figure .figure-tattoo,
+.character-figure .figure-outfit-wash { display: none; }
+
 @media (max-width: 760px) {
   .character-figure {
     min-height: 475px;
