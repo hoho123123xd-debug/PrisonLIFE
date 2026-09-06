@@ -481,15 +481,15 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : ''}`}>
+       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
             <section className="game-panel prisoner-panel"><div className="panel-title"><span>MÓJ WIĘZIEŃ</span><button onClick={() => showNotice('Edycja więźnia będzie dostępna wkrótce.')}><UserRoundPen size={12} /> EDYTUJ</button></div><div className="prisoner-profile"><div><h2>{gameData.nickname.toUpperCase()}</h2><span>#A-7421</span><strong>POZIOM {gameData.level}</strong><div className="profile-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div><GamePortrait creator={creator} small /></div><div className="prisoner-stats">{gameStats.map(({ label, value, icon: Icon, color }) => <div className="prisoner-stat" key={label}><Icon size={16} className={`stat-${color}`} /><span>{label}</span><div><i style={{ width: `${value * 10}%` }} /></div><b>{value}</b></div>)}</div><div className="reputation-row"><div><span>REPUTACJA</span><strong>{gameData.reputation}</strong></div><div><span>RANGA</span><strong>{gameData.rank}</strong></div></div><blockquote>„ZA KRATAMI WSZYSCY<br />JESTEŚMY RÓWNI...<br /><em>ALE NIE NA DŁUGO.”</em></blockquote></section>
-            <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
+            <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE MISJE</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -552,7 +552,7 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     work: 'Znajdź pracę i zacznij zarabiać. Lista stanowisk jest w przygotowaniu.',
     equipment: 'Tutaj znajdzie się Twój ekwipunek i przedmioty zebrane za kratami.',
     market: 'Czarny rynek jest zamknięty. Wróć później po świeżą dostawę.',
-    quests: 'Twoje zadania są widoczne w panelu po prawej stronie.',
+    quests: 'Twoje misje czekają na podjęcie. Wybierz zlecenie i zbuduj swoją pozycję na bloku.',
     gang: 'Dołącz do gangu i zbuduj swoją pozycję w oddziale.',
     ranking: 'Ranking bloku zostanie otwarty, gdy rozpoczniesz pierwszy dzień.',
     'cell-development': 'Rozbuduj swoją celę, odblokuj nowe wyposażenie i stwórz własną przewagę za kratami.',
@@ -561,6 +561,96 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+type MissionTab = 'available' | 'active' | 'completed';
+type MissionRiskTone = 'low' | 'medium' | 'high';
+
+type Mission = {
+  id: string;
+  title: string;
+  summary: string;
+  detail: string;
+  risk: string;
+  riskTone: MissionRiskTone;
+  reward: string;
+  duration: string;
+  chance: number;
+  icon: typeof Archive;
+  image: string;
+  status: MissionTab;
+};
+
+const missions: Mission[] = [
+  { id: 'smuggling', title: 'PRZEMYT', summary: 'Dostarcz paczkę do wskazanej celi na bloku C.', detail: 'Jeden z chłopaków z bloku C potrzebuje paczki. Twoim zadaniem jest dostarczyć ją do celi 214. Unikaj strażników i nie daj się złapać.', risk: 'ŚREDNIE RYZYKO', riskTone: 'medium', reward: '+180 EXP', duration: '30 minut', chance: 72, icon: Archive, image: cellBackground, status: 'available' },
+  { id: 'favor', title: 'PRZYSŁUGA', summary: 'Porozmawiaj z Rysiem na bloku B. Ma dla ciebie robotę.', detail: 'Ryś ma dla ciebie prostą przysługę. Spotkaj się z nim na bloku B i wysłuchaj, co trzeba załatwić.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+120 EXP', duration: '15 minut', chance: 88, icon: Users, image: cellReference, status: 'available' },
+  { id: 'debt', title: 'DŁUG', summary: 'Odzyskaj dług od wskazanego więźnia.', detail: 'Ktoś zaciągnął dług i liczy, że sprawa sama ucichnie. Odzyskaj należność, zanim stracisz szacunek na całym bloku.', risk: 'WYSOKIE RYZYKO', riskTone: 'high', reward: '+250 EXP', duration: '45 minut', chance: 48, icon: CircleDollarSign, image: registrationEnvironment, status: 'available' },
+  { id: 'wrong-man', title: 'NIE SWÓJ CZŁOWIEK', summary: 'Zajmij się wskazanym więźniem. Nie zadawaj pytań.', detail: 'To zlecenie nie zostawia miejsca na błędy. Zrób swoje i nie pozwól, by ktokolwiek połączył cię ze sprawą.', risk: 'WYSOKIE RYZYKO', riskTone: 'high', reward: '+200 EXP', duration: '40 minut', chance: 41, icon: Crosshair, image: cellReference, status: 'available' },
+  { id: 'observation', title: 'OBSERWACJA', summary: 'Zbierz informacje o ruchach strażników.', detail: 'Obserwuj korytarz, zapamiętaj zmiany i wróć z informacjami, które mogą przydać się całemu blokowi.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+150 EXP', duration: '30 minut', chance: 92, icon: Eye, image: registrationEnvironment, status: 'available' },
+  { id: 'first-steps', title: 'PIERWSZE KROKI', summary: 'Zdobądź 100 $ z pracy lub walk.', detail: 'Zdobądź pieniądze i pokaż, że potrafisz zadbać o siebie za kratami.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+100 EXP', duration: '20 minut', chance: 96, icon: CheckCircle2, image: cellReference, status: 'active' },
+  { id: 'completed-delivery', title: 'DOSTAWA ZAKOŃCZONA', summary: 'Paczka dotarła na właściwe miejsce.', detail: 'Zlecenie zostało wykonane. Blok pamięta, kto potrafi dotrzymać słowa.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+140 EXP', duration: '20 minut', chance: 100, icon: CheckCircle2, image: cellBackground, status: 'completed' },
+];
+
+function MissionsView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [tab, setTab] = useState<MissionTab>('available');
+  const [selectedId, setSelectedId] = useState('smuggling');
+  const [startedMission, setStartedMission] = useState<string | null>(null);
+  const visibleMissions = missions.filter((mission) => mission.status === tab);
+  const selectedMission = visibleMissions.find((mission) => mission.id === selectedId) ?? visibleMissions[0];
+  const tabs: Array<{ id: MissionTab; label: string }> = [
+    { id: 'available', label: 'DOSTĘPNE MISJE' },
+    { id: 'active', label: 'AKTYWNE MISJE' },
+    { id: 'completed', label: 'UKOŃCZONE MISJE' },
+  ];
+
+  const selectTab = (nextTab: MissionTab) => {
+    setTab(nextTab);
+    const firstMission = missions.find((mission) => mission.status === nextTab);
+    if (firstMission) setSelectedId(firstMission.id);
+  };
+
+  return <section className="missions-view" style={{ '--missions-art-url': `url("${prisonArtwork}")` } as CSSProperties} data-testid="missions-view">
+    <header className="missions-heading">
+      <span className="eyebrow">MISJE</span>
+      <h1>SPRAWY, KTÓRE MAJĄ ZNACZENIE</h1>
+      <p>Podejmuj się zadań, zdobywaj doświadczenie i buduj swoją pozycję. Nie każda robota jest legalna, ale każda coś daje.</p>
+    </header>
+    <div className="missions-layout">
+      <section className="missions-list-panel game-panel">
+        <div className="missions-tabs" role="tablist" aria-label="Zakładki misji">
+          {tabs.map((item) => <button key={item.id} className={tab === item.id ? 'active' : ''} onClick={() => selectTab(item.id)} role="tab" aria-selected={tab === item.id}>{item.label}</button>)}
+        </div>
+        <div className="missions-card-list">
+          {visibleMissions.map((mission) => {
+            const Icon = mission.icon;
+            return <button key={mission.id} className={`mission-card ${selectedMission?.id === mission.id ? 'selected' : ''}`} onClick={() => setSelectedId(mission.id)} style={{ '--mission-card-image': `url("${mission.image}")` } as CSSProperties} data-testid={`mission-card-${mission.id}`}>
+              <span className="mission-card-image" />
+              <span className="mission-card-copy">
+                <span className="mission-card-title"><strong>{mission.title}</strong><em className={`mission-risk mission-risk-${mission.riskTone}`}>{mission.risk}</em></span>
+                <small>{mission.summary}</small>
+                <span className="mission-card-meta"><span><Zap size={13} /> {mission.reward}</span><span><Users size={13} /> {mission.riskTone === 'low' ? 'ŁATWA' : mission.riskTone === 'high' ? 'TRUDNA' : 'ŚREDNIA'}</span><span><Timer size={13} /> {mission.duration}</span></span>
+              </span>
+              <Icon className="mission-card-icon" size={18} />
+              <ChevronRight className="mission-card-chevron" size={19} />
+            </button>;
+          })}
+        </div>
+      </section>
+      {selectedMission && <aside className="mission-detail-panel game-panel">
+        <div className="mission-detail-topline"><h2>{selectedMission.title}</h2><em className={`mission-risk mission-risk-${selectedMission.riskTone}`}>{selectedMission.risk}</em></div>
+        <div className="mission-detail-art" style={{ backgroundImage: `url("${selectedMission.image}")` }} role="img" aria-label={`Ilustracja misji ${selectedMission.title.toLowerCase()}`} />
+        <p className="mission-detail-description">{selectedMission.detail}</p>
+        <div className="mission-stats">
+          <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><strong>{selectedMission.chance}%</strong><i><b style={{ width: `${selectedMission.chance}%` }} /></i></div>
+          <div><Timer size={16} /><span>CZAS TRWANIA</span><strong>{selectedMission.duration}</strong></div>
+          <div><Zap size={16} /><span>NAGRODA ZA SUKCES</span><strong>{selectedMission.reward}</strong></div>
+          <div><CircleDollarSign size={16} /><span>MOŻLIWY DODATKOWY ŁUP</span><small>$ &nbsp; PUNKTY &nbsp; PRZEDMIOT</small></div>
+        </div>
+        <div className="mission-consequence"><Flag size={18} /><span><strong>KONSEKWENCJE PORAŻKI</strong>W przypadku niepowodzenia trafisz do izolatki.</span></div>
+        <button className="mission-start-button" onClick={() => { setStartedMission(selectedMission.id); onNotice(`Rozpoczynasz misję: ${selectedMission.title.toLowerCase()}.`); }}><span>{startedMission === selectedMission.id ? 'MISJA W TOKU' : 'ROZPOCZNIJ MISJĘ'}</span><ChevronRight size={20} /></button>
+      </aside>}
+    </div>
+  </section>;
 }
 
 type InventoryFilter = 'ALL' | 'USABLE' | 'WEAPON' | 'OTHER';
