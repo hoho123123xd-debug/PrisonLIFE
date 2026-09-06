@@ -445,7 +445,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -479,7 +479,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : ''}`}>
+       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
@@ -487,7 +487,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -851,6 +851,131 @@ function FightView({ creator, gameData, onNotice, onReturn }: { creator: Creator
       </div>
       <button className="fight-attack" onClick={handleAttack} data-testid="fight-attack-button"><Swords size={19} /><span>ATAKUJ<small>ROZPOCZNIJ POJEDYNEK</small></span></button>
     </footer>
+  </section>;
+}
+
+const workHourlyRate = 20;
+const workMinHours = 1;
+const workMaxHours = 24;
+
+function formatWorkRemaining(ms: number) {
+  const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  return [h, m, s].map((value) => String(value).padStart(2, '0')).join(':');
+}
+
+type WorkStatus = 'idle' | 'in-progress' | 'done';
+
+function WorkView({ creator, onNotice }: { creator: CreatorState; onNotice: (message: string) => void }) {
+  const [hours, setHours] = useState(8);
+  const [status, setStatus] = useState<WorkStatus>('idle');
+  const [totalMs, setTotalMs] = useState(0);
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState(0);
+
+  const reward = hours * workHourlyRate;
+
+  useEffect(() => {
+    if (status !== 'in-progress' || endsAt === null) return;
+    const tick = () => {
+      const remaining = endsAt - Date.now();
+      if (remaining <= 0) {
+        setRemainingMs(0);
+        setStatus('done');
+        onNotice(`Praca zakończona. Otrzymano: ${reward} $.`);
+      } else {
+        setRemainingMs(remaining);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [status, endsAt, reward, onNotice]);
+
+  const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
+  const playerAsset = getPrisonerAsset(type, creator.gender);
+  const fillPct = ((hours - workMinHours) / (workMaxHours - workMinHours)) * 100;
+  const progressPct = totalMs > 0 ? Math.min(100, ((totalMs - remainingMs) / totalMs) * 100) : 0;
+
+  const handleStart = () => {
+    const total = hours * 60 * 60 * 1000;
+    setTotalMs(total);
+    setRemainingMs(total);
+    setEndsAt(Date.now() + total);
+    setStatus('in-progress');
+  };
+  const handleReset = () => {
+    setStatus('idle');
+    setEndsAt(null);
+    setTotalMs(0);
+  };
+
+  return <section className="work-view" data-testid="work-view">
+    <header className="work-header">
+      <div><span className="eyebrow">ZAROBKI</span><h1>PRACA</h1></div>
+      <p>ZARABIAJ PIENIĄDZE, PRACUJĄC NA ODDZIALE.</p>
+    </header>
+
+    <div className="work-scene">
+      <span className="work-scene-light" />
+      <span className="work-scene-player" style={{ backgroundImage: `url("${playerAsset}")` }} />
+      <div className="work-scene-caption"><strong>SPRZĄTANIE ODDZIAŁU</strong><span>Podstawowa praca więźnia</span></div>
+    </div>
+
+    <div className="work-panel">
+      {status === 'idle' && <>
+        <div className="work-panel-top">
+          <div className="work-panel-info">
+            <h2>SPRZĄTANIE ODDZIAŁU</h2>
+            <p>Zwykła praca więźnia. Im dłużej pracujesz, tym większe wynagrodzenie.</p>
+            <div className="work-info-row"><Droplets size={14} /><span>Rodzaj pracy</span><b>Sprzątanie oddziału</b></div>
+            <div className="work-info-row"><CircleDollarSign size={14} /><span>Stawka</span><b>${workHourlyRate} za godzinę</b></div>
+            <div className="work-info-row"><Timer size={14} /><span>Dostępny czas</span><b>od {workMinHours} do {workMaxHours} godzin</b></div>
+          </div>
+          <div className="work-panel-slider">
+            <span className="work-slider-title">WYBIERZ CZAS PRACY</span>
+            <div className="work-slider-row">
+              <b>{workMinHours}h</b>
+              <input type="range" min={workMinHours} max={workMaxHours} step={1} value={hours} onChange={(event) => setHours(Number(event.target.value))} className="work-slider" style={{ background: `linear-gradient(90deg, var(--game-orange) 0%, var(--game-orange) ${fillPct}%, #273432 ${fillPct}%, #273432 100%)` }} aria-label="Wybierz czas pracy w godzinach" data-testid="work-hours-slider" />
+              <b>{workMaxHours}h</b>
+            </div>
+            <span className="work-slider-value">{hours} GODZIN</span>
+          </div>
+          <div className="work-panel-reward">
+            <span>PRZEWIDYWANE WYNAGRODZENIE</span>
+            <strong data-testid="work-reward-preview">${reward}</strong>
+          </div>
+        </div>
+        <div className="work-panel-bottom">
+          <button className="work-start" onClick={handleStart} data-testid="work-start-button"><BriefcaseBusiness size={18} /><span>ROZPOCZNIJ PRACĘ</span></button>
+          <p className="work-hint">Po rozpoczęciu pracy Twoja postać będzie zajęta przez wybrany czas.</p>
+        </div>
+      </>}
+
+      {status === 'in-progress' && <div className="work-progress-view" data-testid="work-in-progress">
+        <div className="work-progress-info">
+          <span className="work-status-tag">PRACA W TOKU</span>
+          <h2>SPRZĄTANIE ODDZIAŁU</h2>
+        </div>
+        <div className="work-timer-block">
+          <strong className="work-timer" data-testid="work-timer">{formatWorkRemaining(remainingMs)}</strong>
+          <span>POZOSTAŁO</span>
+        </div>
+        <div className="work-progress-track"><i style={{ width: `${progressPct}%` }} /></div>
+        <div className="work-panel-reward">
+          <span>PRZEWIDYWANE WYNAGRODZENIE</span>
+          <strong>${reward}</strong>
+        </div>
+      </div>}
+
+      {status === 'done' && <div className="work-done-view" data-testid="work-done">
+        <span className="work-status-tag done">PRACA ZAKOŃCZONA</span>
+        <strong className="work-earned">OTRZYMANO: ${reward}</strong>
+        <button className="work-start" onClick={handleReset} data-testid="work-again-button"><BriefcaseBusiness size={18} /><span>WRÓĆ DO PRACY</span></button>
+      </div>}
+    </div>
   </section>;
 }
 
