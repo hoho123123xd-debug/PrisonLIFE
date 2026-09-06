@@ -30,6 +30,7 @@ import {
   Gamepad2,
   Heart,
   Instagram,
+  Lightbulb,
   KeyRound,
   LockKeyhole,
   LogOut,
@@ -44,6 +45,7 @@ import {
   Settings,
   ShoppingCart,
   Swords,
+  Timer,
   Table,
   Trophy,
   Tv,
@@ -69,6 +71,7 @@ import femaleWolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_54_1788715089
 import cellBackground from './assets/cell/cell-background.webp';
 import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
+import trainingMockup from '@assets/Obraz_Codex_6_wrz_2026,_20_10_24_1788718237783.png';
 
 const queryClient = new QueryClient();
 
@@ -473,7 +476,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : ''}`}>
+       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
@@ -481,7 +484,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -553,6 +556,86 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+type TrainingExercise = {
+  id: string;
+  label: string;
+  description: string;
+  energy: number;
+  duration: number;
+  reward: string;
+  icon: typeof Dumbbell;
+};
+
+const trainingExercises: TrainingExercise[] = [
+  { id: 'pushups', label: 'POMPKI', description: 'Rozwijaj siłę. Proste, ale skuteczne.', energy: 10, duration: 15, reward: 'Siła (XP)', icon: Dumbbell },
+  { id: 'squats', label: 'PRZYSIADY', description: 'Lepsza kondycja to większa wytrzymałość.', energy: 10, duration: 15, reward: 'Kondycja (XP)', icon: Heart },
+  { id: 'weights', label: 'CIĘŻARY', description: 'Prawdziwa siła rodzi się z wysiłku.', energy: 20, duration: 30, reward: 'Siła (więcej XP)', icon: Dumbbell },
+  { id: 'combat', label: 'TRENING WALKI', description: 'Technika, refleks, kontrola.', energy: 25, duration: 30, reward: 'Siła (max XP)', icon: Crosshair },
+];
+
+const trainingStats = [
+  { label: 'SIŁA', level: 'POZIOM 5', value: '320 / 500', progress: '64%', icon: Dumbbell },
+  { label: 'KONDYCJA', level: 'POZIOM 4', value: '180 / 400', progress: '45%', icon: Heart },
+  { label: 'ZRĘCZNOŚĆ', level: 'POZIOM 3', value: '120 / 300', progress: '40%', icon: Crosshair },
+];
+
+function TrainingView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [startedExercise, setStartedExercise] = useState<string | null>(null);
+
+  return <section className="training-view" data-testid="training-view">
+    <header className="training-page-header">
+      <div className="training-page-title">
+        <span className="eyebrow">DZIEŃ 12 / BLOK A</span>
+        <h1>TRENING</h1>
+        <p>SILNIEJSZY DZIŚ. BLIŻEJ WOLNOŚCI JUTRO.</p>
+      </div>
+      <blockquote>„CIAŁO MOŻNA ZAMKNĄĆ,<br />ALE CHARAKTER TAK ŁATWO NIE ZNIKA.”</blockquote>
+    </header>
+
+    <div className="training-layout">
+      <div className="training-main-column">
+        <div className="training-hero" style={{ backgroundImage: `url("${trainingMockup}")` }} role="img" aria-label="Siłownia w bloku więziennym">
+          <div className="training-hero-caption"><strong>TRENING</strong><span>TO WIĘCEJ NIŻ SIŁA.<br />TO KONTROLA.</span></div>
+        </div>
+
+        <section className="training-available">
+          <div className="training-section-heading"><div><h2>DOSTĘPNE TRENINGI</h2><span>WYBIERZ ĆWICZENIE I ROZWIJAJ SWOJE UMIEJĘTNOŚCI.</span></div></div>
+          <div className="training-exercise-grid">{trainingExercises.map((exercise) => {
+            const Icon = exercise.icon;
+            const started = startedExercise === exercise.id;
+            return <article className={`training-exercise-card ${started ? 'started' : ''}`} key={exercise.id}>
+              <div className={`training-exercise-art training-art-${exercise.id}`} style={{ backgroundImage: `url("${trainingMockup}")` }} />
+              <div className="training-exercise-copy"><h3>{exercise.label}</h3><p>{exercise.description}</p><div className="training-exercise-meta"><span><Zap size={13} /> {exercise.energy} energii</span><span><Timer size={13} /> {exercise.duration} minut</span><span><Icon size={13} /> {exercise.reward}</span></div><button onClick={() => { setStartedExercise(exercise.id); onNotice(`Rozpoczynasz trening: ${exercise.label.toLowerCase()}.`); }}>{started ? 'W TRAKCIE' : 'ROZPOCZNIJ'}</button></div>
+            </article>;
+          })}</div>
+        </section>
+
+        <div className="training-bottom-grid">
+          <section className="training-progress-panel">
+            <div className="training-section-heading"><div><h2>POSTĘP DZIŚ</h2><span>WYKONAJ WSZYSTKIE DZIŚ TRENINGI, ABY OTRZYMAĆ BONUS.</span></div></div>
+            <div className="training-progress-track"><div className="training-progress-line" /><i className="complete"><CheckCircle2 size={13} /></i><i className="complete"><CheckCircle2 size={13} /></i><i><span>3</span></i><i><span>4</span></i><div className="training-reward"><Trophy size={18} /><span><strong>NAGRODA</strong><small>+10% wszystkich treningów<br />(przez 24h)</small></span></div></div>
+          </section>
+          <section className="training-history-panel">
+            <div className="training-section-heading"><div><h2>HISTORIA TRENINGÓW</h2><span>OSTATNIE AKTYWNOŚCI</span></div><button onClick={() => onNotice('Wyświetlasz pełną historię treningów.')}>ZOBACZ WIĘCEJ <ChevronRight size={12} /></button></div>
+            <div className="training-history-list"><div><CheckCircle2 size={15} /><strong>Pompki</strong><small>Dziś, 06:30</small><b>+12 XP (Siła)</b></div><div><CheckCircle2 size={15} /><strong>Przysiady</strong><small>Wczoraj, 18:45</small><b>+10 XP (Kondycja)</b></div></div>
+          </section>
+        </div>
+      </div>
+
+      <aside className="training-side-column">
+        <section className="training-side-panel training-stat-panel">
+          <div className="training-side-heading"><h2>TWOJE STATYSTYKI</h2><button onClick={() => onNotice('Pełne statystyki postaci będą dostępne w zakładce STATYSTYKI.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div>
+          {trainingStats.map(({ label, level, value, progress, icon: Icon }) => <div className="training-stat-row" key={label}><Icon size={18} /><div><strong>{label}</strong><small>{level}</small><div className="training-stat-bar"><i style={{ width: progress }} /></div></div><span>{value}</span></div>)}
+          <div className="training-energy-row"><Zap size={23} /><div><strong>ENERGIA</strong><div className="training-stat-bar"><i style={{ width: '75%' }} /></div></div><span>75 / 100<small>+1 za 24 min</small></span></div>
+        </section>
+        <section className="training-side-panel training-efficiency-panel"><div className="training-side-heading"><h2>EFEKTYWNOŚĆ TRENINGU</h2></div><div><span>Podstawowa efektywność</span><b>100%</b></div><div><span>Bonus z celi (Kącik treningowy)</span><b>+15%</b></div><div><span>Bonus gangu (BRak)</span><b>0%</b></div><div className="training-efficiency-total"><span>Suma efektywności</span><b>115%</b></div></section>
+        <section className="training-side-panel training-tip-panel"><Lightbulb size={25} /><div><h2>WSKAZÓWKA</h2><p>Regularny trening nie tylko zwiększa statystyki, ale też poprawia Twoje samopoczucie i morale.</p></div></section>
+        <div className="training-side-art" style={{ backgroundImage: `url("${trainingMockup}")` }}><span>LEPSZY<br /><strong>NIŻ WCZORAJ.</strong></span></div>
+      </aside>
+    </div>
+  </section>;
 }
 
 type CellUpgradeId = 'bed' | 'locker' | 'table' | 'shelf' | 'tv' | 'sink' | 'training' | 'extras';
