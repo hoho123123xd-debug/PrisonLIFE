@@ -331,14 +331,6 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
   );
 }
 
-function TypeCard({ type, selected, onSelect, compact = false, displayName = type.name }: { type: typeof prisonerTypes[number]; selected: boolean; onSelect: () => void; compact?: boolean; displayName?: string }) {
-  return <button type="button" className={`type-card ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={onSelect} aria-pressed={selected} data-testid={`button-prisoner-type-${type.id}`}><span className={`type-avatar type-${type.id}`}><span>{displayName.slice(0, 1)}</span></span><span className="type-card-content"><strong>{displayName}</strong><em>{type.specialty}</em>{!compact && <><small>{type.description}</small><i>{type.abilityIcon} {type.abilityTitle}</i></>}</span>{selected && <Check className="type-check" size={17} />}</button>;
-}
-
-function TypeRail({ selectedType, onSelect, heading = 'WYBIERZ TYP WIĘŹNIA', compact = false }: { selectedType: PrisonerType; onSelect: (type: PrisonerType) => void; heading?: string; compact?: boolean }) {
-  return <aside className={`type-rail ${compact ? 'type-rail-compact' : ''}`}><div className="section-kicker">{heading}</div><p className="rail-hint">KAŻDY TYP TO INNA DROGA. WYBIERZ MĄDRZE.</p><div className="type-cards">{prisonerTypes.map((type) => <TypeCard key={type.id} type={type} selected={selectedType === type.id} onSelect={() => onSelect(type.id)} compact={compact} />)}</div></aside>;
-}
-
 function RegistrationShell({ step, children, onNavigate, onStepChange, onNext, onCreate }: {
   step: number; children: ReactNode; onNavigate: (screen: Screen) => void; onStepChange: (step: number) => void; onNext: () => void; onCreate: () => void;
 }) {
