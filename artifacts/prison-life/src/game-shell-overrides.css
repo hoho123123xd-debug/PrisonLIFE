@@ -1524,6 +1524,607 @@
   }
 }
 
+/* Gang dashboard reference screen. */
+.game-shell-page .game-content-gang {
+  display: block;
+  overflow: hidden;
+  padding: var(--game-space);
+}
+.gang-view {
+  --gang-line: rgba(167, 184, 174, .2);
+  --gang-muted: #8d9890;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 111px 99px 38px minmax(0, 1fr);
+  gap: 7px;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.gang-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(90deg, rgba(5, 10, 12, .96), rgba(5, 10, 12, .78) 45%, rgba(5, 10, 12, .91)),
+    repeating-linear-gradient(90deg, rgba(172, 179, 157, .045) 0 1px, transparent 1px 38px),
+    radial-gradient(ellipse at 68% 25%, rgba(115, 130, 115, .18), transparent 37%),
+    linear-gradient(140deg, #1a2424, #080f12 70%);
+}
+.gang-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 4px);
+}
+.gang-heading {
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gang-line);
+  background: linear-gradient(90deg, rgba(7, 13, 15, .92), rgba(7, 13, 15, .5));
+}
+.gang-heading h1 {
+  margin: 0 0 3px;
+  color: #f1eee5;
+  font: 700 48px/.85 'Oswald';
+}
+.gang-heading .eyebrow {
+  color: var(--game-orange-soft);
+  font-size: 10px;
+}
+.gang-heading p {
+  margin: 0;
+  color: #bdc4ba;
+  font: 12px 'Barlow Condensed';
+}
+.gang-founder {
+  position: absolute;
+  top: 5px;
+  right: 0;
+  width: 164px;
+  height: 93px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 5px;
+  padding: 9px;
+  border: 1px solid var(--gang-line);
+  background: rgba(8, 15, 17, .88);
+}
+.gang-founder > svg {
+  color: #eba53f;
+}
+.gang-founder > div {
+  display: flex;
+  flex-direction: column;
+}
+.gang-founder b,
+.gang-founder small {
+  color: #8f9a91;
+  font: 8px 'Barlow Condensed';
+}
+.gang-founder strong {
+  color: #e3a044;
+  font: 12px 'Oswald';
+}
+.gang-founder button {
+  grid-column: 1 / -1;
+  height: 25px;
+  border: 1px solid #3c4a45;
+  color: #c0c6bd;
+  background: #131e20;
+  cursor: pointer;
+  font: 9px 'Barlow Condensed';
+}
+.gang-quote {
+  position: absolute;
+  right: 186px;
+  top: 14px;
+  color: rgba(192, 198, 183, .21);
+  font: italic 700 15px/1.1 'Oswald';
+  transform: rotate(-9deg);
+}
+.gang-quote em {
+  color: rgba(205, 152, 76, .38);
+  font-style: normal;
+}
+.gang-identity {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 122px minmax(0, 1fr) 130px;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 11px;
+  border: 1px solid #34433e;
+  background: rgba(8, 15, 17, .86);
+}
+.gang-emblem {
+  height: 86px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  color: #d5d9d0;
+  border-right: 1px solid var(--gang-line);
+}
+.gang-emblem svg:last-child {
+  position: absolute;
+  color: #aeb7af;
+  transform: rotate(-45deg) translate(2px, 5px);
+}
+.gang-identity-copy {
+  min-width: 0;
+}
+.gang-identity-copy h2 {
+  margin: 0 0 1px;
+  color: #e9e6dc;
+  font: 700 25px 'Oswald';
+}
+.gang-identity-copy h2 button {
+  padding: 2px;
+  border: 0;
+  color: #c4cbc1;
+  background: transparent;
+  cursor: pointer;
+}
+.gang-identity-copy p {
+  margin: 0 0 8px;
+  color: #8e9991;
+  font: 11px 'Barlow Condensed';
+}
+.gang-badges {
+  display: flex;
+  gap: 14px;
+  color: #aeb8af;
+  font: 9px 'Barlow Condensed';
+}
+.gang-badges b {
+  color: #55c587;
+}
+.gang-xp {
+  max-width: 380px;
+  height: 10px;
+  position: relative;
+  margin-top: 7px;
+  border: 1px solid #394741;
+  background: #121e1e;
+}
+.gang-xp i {
+  height: 100%;
+  display: block;
+  background: linear-gradient(90deg, #d77729, #efad47);
+}
+.gang-xp small {
+  position: absolute;
+  left: calc(100% + 7px);
+  top: -3px;
+  width: 90px;
+  color: #9ba69d;
+  font: 9px 'Barlow Condensed';
+}
+.gang-develop-button {
+  min-height: 29px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #65736a;
+  color: #cad0c6;
+  background: rgba(18, 29, 29, .8);
+  cursor: pointer;
+  font: 10px 'Barlow Condensed';
+}
+.gang-develop-button:hover {
+  border-color: var(--game-orange);
+  color: #e7aa62;
+}
+.gang-tabs {
+  min-width: 0;
+  display: flex;
+  gap: 5px;
+}
+.gang-tabs button {
+  min-width: 92px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid #34433e;
+  color: #9ba69d;
+  background: rgba(8, 16, 18, .92);
+  cursor: pointer;
+  font: 10px 'Barlow Condensed';
+}
+.gang-tabs button:hover,
+.gang-tabs button.active {
+  border-color: var(--game-orange);
+  color: #f0ab5b;
+  background: rgba(105, 54, 27, .55);
+}
+.gang-dashboard {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.38fr) minmax(250px, .85fr) minmax(240px, .85fr);
+  gap: 7px;
+}
+.gang-main-column,
+.gang-middle-column,
+.gang-side-column {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  gap: 7px;
+}
+.gang-main-column { grid-template-rows: 88px minmax(0, 1fr); }
+.gang-middle-column { grid-template-rows: 88px minmax(0, 1fr); }
+.gang-side-column { grid-template-rows: minmax(0, 1fr) 139px 86px; }
+.gang-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid #32413d;
+  background: rgba(7, 15, 17, .92);
+}
+.gang-panel h3 {
+  margin: 0;
+  color: #e2e2d9;
+  font: 13px 'Oswald';
+}
+.gang-stats {
+  padding: 8px;
+}
+.gang-stat-grid {
+  height: calc(100% - 18px);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-top: 5px;
+}
+.gang-stat-grid div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 1px solid rgba(97, 113, 103, .23);
+  color: #b3bcb3;
+}
+.gang-stat-grid svg {
+  color: #d89035;
+}
+.gang-stat-grid b {
+  color: #e4e5dc;
+  font: 18px 'Oswald';
+}
+.gang-stat-grid span {
+  color: #8f9b92;
+  font: 8px 'Barlow Condensed';
+  text-align: center;
+}
+.gang-panel-title {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding: 0 9px;
+  border-bottom: 1px solid rgba(166, 183, 172, .16);
+}
+.gang-panel-title button,
+.gang-member-count button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 0;
+  color: #d28a39;
+  background: transparent;
+  cursor: pointer;
+  font: 8px 'Barlow Condensed';
+}
+.gang-member-head,
+.gang-member-row {
+  display: grid;
+  grid-template-columns: 25px minmax(60px, 1fr) 82px 45px 92px 28px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+}
+.gang-member-head {
+  min-height: 24px;
+  color: #7f8c83;
+  font: 8px 'Barlow Condensed';
+}
+.gang-member-row {
+  min-height: 24px;
+  border-top: 1px solid rgba(155, 172, 160, .1);
+  color: #aeb8af;
+  font: 10px 'Barlow Condensed';
+}
+.gang-member-row b {
+  color: #e0e1d7;
+  font-weight: 500;
+}
+.founder-text {
+  color: #e7a144 !important;
+}
+.gang-member-row .online,
+.gang-member-row .away {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gang-member-row i {
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+  border-radius: 50%;
+  background: #4dc77d;
+}
+.gang-member-row .away i {
+  background: #78817a;
+}
+.gang-member-count {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 9px;
+  color: #849087;
+  font: 9px 'Barlow Condensed';
+}
+.gang-benefits {
+  padding-bottom: 5px;
+}
+.gang-benefits h3 {
+  padding: 8px 9px 4px;
+}
+.gang-benefits > div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 18px;
+  padding: 0 9px;
+  color: #aab4aa;
+  font: 9px 'Barlow Condensed';
+}
+.gang-benefits svg {
+  color: #bdc6bc;
+}
+.gang-treasury {
+  padding-bottom: 8px;
+}
+.gang-treasury-balance {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 9px;
+}
+.gang-treasury-balance > svg {
+  color: #afb9ad;
+}
+.gang-treasury-balance span {
+  display: flex;
+  flex-direction: column;
+  margin-right: auto;
+}
+.gang-treasury-balance small,
+.gang-treasury h4 {
+  color: #88958c;
+  font: 8px 'Barlow Condensed';
+}
+.gang-treasury-balance strong {
+  color: #e2a448;
+  font: 20px 'Oswald';
+}
+.gang-treasury-balance button {
+  min-height: 25px;
+  padding: 0 7px;
+  border: 1px solid #46534b;
+  color: #b3beb3;
+  background: #172323;
+  cursor: pointer;
+  font: 9px 'Barlow Condensed';
+}
+.gang-treasury h4 {
+  margin: 4px 9px 3px;
+}
+.gang-transactions {
+  display: grid;
+  gap: 2px;
+  padding: 0 9px;
+  color: #7f8d84;
+  font: 9px 'Barlow Condensed';
+}
+.gang-transactions span {
+  display: flex;
+  gap: 9px;
+}
+.gang-transactions b {
+  color: #aeb8ad;
+  font-weight: 400;
+}
+.gang-events {
+  padding-bottom: 4px;
+}
+.gang-events > div:not(.gang-panel-title) {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 5px;
+  padding: 5px 8px 0;
+  color: #acb5ac;
+  font: 9px/1.15 'Barlow Condensed';
+}
+.gang-events time {
+  color: #87928a;
+}
+.gang-mission {
+  padding-bottom: 7px;
+  box-shadow: inset 0 0 18px rgba(231, 113, 34, .08);
+}
+.gang-mission h4 {
+  margin: 8px 9px 2px;
+  color: #dddcd1;
+  font: 11px 'Oswald';
+}
+.gang-mission h4 em {
+  float: right;
+  padding: 2px 4px;
+  color: #55c683;
+  border: 1px solid #3f9666;
+  font: 8px 'Barlow Condensed';
+  font-style: normal;
+}
+.gang-mission p {
+  margin: 0 9px 7px;
+  color: #8f9991;
+  font: 9px/1.2 'Barlow Condensed';
+}
+.gang-mission > div:not(.gang-panel-title) {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  color: #c4cbc2;
+  font: 10px 'Barlow Condensed';
+}
+.gang-mission > div button {
+  margin-left: auto;
+  min-height: 25px;
+  padding: 0 7px;
+  border: 1px solid #f0832e;
+  color: #24150d;
+  background: linear-gradient(90deg, #ec7628, #ee963a);
+  cursor: pointer;
+  font: 700 9px 'Barlow Condensed';
+}
+.gang-mission > small {
+  display: block;
+  margin: 7px 9px 0;
+  color: #969f96;
+  font: 8px 'Barlow Condensed';
+}
+.gang-mission > small b {
+  color: #eab04e;
+}
+.gang-promo {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px;
+  color: #a9b3aa;
+}
+.gang-promo > svg {
+  color: #b6c0b6;
+}
+.gang-promo h4 {
+  margin: 0 0 4px;
+  color: #d7d8ce;
+  font: 10px 'Oswald';
+}
+.gang-promo p {
+  margin: 0 0 4px;
+  color: #87938a;
+  font: 8px/1.2 'Barlow Condensed';
+}
+.gang-promo button {
+  padding: 2px 0;
+  border: 0;
+  color: #cf8a3b;
+  background: transparent;
+  cursor: pointer;
+  font: 8px 'Barlow Condensed';
+}
+
+@media (max-width: 760px) {
+  .game-shell-page .game-content-gang {
+    overflow: auto;
+  }
+  .gang-view {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    grid-template-rows: 100px auto auto auto;
+  }
+  .gang-heading {
+    min-height: 100px;
+  }
+  .gang-heading h1 {
+    font-size: 38px;
+  }
+  .gang-heading p {
+    max-width: 230px;
+    font-size: 10px;
+  }
+  .gang-founder,
+  .gang-quote {
+    display: none;
+  }
+  .gang-identity {
+    grid-template-columns: 75px minmax(0, 1fr);
+  }
+  .gang-emblem {
+    height: 80px;
+  }
+  .gang-emblem svg:first-child {
+    width: 51px;
+  }
+  .gang-emblem svg:last-child {
+    width: 35px;
+  }
+  .gang-identity-copy h2 {
+    font-size: 20px;
+  }
+  .gang-badges {
+    flex-wrap: wrap;
+    gap: 5px 9px;
+  }
+  .gang-develop-button {
+    display: none;
+  }
+  .gang-tabs {
+    overflow-x: auto;
+  }
+  .gang-tabs button {
+    min-width: 91px;
+    flex: 0 0 auto;
+    font-size: 9px;
+  }
+  .gang-dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+  .gang-main-column,
+  .gang-middle-column,
+  .gang-side-column {
+    grid-template-rows: auto;
+  }
+  .gang-members {
+    min-height: 260px;
+  }
+  .gang-benefits {
+    min-height: 145px;
+  }
+  .gang-treasury {
+    min-height: 190px;
+  }
+  .gang-events {
+    min-height: 170px;
+  }
+  .gang-mission {
+    min-height: 150px;
+  }
+  .gang-promo {
+    min-height: 90px;
+  }
+}
+
 /* Training screen */
 .game-shell-page .game-content-training {
   display: block;

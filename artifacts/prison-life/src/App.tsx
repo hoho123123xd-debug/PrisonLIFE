@@ -454,7 +454,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'market' && section !== 'equipment' && section !== 'quests') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'market' && section !== 'equipment' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -488,7 +488,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : ''}`}>
+        <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
@@ -496,7 +496,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE MISJE</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -568,6 +568,65 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+function GangView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [tab, setTab] = useState('PRZEGLĄD');
+  const [treasury, setTreasury] = useState(12450);
+  const tabs = [
+    { label: 'PRZEGLĄD', icon: Shield },
+    { label: 'CZŁONKOWIE', icon: Users },
+    { label: 'ROZWÓJ', icon: BarChart3 },
+    { label: 'WOJNY', icon: Swords },
+    { label: 'SKARBIEC', icon: Archive },
+    { label: 'MISJE GANGU', icon: Trophy },
+    { label: 'USTAWIENIA', icon: Settings },
+  ];
+  const members = [
+    ['F1QU', 'Założyciel', '8', 'Online', '—'],
+    ['Kamil', 'Oficer', '12', 'Online', '•••'],
+    ['StaryDozor', 'Oficer', '10', 'Online', '•••'],
+    ['Beton', 'Członek', '9', '2h temu', '•••'],
+    ['Malina', 'Członek', '7', '5h temu', '•••'],
+    ['Cichy', 'Rekrut', '5', '1 dzień temu', '•••'],
+    ['Rzeźnik', 'Rekrut', '4', '3 dni temu', '•••'],
+  ];
+  const events = [
+    ['12.05', 'F1QU awansował gracza Kamil do rangi Oficer.'],
+    ['11.05', 'Gang wygrał wojnę z Czerwone Węże.'],
+    ['10.05', 'Nowy członek: StaryDozor.'],
+    ['08.05', 'Ukończono misję gangową: Przemyt.'],
+    ['07.05', 'Wpłacono 5 000 $ do skarbca.'],
+  ];
+  const notify = (message: string) => onNotice(message);
+  return <section className="gang-view" data-testid="gang-view">
+    <header className="gang-heading">
+      <div><span className="eyebrow">GANG</span><h1>GANG</h1><p>TWÓJ GANG. TWOJE ZASADY. RAZEM TWORZYMY SIŁĘ.</p></div>
+      <aside className="gang-founder"><Crown size={18} /><div><b>ZAŁOŻYCIEL</b><strong>F1QU</strong><small>OD 12.04.2025</small></div><button onClick={() => notify('Edycja emblematu będzie dostępna wkrótce.')}>EDYTUJ EMBLEMAT</button></aside>
+      <div className="gang-quote">LOJALNOŚĆ<br />SIŁA<br />SZACUNEK<br />WOLNOŚĆ<br /><em>NAWET TUTAJ</em></div>
+    </header>
+    <section className="gang-identity">
+      <div className="gang-emblem"><Crown size={75} /><Swords size={50} /></div>
+      <div className="gang-identity-copy"><h2>WILCZA PACZKA <button onClick={() => notify('Nazwa gangu będzie można zmienić później.')}><UserRoundPen size={14} /></button></h2><p>„Zawsze razem. Zawsze do końca.”</p><div className="gang-badges"><span>★ POZIOM 3</span><span><Users size={13} /> 12 CZŁONKÓW</span><span>♟ REPUTACJA: <b>POZYTYWNA</b></span></div><div className="gang-xp"><i style={{ width: '45%' }} /><small>450 / 1 000 XP</small></div></div>
+      <button className="gang-develop-button" onClick={() => setTab('ROZWÓJ')}>ROZWÓJ GANGU <ChevronRight size={13} /></button>
+    </section>
+    <nav className="gang-tabs" role="tablist">{tabs.map(({ label, icon: TabIcon }) => <button key={label} className={tab === label ? 'active' : ''} onClick={() => { setTab(label); notify(`${label}: panel zostanie otwarty wkrótce.`); }} role="tab" aria-selected={tab === label}><TabIcon size={14} />{label}</button>)}</nav>
+    <div className="gang-dashboard">
+      <div className="gang-main-column">
+        <section className="gang-panel gang-stats"><h3>STATYSTYKI GANGU</h3><div className="gang-stat-grid"><div><Users size={19} /><b>12</b><span>CZŁONKÓW</span></div><div><Award size={19} /><b>3</b><span>POZIOM</span></div><div><Trophy size={19} /><b>145</b><span>PUNKTY PRESTIŻU</span></div><div><Swords size={19} /><b>8</b><span>WYGRANE WOJNY</span></div></div></section>
+        <section className="gang-panel gang-members"><div className="gang-panel-title"><h3>CZŁONKOWIE GANGU</h3><button onClick={() => notify('Zarządzanie członkami będzie dostępne wkrótce.')}>ZARZĄDZAJ CZŁONKAMI <ChevronRight size={12} /></button></div><div className="gang-member-head"><span>#</span><span>NICK</span><span>RANGA</span><span>POZIOM</span><span>AKTYWNOŚĆ</span><span> </span></div>{members.map(([nick, rank, level, status, more], index) => <div className="gang-member-row" key={nick}><span>{index + 1}</span><b>{nick}</b><span className={rank === 'Założyciel' ? 'founder-text' : ''}>{rank}</span><span>{level}</span><span className={status === 'Online' ? 'online' : 'away'}><i />{status}</span><span>{more}</span></div>)}<small className="gang-member-count">Pokazano 7 z 12 członków <button onClick={() => notify('Wyświetlasz wszystkich członków gangu.')}>ZOBACZ WSZYSTKICH <ChevronRight size={11} /></button></small></section>
+      </div>
+      <div className="gang-middle-column">
+        <section className="gang-panel gang-benefits"><h3>KORZYŚCI GANGU</h3>{[['+3% do zarobków za pracę', BriefcaseBusiness], ['+5% do skuteczności w walkach', Swords], ['Dostęp do specjalnych misji gangowych', Crown], ['Niższe ceny na czarnym rynku', Coins], ['Wspólny skarbiec', Archive]].map(([text, Icon]) => <div key={String(text)}><Icon size={15} /><span>{String(text)}</span></div>)}</section>
+        <section className="gang-panel gang-treasury"><div className="gang-panel-title"><h3>SKARBIEC GANGU</h3><button onClick={() => notify('Historia skarbca będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="gang-treasury-balance"><Coins size={26} /><span><small>SALDO</small><strong>{treasury.toLocaleString('pl-PL')} $</strong></span><button onClick={() => { setTreasury((value) => value + 500); notify('Wpłacono 500 $ do skarbca.'); }}>WPŁAĆ</button><button onClick={() => notify('Wypłata wymaga rangi oficera.')}>WYPŁAĆ</button></div><h4>OSTATNIE TRANSAKCJE</h4><div className="gang-transactions"><span>12.05 <b>F1QU wpłacił 5 000 $</b></span><span>10.05 <b>Kamil wypłacił 2 500 $</b></span><span>08.05 <b>Wpłata na wojnę: -1 000 $</b></span><span>06.05 <b>Malina wpłaciła 3 000 $</b></span></div></section>
+      </div>
+      <div className="gang-side-column">
+        <section className="gang-panel gang-events"><div className="gang-panel-title"><h3>AKTUALNE WYDARZENIA</h3><button onClick={() => notify('Wyświetlasz wszystkie wydarzenia.')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div>{events.map(([date, text]) => <div key={date + text}><time>{date}</time><span>{text}</span></div>)}</section>
+        <section className="gang-panel gang-mission"><div className="gang-panel-title"><h3>MISJA GANGOWA</h3><button onClick={() => notify('Wyświetlasz wszystkie misje gangowe.')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><h4>KONTROLA KORYTARZA <em>AKTYWNA</em></h4><p>Przejmijcie kontrolę nad sektorem C. Wymaga minimum 3 członków.</p><div><Timer size={14} /> 05:12:37 <button onClick={() => notify('Drużyna została zebrana.')}>ZBIERZ DRUŻYNĘ</button></div><small>NAGRODA: <b>★ +500 EXP</b> &nbsp; + wpływy na dzielnicę</small></section>
+        <section className="gang-panel gang-promo"><BarChart3 size={23} /><div><h4>ROZBUDUJ SWÓJ GANG</h4><p>Zwiększ poziom gangu, aby odblokować nowe możliwości, wyższy limit członków i lepsze bonusy.</p><button onClick={() => setTab('ROZWÓJ')}>ZOBACZ ROZWÓJ <ChevronRight size={11} /></button></div></section>
+      </div>
+    </div>
+  </section>;
 }
 
 type MarketCategory = 'ALL' | 'USABLE' | 'GEAR' | 'OTHER';
