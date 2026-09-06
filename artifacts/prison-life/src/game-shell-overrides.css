@@ -1,0 +1,82 @@
+/* The supplied game mockup is the source of truth for the cell artwork.
+   Keep the HTML interaction layer above the image instead of rebuilding the
+   room with CSS primitives. */
+.game-header-avatar {
+  width: 43px;
+  height: 48px;
+  flex: 0 0 43px;
+  object-fit: cover;
+  object-position: center top;
+  border: 1px solid #4a5954;
+  background: #182225;
+  filter: saturate(.82) contrast(1.08);
+}
+.game-shell-page .cell-scene {
+  min-height: clamp(530px, calc(100dvh - 235px), 670px);
+  background: #0b1113;
+}
+.game-shell-page .cell-scene::before { display: none; }
+.game-shell-page .cell-scene::after {
+  z-index: 4;
+  background:
+    linear-gradient(90deg, rgba(3, 7, 8, .16), transparent 28%, transparent 76%, rgba(2, 5, 6, .24)),
+    linear-gradient(0deg, rgba(3, 6, 7, .18), transparent 28%);
+}
+.scene-artwork {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image: var(--game-scene-artwork);
+  background-repeat: no-repeat;
+  background-position: 50% 38%;
+  background-size: 178% auto;
+  filter: saturate(.94) contrast(1.04);
+}
+.game-shell-page .cell-hotspot {
+  z-index: 12;
+  min-width: 128px;
+  min-height: 50px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  background: transparent;
+  box-shadow: none;
+}
+.game-shell-page .cell-hotspot > * {
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+.game-shell-page .cell-hotspot:hover,
+.game-shell-page .cell-hotspot:focus-visible,
+.game-shell-page .cell-hotspot.visited {
+  padding: 7px 9px;
+  border-color: rgba(229, 130, 58, .9);
+  border-left-color: var(--game-orange);
+  background: rgba(12, 18, 19, .88);
+  box-shadow: 0 0 17px rgba(225, 115, 40, .22);
+}
+.game-shell-page .cell-hotspot:hover > *,
+.game-shell-page .cell-hotspot:focus-visible > *,
+.game-shell-page .cell-hotspot.visited > * { opacity: 1; }
+.game-shell-page .hotspot-bed { left: 12%; top: 48%; bottom: auto; }
+.game-shell-page .hotspot-locker { right: 4%; top: 39%; }
+.game-shell-page .hotspot-table { left: 47%; right: auto; top: 46%; bottom: auto; }
+.game-shell-page .hotspot-training { left: 12%; top: 72%; bottom: auto; }
+.game-shell-page .hotspot-tv { right: 27%; top: 17%; }
+.game-shell-page .hotspot-stash { right: 14%; top: 72%; }
+
+@media (max-width: 900px) {
+  .game-shell-page .cell-scene { min-height: 560px; }
+  .scene-artwork { background-size: 185% auto; background-position: 50% 38%; }
+}
+@media (max-width: 640px) {
+  .game-shell-page .cell-scene { min-height: 510px; }
+  .scene-artwork { background-size: 245% auto; background-position: 50% 47%; }
+  .game-shell-page .cell-hotspot { min-width: 96px; min-height: 42px; }
+  .game-shell-page .hotspot-bed { left: 3%; top: 50%; }
+  .game-shell-page .hotspot-locker { right: 2%; top: 38%; }
+  .game-shell-page .hotspot-table { left: 42%; top: 47%; }
+  .game-shell-page .hotspot-training { left: 3%; top: 74%; }
+  .game-shell-page .hotspot-tv { right: 20%; top: 16%; }
+  .game-shell-page .hotspot-stash { right: 4%; top: 73%; }
+}
