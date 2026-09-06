@@ -11,6 +11,13 @@
   background: #182225;
   filter: saturate(.82) contrast(1.08);
 }
+/* Keep the desktop game board at a controlled interface width.
+   The extra viewport space stays empty instead of stretching the cell scene. */
+.game-shell-page .game-content {
+  width: min(calc(100% - 160px), 1260px);
+  max-width: 1260px;
+  margin-right: auto;
+}
 .game-shell-page .cell-scene {
   width: 100%;
   min-height: 0;
@@ -61,3 +68,10 @@
 .game-shell-page .cell-hotspot:hover > *,
 .game-shell-page .cell-hotspot:focus-visible > *,
 .game-shell-page .cell-hotspot.visited > * { opacity: 1; }
+
+@media (max-width: 900px) {
+  .game-shell-page .game-content {
+    width: 100%;
+    max-width: none;
+  }
+}

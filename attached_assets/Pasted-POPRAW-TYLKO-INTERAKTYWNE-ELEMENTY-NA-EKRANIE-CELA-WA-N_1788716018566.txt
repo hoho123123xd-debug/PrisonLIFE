@@ -1,0 +1,91 @@
+POPRAW TYLKO INTERAKTYWNE ELEMENTY NA EKRANIE „CELA”.
+
+WAŻNE:
+Obecna wielkość głównej sceny CELI jest już dobra. NIE ZMIENIAJ jej rozmiaru, proporcji ani położenia.
+
+Problem dotyczy WYŁĄCZNIE hotspotów / interaktywnych elementów.
+
+W tej chwili „ŁÓŻKO” i „PÓŁKA” są zdecydowanie za duże i wyglądają jak duże karty UI naklejone na obraz.
+
+CHCĘ, ŻEBY INTERAKCJE WYGLĄDAŁY JAK MAŁE, DYSKRETNE ELEMENTY GRY PRZYPISANE DO KONKRETNEGO OBIEKTU.
+
+ZASADA:
+Hotspot nie jest kartą zajmującą dużą część sceny.
+
+Każdy hotspot powinien:
+- być mały,
+- znajdować się bezpośrednio przy obiekcie, którego dotyczy,
+- mieć cienką pomarańczową ramkę,
+- mieć ciemne, lekko przezroczyste tło,
+- zawierać małą ikonę,
+- nazwę obiektu,
+- bardzo krótki opis,
+- opcjonalnie małą strzałkę po prawej.
+
+PRZYKŁAD:
+
+ŁÓŻKO
+[mały hotspot]
+
+Hotspot ma mieć mniej więcej szerokość 150–190 px na desktopie, a nie 300+ px.
+
+PÓŁKA:
+mały hotspot umieszczony przy półce / w jej bezpośrednim sąsiedztwie.
+
+Nie zakrywaj dużej części łóżka, ściany ani innych elementów sceny.
+
+POZYCJONOWANIE:
+Hotspoty mają być pozycjonowane względem kontenera sceny CELI, a nie względem całego viewportu.
+
+Użyj np.:
+position: absolute;
+
+a kontener sceny:
+position: relative;
+
+Każdy hotspot ma mieć stałą kotwicę w konkretnym miejscu sceny.
+
+NIE używaj losowego rozmieszczania.
+NIE pozwalaj Flexbox/Gridowi decydować, gdzie pojawi się hotspot.
+NIE ustawiaj hotspotów jako elementów normalnego flow strony.
+
+Przykładowa struktura:
+
+CELA
+└── .cell-scene { position: relative; }
+    ├── background
+    ├── bed-hotspot { position: absolute; ... }
+    ├── shelf-hotspot { position: absolute; ... }
+    ├── table-hotspot { position: absolute; ... }
+    └── locker-hotspot { position: absolute; ... }
+
+HOTSPOTY MAJĄ BYĆ PRZYPISANE DO SCENY.
+
+RESPONSYWNOŚĆ:
+Nie skaluj hotspotów proporcjonalnie do całego ekranu.
+
+Na mniejszych ekranach hotspot może się nieznacznie zmniejszyć, ale jego pozycja względem obiektu ma zostać zachowana.
+
+NAJWAŻNIEJSZE:
+Nie zmieniaj:
+- tła celi,
+- sceny,
+- sidebaru,
+- prawego panelu,
+- dolnych paneli,
+- kolorystyki,
+- typografii,
+- ogólnego layoutu.
+
+Nie projektuj tego od nowa.
+
+Popraw wyłącznie:
+1. wielkość hotspotów,
+2. ich wygląd,
+3. ich pozycjonowanie względem konkretnych obiektów.
+
+CEL WIZUALNY:
+Kiedy patrzę na celę, najpierw widzę CELĘ.
+Hotspoty mają być tylko małymi oznaczeniami miejsc, z którymi można wejść w interakcję.
+
+Nie mogą dominować nad grafiką.

@@ -1,0 +1,230 @@
+POPRAW RESPONSYWNOŚĆ CAŁEGO EKRANU „CELA”.
+
+WAŻNE: NIE PRZEprojektowuj UI.
+Obecny wygląd, grafika, sidebar, prawy panel, dolne panele i typografia są właściwe.
+
+Problem jest WYŁĄCZNIE w sposobie dopasowania layoutu do viewportu.
+
+OBECNY PROBLEM:
+Na szerokim monitorze cały interfejs zajmuje tylko część ekranu i po prawej stronie zostaje ogromna pusta przestrzeń.
+
+WCZEŚNIEJ PROBLEM BYŁ ODWROTNY:
+scena celi robiła się zbyt duża i powodowała konieczność przewijania.
+
+CHCĘ ROZWIĄZANIE POŚRODKU:
+
+CAŁY EKRAN GRY MA SIĘ DOPASOWYWAĆ DO VIEWPORTU, ALE BEZ SCROLLA.
+
+==================================================
+GŁÓWNA ZASADA
+==================================================
+
+Ekran „CELA” ma być traktowany jako aplikacja typu game dashboard, która mieści się w jednym viewportcie.
+
+Po wejściu na ekran:
+
+- NIE MOŻE BYĆ pionowego scrolla całej strony,
+- NIE MOŻE BYĆ konieczności przewijania góra/dół,
+- header musi być cały widoczny,
+- lewy sidebar musi być cały widoczny,
+- scena celi musi być widoczna,
+- prawy panel „MÓJ WIĘZIEŃ” i „AKTUALNE ZADANIA” muszą być widoczne,
+- dolne moduły WIADOMOŚCI / CZAT / OSTATNIE WYDARZENIA muszą być widoczne.
+
+Wszystko ma się zmieścić w aktualnej wysokości ekranu.
+
+==================================================
+LAYOUT
+==================================================
+
+Użyj layoutu opartego o CSS Grid.
+
+Struktura:
+
+APP
+├── HEADER
+└── MAIN
+    ├── SIDEBAR
+    └── CONTENT
+        ├── TOP / GAME AREA
+        │   ├── CELL SCENE
+        │   └── RIGHT PANEL
+        └── BOTTOM PANELS
+            ├── WIADOMOŚCI
+            ├── CZAT
+            └── OSTATNIE WYDARZENIA
+
+MAIN powinien mieć:
+
+height: calc(100vh - HEADER_HEIGHT);
+min-height: 0;
+overflow: hidden;
+
+CONTENT również:
+
+height: 100%;
+min-height: 0;
+overflow: hidden;
+
+NIE pozwól, aby którykolwiek element powodował zwiększenie wysokości dokumentu.
+
+==================================================
+SZEROKOŚĆ
+==================================================
+
+Nie używaj małego globalnego max-width dla całego CONTENT.
+
+Na szerokich monitorach layout ma wykorzystywać dostępną szerokość.
+
+Przykładowo:
+
+- sidebar = stała szerokość,
+- prawa kolumna = stała / kontrolowana szerokość,
+- środek = 1fr.
+
+Czyli:
+
+grid-template-columns: [sidebar] [flexible center] [right panel];
+
+Środkowa część ma zajmować całą pozostałą przestrzeń.
+
+NIE zostawiaj ogromnego pustego obszaru po prawej stronie.
+
+==================================================
+SCENA CELI
+==================================================
+
+Scena ma zachować proporcje swojej grafiki.
+
+Nie rozciągaj jej pionowo niezależnie od szerokości.
+
+Użyj:
+
+aspect-ratio: odpowiednie dla grafiki;
+
+oraz:
+
+width: 100%;
+max-height: 100%;
+object-fit: cover;
+
+ALE najważniejsze:
+
+scena musi zmieścić się w dostępnej wysokości TOP / GAME AREA.
+
+Jeżeli wysokość ekranu jest mała, scena ma się zmniejszyć.
+
+Jeżeli wysokość ekranu jest większa, scena może się powiększyć.
+
+Jeżeli ekran jest bardzo szeroki, scena może wykorzystać większą szerokość, ale NIE może wypchnąć dolnych paneli poza viewport.
+
+==================================================
+DOLNE PANELE
+==================================================
+
+Dolne panele WIADOMOŚCI / CZAT / OSTATNIE WYDARZENIA muszą zawsze pozostać widoczne na desktopie.
+
+Nie mogą zostać wypchnięte poniżej ekranu przez scenę.
+
+Główna część z celą i dolne panele powinny dzielić dostępną wysokość.
+
+Przykładowo:
+
+CONTENT:
+grid-template-rows: minmax(0, 1fr) auto;
+
+BOTTOM:
+stała, ale responsywna wysokość.
+
+Jeżeli trzeba zmniejszyć scenę, zmniejsz scenę.
+
+NIE chowaj dolnych paneli.
+NIE dodawaj scrolla całej strony.
+
+==================================================
+RESPONSYWNOŚĆ
+==================================================
+
+Chcę płynne dopasowanie.
+
+Przykładowa zasada:
+
+1920×1080:
+→ layout wykorzystuje praktycznie całą szerokość ekranu
+→ scena jest duża
+→ dolne panele są widoczne
+→ brak scrolla
+
+1600×900:
+→ wszystko jest trochę mniejsze
+→ nadal wszystko jest widoczne
+→ brak scrolla
+
+1440×900:
+→ wszystko jest odpowiednio zmniejszone
+→ nadal wszystko mieści się w viewportcie
+→ brak scrolla
+
+1280×720:
+→ interfejs jeszcze bardziej się kompaktuje
+→ scena zmniejsza się
+→ dolne panele pozostają widoczne
+→ brak scrolla
+
+Ultrawide:
+→ wykorzystaj dodatkową szerokość
+→ NIE zostawiaj ogromnej pustej przestrzeni
+→ nie zwiększaj wysokości sceny kosztem dolnych paneli.
+
+==================================================
+BARDZO WAŻNE — NIE ROBIĆ
+==================================================
+
+NIE:
+
+- ustawiaj całego contentu na mały max-width,
+- centruj całej aplikacji jako małego bloku na środku,
+- używaj width: 100vw dla pojedynczej sceny,
+- używaj transform: scale() dla całej aplikacji,
+- pozwalaj scenie wypchnąć dolne moduły,
+- dodawaj pionowego scrolla do body,
+- chowaj dolne moduły na desktopie,
+- twórz osobnego layoutu dla każdego monitora.
+
+==================================================
+CEL
+==================================================
+
+Chcę efekt podobny do profesjonalnego interfejsu gry przeglądarkowej.
+
+Niezależnie od rozdzielczości:
+
+[ SIDEBAR ][        GRA / CELA        ][ PANEL ]
+
+                         ↓
+
+[       WIADOMOŚCI       ][ CZAT ][ OSTATNIE WYDARZENIA ]
+
+Całość ma być widoczna jednocześnie.
+
+Szerokość ma wykorzystywać dostępne miejsce.
+Wysokość ma się dopasowywać do viewportu.
+Scena ma się zmniejszać/powiększać w zależności od dostępnego miejsca.
+NIC nie może wymuszać przewijania strony.
+
+PO WPROWADZENIU ZMIAN SPRAWDŹ:
+1920×1080
+1600×900
+1440×900
+1280×720
+2560×1440
+
+Na każdym z tych ekranów:
+1. brak vertical scroll,
+2. brak ogromnej pustej przestrzeni,
+3. scena celi widoczna,
+4. prawy panel widoczny,
+5. dolne panele widoczne,
+6. cały dashboard mieści się w jednym viewportcie.
+
+Nie zmieniaj projektu wizualnego. Zmień wyłącznie mechanizm responsywnego dopasowania.

@@ -1,0 +1,64 @@
+POPRAW WYŁĄCZNIE RESPONSYWNOŚĆ EKRANU „CELA”.
+
+Obecnie ekran celi skaluje się zbyt mocno w zależności od rozdzielczości monitora. Na dużym ekranie główna scena z celą robi się ogromna i zajmuje zdecydowanie za dużo miejsca. NIE CHCĘ, żeby cały layout był fluid i rozciągał się proporcjonalnie do szerokości monitora.
+
+Zachowaj obecny projekt, grafikę, assety, sidebar, prawy panel oraz dolne moduły. Nie przeprojektowuj UI.
+
+ZASADA:
+Ekran ma mieć stałą, kontrolowaną szerokość contentu, a nie skalować się bez ograniczeń.
+
+GŁÓWNA SCENA „CELA”:
+- ustaw sensowny max-width dla głównego obszaru celi,
+- nie pozwól, aby obraz celi zwiększał swoją wysokość proporcjonalnie do szerokości ekranu,
+- zachowaj proporcje grafiki,
+- scena ma wyglądać jak element interfejsu gry, a nie jak pełnoekranowy hero image,
+- na monitorach 1920px / 2560px / ultrawide scena NIE MOŻE robić się gigantyczna,
+- wolna przestrzeń po bokach jest OK,
+- lepiej mieć trochę pustego miejsca niż rozciągać scenę.
+
+LAYOUT:
+[LEWY SIDEBAR] [GŁÓWNY OBSZAR GRY] [PRAWY PANEL]
+
+Lewy sidebar i prawy panel powinny mieć kontrolowaną szerokość.
+Środkowy obszar powinien mieć ograniczoną maksymalną szerokość.
+
+Nie stosuj:
+- width: 100vw dla sceny,
+- bezpośredniego skalowania całego UI razem z viewportem,
+- transform: scale() dla całego ekranu,
+- rozciągania obrazu celi do pełnej dostępnej szerokości.
+
+Zamiast tego:
+- użyj max-width,
+- width: 100% wewnątrz ograniczonego kontenera,
+- aspect-ratio dla sceny,
+- object-fit: cover dla tła tylko tam, gdzie jest to potrzebne.
+
+NAJWAŻNIEJSZE:
+Przygotuj responsywność według konkretnych breakpointów, a nie według ciągłego skalowania.
+
+DESKTOP:
+- 1440px: normalny rozmiar sceny
+- 1920px: scena ma być nadal mniej więcej tej samej wielkości, NIE znacznie większa
+- 2560px / ultrawide: NIE zwiększaj już znacząco sceny; utrzymaj max-width
+- mniejsze monitory: stopniowo zmniejszaj środkowy obszar, ale nie zmieniaj proporcji
+
+TABLET / MOBILE:
+Dopiero poniżej odpowiednich breakpointów layout może się przeorganizować.
+
+BARDZO WAŻNE:
+Nie zmieniaj wyglądu istniejącego ekranu.
+Nie dodawaj nowych elementów.
+Nie usuwaj istniejących elementów.
+Nie zmieniaj kolorystyki, typografii ani assetów.
+Nie twórz nowego layoutu.
+
+Celem jest wyłącznie:
+„Ten sam ekran, ale niezależny od rozmiaru monitora i bez gigantycznego rozciągania sceny”.
+
+Po wykonaniu sprawdź ekran na:
+1440×900
+1920×1080
+2560×1440
+
+i dopasuj CSS tak, aby różnica wizualna między tymi rozdzielczościami była niewielka.
