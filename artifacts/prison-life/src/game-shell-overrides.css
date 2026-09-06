@@ -979,3 +979,832 @@
     grid-row: 2;
   }
 }
+
+/* Training screen */
+.game-shell-page .game-content-training {
+  display: block;
+  padding: 8px 13px 0;
+  overflow: hidden;
+}
+.training-view {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 58px minmax(0, 1fr);
+  gap: 8px;
+}
+.training-page-header {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 15px;
+  border: 1px solid var(--game-line);
+  background:
+    linear-gradient(90deg, rgba(8, 14, 17, .96), rgba(8, 14, 17, .62)),
+    repeating-linear-gradient(135deg, rgba(155,165,155,.035) 0 2px, transparent 2px 12px),
+    #10191c;
+}
+.training-page-title {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+.training-page-title .eyebrow {
+  align-self: flex-start;
+  margin-top: 8px;
+  color: var(--game-orange-soft);
+  font-size: 8px;
+  letter-spacing: .22em;
+}
+.training-page-title h1 {
+  margin: 0;
+  color: #eee9df;
+  font: 700 31px/1 'Oswald';
+  letter-spacing: .04em;
+}
+.training-page-title p {
+  margin: 0;
+  color: #9ba49c;
+  font: 10px 'Barlow Condensed';
+  letter-spacing: .08em;
+}
+.training-page-header blockquote {
+  margin: 0;
+  color: #8e9991;
+  font: italic 10px/1.2 'Oswald';
+  text-align: right;
+}
+.training-layout {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 258px;
+  gap: 8px;
+}
+.training-main-column {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1.05fr) minmax(0, 1.12fr) 104px;
+  gap: 8px;
+}
+.training-hero {
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #53625d;
+  background-color: #111a1b;
+  background-repeat: no-repeat;
+  background-size: 163% auto;
+  background-position: 32% 25%;
+  isolation: isolate;
+}
+.training-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(2, 7, 8, .14), transparent 42%, rgba(2, 7, 8, .18)),
+    linear-gradient(0deg, rgba(3, 7, 8, .3), transparent 35%);
+  pointer-events: none;
+}
+.training-hero-caption {
+  position: absolute;
+  z-index: 2;
+  left: 14px;
+  top: 14px;
+  display: flex;
+  flex-direction: column;
+  color: #121a19;
+  text-shadow: 0 1px rgba(222, 208, 177, .18);
+  transform: rotate(-3deg);
+}
+.training-hero-caption strong {
+  font: 700 19px/1 'Oswald';
+}
+.training-hero-caption span {
+  margin-top: 4px;
+  font: 700 12px/1.05 'Oswald';
+}
+.training-available,
+.training-progress-panel,
+.training-history-panel,
+.training-side-panel {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--game-line);
+  background: #0d1619;
+  box-shadow: inset 0 1px rgba(255,255,255,.025);
+}
+.training-available {
+  overflow: hidden;
+}
+.training-section-heading {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 9px;
+  border-bottom: 1px solid rgba(185,195,188,.18);
+}
+.training-section-heading h2,
+.training-side-heading h2 {
+  margin: 0;
+  color: #e6e4d9;
+  font: 14px/1 'Oswald';
+  letter-spacing: .05em;
+}
+.training-section-heading span {
+  display: block;
+  margin-top: 3px;
+  color: #87938b;
+  font: 8px 'Barlow Condensed';
+  letter-spacing: .05em;
+}
+.training-exercise-grid {
+  height: calc(100% - 35px);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 7px;
+}
+.training-exercise-card {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #33433f;
+  background: #101c1e;
+}
+.training-exercise-card:hover,
+.training-exercise-card.started {
+  border-color: var(--game-orange);
+}
+.training-exercise-art {
+  min-height: 0;
+  flex: 0 0 29%;
+  border-bottom: 1px solid #45534c;
+  background-repeat: no-repeat;
+  background-size: 744% auto;
+  filter: saturate(.84) contrast(1.04);
+}
+.training-art-pushups { background-position: 15% 60%; }
+.training-art-squats { background-position: 33% 60%; }
+.training-art-weights { background-position: 50% 60%; }
+.training-art-combat { background-position: 69% 60%; }
+.training-exercise-copy {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 7px 7px;
+}
+.training-exercise-copy h3 {
+  margin: 0;
+  color: #eee8dc;
+  font: 700 13px/1 'Oswald';
+}
+.training-exercise-copy p {
+  min-height: 22px;
+  margin: 4px 0 5px;
+  color: #98a39b;
+  font: 9px/1.16 'Barlow Condensed';
+}
+.training-exercise-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #c0c8be;
+  font: 9px 'Barlow Condensed';
+}
+.training-exercise-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.training-exercise-meta svg:first-child {
+  color: var(--game-orange-soft);
+}
+.training-exercise-card button {
+  min-height: 28px;
+  margin-top: auto;
+  border: 1px solid #f39a3d;
+  color: #25170d;
+  background: #f0782c;
+  cursor: pointer;
+  font: 700 10px 'Oswald';
+  letter-spacing: .04em;
+}
+.training-exercise-card button:hover {
+  background: #ff9340;
+}
+.training-bottom-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.08fr .92fr;
+  gap: 8px;
+}
+.training-progress-panel,
+.training-history-panel {
+  overflow: hidden;
+}
+.training-progress-track {
+  height: calc(100% - 35px);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 10px;
+}
+.training-progress-line {
+  position: absolute;
+  left: 28px;
+  right: 150px;
+  top: 50%;
+  height: 1px;
+  background: #60716a;
+}
+.training-progress-track > i {
+  z-index: 1;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #89958d;
+  border-radius: 50%;
+  color: #9aa69d;
+  background: #0e191c;
+  font-style: normal;
+}
+.training-progress-track > i.complete {
+  color: #63ce8d;
+  border-color: #63ce8d;
+}
+.training-reward {
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 118px;
+  padding: 5px 7px;
+  border: 1px solid #33433f;
+  color: var(--game-orange-soft);
+  background: #152124;
+}
+.training-reward span {
+  display: flex;
+  flex-direction: column;
+}
+.training-reward strong {
+  color: #e6e4d9;
+  font: 10px 'Oswald';
+}
+.training-reward small {
+  color: #85918a;
+  font: 8px/1.1 'Barlow Condensed';
+}
+.training-history-panel .training-section-heading button,
+.training-side-heading button {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 0;
+  color: var(--game-orange-soft);
+  background: transparent;
+  cursor: pointer;
+  font: 8px 'Barlow Condensed';
+}
+.training-history-list {
+  padding: 4px 8px;
+}
+.training-history-list > div {
+  min-height: 25px;
+  display: grid;
+  grid-template-columns: 17px 1fr 78px auto;
+  gap: 4px;
+  align-items: center;
+  border-bottom: 1px solid rgba(188,198,190,.11);
+  color: #c5ccc2;
+  font: 9px 'Barlow Condensed';
+}
+.training-history-list > div:last-child {
+  border-bottom: 0;
+}
+.training-history-list svg {
+  color: #65cf8c;
+}
+.training-history-list small {
+  color: #77847c;
+}
+.training-history-list b {
+  color: #6fd193;
+  font-weight: 500;
+  text-align: right;
+}
+.training-side-column {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, .85fr) minmax(0, 1fr);
+  gap: 8px;
+}
+.training-side-panel {
+  overflow: hidden;
+}
+.training-side-heading {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 9px;
+  border-bottom: 1px solid rgba(185,195,188,.18);
+}
+.training-side-heading h2 {
+  font-size: 12px;
+}
+.training-stat-row {
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 2px 9px;
+  color: var(--game-orange-soft);
+}
+.training-stat-row > div {
+  min-width: 0;
+}
+.training-stat-row strong {
+  display: block;
+  color: #e5e3d8;
+  font: 11px 'Oswald';
+}
+.training-stat-row small {
+  display: block;
+  color: #849087;
+  font: 8px 'Barlow Condensed';
+}
+.training-stat-row > span,
+.training-energy-row > span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  color: #c8cec3;
+  font: 9px 'Barlow Condensed';
+}
+.training-stat-bar {
+  height: 6px;
+  margin-top: 3px;
+  background: #253330;
+}
+.training-stat-bar i {
+  display: block;
+  height: 100%;
+  background: #f07b32;
+}
+.training-energy-row {
+  min-height: 45px;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  margin: 5px 9px 0;
+  padding-top: 6px;
+  border-top: 1px solid rgba(185,195,188,.15);
+  color: var(--game-orange-soft);
+}
+.training-energy-row strong {
+  display: block;
+  color: #e5e3d8;
+  font: 11px 'Oswald';
+}
+.training-energy-row small {
+  margin-top: 2px;
+  color: #6ece8d;
+  font: 8px 'Barlow Condensed';
+}
+.training-efficiency-panel {
+  padding-bottom: 5px;
+}
+.training-efficiency-panel > div:not(.training-side-heading) {
+  min-height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 9px;
+  color: #a5afa5;
+  font: 9px 'Barlow Condensed';
+}
+.training-efficiency-panel b {
+  color: #dfe3d9;
+  font-weight: 500;
+}
+.training-efficiency-panel .training-efficiency-total {
+  margin-top: 3px;
+  border-top: 1px solid rgba(185,195,188,.16);
+  color: #e5e3d8;
+}
+.training-efficiency-total b {
+  color: #6fd293;
+  font-size: 13px;
+}
+.training-tip-panel {
+  display: flex;
+  gap: 9px;
+  padding: 10px;
+  color: var(--game-orange-soft);
+}
+.training-tip-panel h2 {
+  margin: 0 0 5px;
+  color: #e6e4d9;
+  font: 11px 'Oswald';
+}
+.training-tip-panel p {
+  margin: 0;
+  color: #a0aaa1;
+  font: 9px/1.35 'Barlow Condensed';
+}
+.training-side-art {
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #4a5751;
+  background-repeat: no-repeat;
+  background-size: 416% auto;
+  background-position: 99% 99%;
+}
+.training-side-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(5,10,11,.72), transparent 78%);
+}
+.training-side-art span {
+  position: absolute;
+  z-index: 1;
+  left: 12px;
+  bottom: 12px;
+  color: #ddd7c8;
+  font: italic 14px/1 'Oswald';
+}
+.training-side-art strong {
+  color: var(--game-orange-soft);
+}
+
+@media (min-width: 901px) and (max-width: 1180px) {
+  .training-layout {
+    grid-template-columns: minmax(0, 1fr) 245px;
+  }
+  .training-page-title {
+    gap: 9px;
+  }
+  .training-page-title h1 {
+    font-size: 27px;
+  }
+  .training-exercise-copy p {
+    font-size: 8px;
+  }
+  .training-history-list > div {
+    grid-template-columns: 17px 1fr 65px;
+  }
+  .training-history-list b {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    text-align: left;
+    padding-bottom: 3px;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 760px) {
+  .game-shell-page .game-content-training {
+    padding-top: 8px;
+  }
+  .training-view {
+    grid-template-rows: 53px minmax(0, 1fr);
+  }
+  .training-page-title h1 {
+    font-size: 26px;
+  }
+  .training-page-title p {
+    font-size: 8px;
+  }
+  .training-main-column {
+    grid-template-rows: minmax(0, 1.05fr) minmax(0, 1.12fr) 88px;
+  }
+  .training-section-heading {
+    min-height: 28px;
+    padding-block: 2px;
+  }
+  .training-section-heading h2 {
+    font-size: 11px;
+  }
+  .training-section-heading span {
+    font-size: 7px;
+  }
+  .training-exercise-copy {
+    padding: 4px 5px 5px;
+  }
+  .training-exercise-copy h3 {
+    font-size: 11px;
+  }
+  .training-exercise-copy p {
+    min-height: 18px;
+    margin-block: 2px 3px;
+    font-size: 8px;
+  }
+  .training-exercise-meta {
+    font-size: 8px;
+  }
+  .training-exercise-card button {
+    min-height: 24px;
+    font-size: 9px;
+  }
+  .training-bottom-grid {
+    grid-template-columns: 1fr .9fr;
+  }
+  .training-side-heading {
+    min-height: 27px;
+  }
+  .training-side-heading h2 {
+    font-size: 10px;
+  }
+  .training-stat-row {
+    min-height: 33px;
+  }
+  .training-stat-row strong,
+  .training-energy-row strong {
+    font-size: 9px;
+  }
+  .training-energy-row {
+    min-height: 34px;
+    margin-top: 1px;
+    padding-top: 3px;
+  }
+  .training-efficiency-panel > div:not(.training-side-heading) {
+    min-height: 19px;
+  }
+  .training-tip-panel p {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  .game-content-training {
+    overflow: auto !important;
+  }
+  .training-view {
+    height: auto;
+    grid-template-rows: auto auto;
+  }
+  .training-page-header {
+    display: block;
+    padding: 10px;
+  }
+  .training-page-title {
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+  .training-page-title p {
+    width: 100%;
+  }
+  .training-page-header blockquote {
+    margin-top: 8px;
+    text-align: left;
+  }
+  .training-layout {
+    grid-template-columns: 1fr;
+  }
+  .training-main-column {
+    grid-template-rows: 310px auto auto;
+  }
+  .training-exercise-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .training-side-column {
+    grid-template-rows: repeat(4, auto);
+  }
+}
+
+/* Cela: viewport-first desktop grid. Kept scoped so training and development
+   screens retain their own layouts. */
+@media (min-width: 901px) {
+  .game-shell-page.game-cell-screen {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+  .game-cell-screen .game-layout {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    grid-template-columns: clamp(150px, 11vw, 220px) minmax(0, 1fr);
+  }
+  .game-cell-screen .game-sidebar {
+    width: auto;
+    min-width: 0;
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .game-cell-screen .game-content {
+    width: auto;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    padding: clamp(8px, .8vw, 16px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(220px, 17vw, 320px);
+    grid-template-rows: minmax(0, 1fr) clamp(130px, 19vh, 220px);
+    gap: clamp(8px, .8vw, 16px);
+    overflow: hidden;
+  }
+  .game-cell-screen .game-board {
+    min-width: 0;
+    min-height: 0;
+    display: contents;
+  }
+  .game-cell-screen .game-cell-column {
+    min-width: 0;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    overflow: hidden;
+  }
+  .game-cell-screen .game-section-heading {
+    min-width: 0;
+  }
+  .game-cell-screen .cell-scene {
+    width: auto;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 3 / 2;
+    align-self: center;
+    justify-self: center;
+  }
+  .game-cell-screen .game-right-column {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .game-cell-screen .game-bottom-grid {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(8px, .8vw, 16px);
+  }
+  .game-cell-screen .cell-hotspot {
+    min-width: clamp(110px, 11vw, 180px);
+    padding: clamp(6px, .55vw, 9px);
+  }
+  .game-cell-screen .cell-hotspot strong {
+    font-size: clamp(10px, .65vw, 12px);
+  }
+  .game-cell-screen .cell-hotspot small {
+    font-size: clamp(8px, .5vw, 10px);
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1280px), (min-width: 901px) and (max-height: 760px) {
+  .game-cell-screen .game-layout {
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+  .game-cell-screen .game-content {
+    grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-rows: minmax(0, 1fr) 130px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 960px) {
+  .game-cell-screen {
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .game-cell-screen .game-header {
+    height: auto;
+    min-height: 72px;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    padding-inline: 14px;
+  }
+  .game-cell-screen .game-header-brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .game-cell-screen .game-player-summary,
+  .game-cell-screen .game-resources {
+    display: none;
+  }
+  .game-cell-screen .game-header-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .game-cell-screen .game-mobile-menu-toggle {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+    margin-right: 8px;
+  }
+  .game-cell-screen .game-layout {
+    display: block;
+    height: auto;
+    min-height: calc(100dvh - 111px);
+    overflow: visible;
+  }
+  .game-cell-screen .game-sidebar {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    top: 72px;
+    left: 0;
+    width: 235px;
+    min-height: calc(100dvh - 72px);
+    box-shadow: 13px 0 28px rgba(0, 0, 0, .45);
+  }
+  .game-cell-screen .game-sidebar.mobile-sidebar-open {
+    display: block;
+  }
+  .game-cell-screen .game-content {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding: 8px 7px 0;
+    display: block;
+    overflow: visible;
+  }
+  .game-cell-screen .game-board {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas: "cell" "right";
+    gap: 8px;
+  }
+  .game-cell-screen .game-cell-column,
+  .game-cell-screen .game-right-column,
+  .game-cell-screen .game-bottom-grid {
+    min-height: 0;
+  }
+  .game-cell-screen .game-cell-column {
+    display: grid;
+    grid-template-rows: auto auto;
+  }
+  .game-cell-screen .cell-scene {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    min-height: 0;
+  }
+  .game-cell-screen .game-right-column {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    align-items: start;
+  }
+  .game-cell-screen .game-promo {
+    grid-column: 1 / -1;
+  }
+  .game-cell-screen .game-bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+  .game-cell-screen .events-panel {
+    grid-column: 1 / -1;
+  }
+  .game-cell-screen .game-footer {
+    min-height: 60px;
+    padding: 10px 11px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+}
+
+@media (max-width: 640px) {
+  .game-cell-screen .game-mobile-menu-toggle {
+    margin-right: 8px;
+  }
+  .game-cell-screen .game-content {
+    padding-inline: 7px;
+  }
+  .game-cell-screen .game-right-column,
+  .game-cell-screen .game-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+  .game-cell-screen .events-panel {
+    grid-column: auto;
+  }
+  .game-cell-screen .cell-scene {
+    aspect-ratio: 16 / 10;
+  }
+}

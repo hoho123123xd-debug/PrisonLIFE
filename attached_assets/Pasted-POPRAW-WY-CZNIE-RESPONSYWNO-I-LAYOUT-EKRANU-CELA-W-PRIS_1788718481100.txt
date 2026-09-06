@@ -1,0 +1,209 @@
+POPRAW WYŁĄCZNIE RESPONSYWNOŚĆ I LAYOUT EKRANU „CELA” W PRISON LIFE.
+
+Nie zmieniaj projektu wizualnego, assetów, kolorów, fontów, tekstów, ikon ani funkcjonalności. Zachowaj sidebar, header, główną scenę celi, prawy panel gracza/zadań oraz dolne moduły. Nie rób redesignu.
+
+Problem obecny:
+- UI wygląda jak mały, sztywno ograniczony canvas zamiast pełnoekranowego dashboardu.
+- Na szerokich ekranach część przestrzeni zostaje niewykorzystana albo elementy są nieproporcjonalnie małe.
+- Na niższych desktopach scena wypycha dolne moduły i powoduje pionowy scroll.
+- Elementy nie powinny być naprawiane pojedynczymi `margin`, `transform: scale()` ani pozycjonowaniem pod konkretną rozdzielczość.
+
+Cel:
+- Desktop ma zawsze mieścić cały ekran gry w jednym viewportcie, bez pionowego i poziomego scrolla strony.
+- Układ ma wykorzystywać dostępną szerokość, również na ultrawide.
+- Wysokość musi zależeć od viewportu.
+- Scena celi ma zachować proporcje, ale w razie braku miejsca zmniejszać się przed wypchnięciem dolnych paneli.
+- Tablet i mobile mają mieć osobne breakpointy oraz reflow, nie „skurczony desktop”.
+
+Wprowadź strukturę opartą o CSS Grid:
+
+```css
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app {
+  min-width: 0;
+  width: 100%;
+  height: 100dvh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.app-main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: clamp(150px, 11vw, 220px) minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.content {
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(8px, 0.8vw, 16px);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) clamp(130px, 19vh, 220px);
+  gap: clamp(8px, 0.8vw, 16px);
+  overflow: hidden;
+}
+
+.game-area {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(220px, 17vw, 320px);
+  gap: clamp(8px, 0.8vw, 16px);
+  overflow: hidden;
+}
+```
+
+Główna scena celi:
+
+```css
+.cell-scene {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.cell-scene__media {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* zachowaj pełną scenę */
+  object-position: center;
+}
+```
+
+Jeżeli scena używa obrazka jako `background-image`, zastosuj odpowiednik:
+
+```css
+background-size: contain;
+background-position: center;
+background-repeat: no-repeat;
+```
+
+Nie ustawiaj globalnego małego `max-width` dla contentu ani sceny. Środkowa kolumna ma być `minmax(0, 1fr)` i wykorzystać całą przestrzeń między sidebarem a prawym panelem.
+
+Dolne moduły mają być elementem osobnego wiersza grida, zawsze widocznym na desktopie:
+
+```css
+.bottom-panels {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(8px, 0.8vw, 16px);
+  overflow: hidden;
+}
+```
+
+Wszystkie wewnętrzne listy, czat i wydarzenia mogą mieć własne `overflow: auto`, ale `body`, `.app`, `.app-main` i `.content` nie mogą scrollować.
+
+Hotspoty na scenie pozostaw pozycjonowane absolutnie względem `.cell-scene`. Nie pozycjonuj ich względem viewportu. Ich skala ma być ograniczona przez `clamp()`, np.:
+
+```css
+.hotspot {
+  width: clamp(110px, 11vw, 180px);
+  font-size: clamp(9px, 0.65vw, 12px);
+}
+```
+
+Breakpointy:
+
+```css
+/* mniejszy desktop */
+@media (max-width: 1280px), (max-height: 760px) {
+  .app-main {
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+
+  .game-area {
+    grid-template-columns: minmax(0, 1fr) 220px;
+  }
+
+  .content {
+    grid-template-rows: minmax(0, 1fr) 130px;
+  }
+}
+
+/* tablet */
+@media (max-width: 960px) {
+  body,
+  #root,
+  .app {
+    overflow: auto;
+  }
+
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    display: none; /* tylko jeśli istnieje obecny mechanizm menu mobilnego */
+  }
+
+  .content {
+    height: auto;
+    overflow: visible;
+    grid-template-rows: auto auto;
+  }
+
+  .game-area {
+    grid-template-columns: 1fr;
+  }
+
+  .right-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* mobile */
+@media (max-width: 640px) {
+  .bottom-panels,
+  .right-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .cell-scene {
+    aspect-ratio: 16 / 10;
+    height: auto;
+  }
+}
+```
+
+Dodatkowe zasady:
+- Dodaj `min-width: 0` i `min-height: 0` do wszystkich dzieci grid/flex, które mogą się kurczyć.
+- Usuń lub zastąp `width: 100vw`, sztywne wysokości sceny oraz ograniczenia `max-width`, które blokują wykorzystanie szerokiego ekranu.
+- Nie używaj `transform: scale()` ani `zoom` do skalowania całej aplikacji.
+- Nie ukrywaj dolnych modułów na desktopie.
+- Nie zmieniaj proporcji ani stylu sceny — tylko jej kontener i reguły dopasowania.
+
+Po zmianie sprawdź dokładnie:
+- 1280×720
+- 1440×900
+- 1600×900
+- 1920×1080
+- 2560×1440 / ultrawide
+
+Warunki akceptacji dla każdego desktopowego widoku:
+1. brak poziomego scrolla,
+2. brak pionowego scrolla strony,
+3. header, sidebar, scena, prawy panel i dolne moduły są jednocześnie widoczne,
+4. scena nie wypycha dolnych modułów,
+5. dodatkowa szerokość jest wykorzystana przez środkową kolumnę,
+6. nie ma ogromnej pustej przestrzeni po prawej,
+7. styl wizualny i funkcjonalność pozostają bez zmian.
