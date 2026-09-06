@@ -1,3 +1,4 @@
+- [Responsive design (project-wide)](responsive-design.md) — every screen/component must be one fluid responsive interface, verified across 1920×1080 down to 1280×800, with no scroll-as-layout-fix and no per-breakpoint magic-number positioning. Takes precedence over ad-hoc CSS fixes.
 - [Registration scene compositing](registration-scene-compositing.md) — keep the character cutout and prison environment as separate visual layers to avoid duplicate subjects.
 - [Game shell styling](game-shell-styling.md) — keep the game viewport styles isolated from the public landing and prisoner-intake screens.
 - [Registration stage layout](registration-stage-layout.md) — the supplied intake mockup is the source of truth: stage 1 uses four full-height columns including prisoner type.
