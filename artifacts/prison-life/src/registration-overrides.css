@@ -243,6 +243,13 @@
   background-position: center 24%;
   border-bottom: 1px solid rgba(173, 184, 174, .25);
 }
+.registration-page .registration-body .type-selection-card-art > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 24%;
+}
 .registration-page .registration-body .type-selection-card-art::after {
   content: '';
   position: absolute;

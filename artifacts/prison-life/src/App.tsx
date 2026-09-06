@@ -50,6 +50,10 @@ import {
 import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864145.png';
 import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
 import prisonerAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_12_30_1788711187677.png';
+import bullAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_57_13_1788713844519.png';
+import ratAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_57_44_1788713877886.png';
+import foxAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_58_23_1788713918595.png';
+import wolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_59_09_1788713957701.png';
 import gameSceneArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_50_39_1788709841559.png';
 
 const queryClient = new QueryClient();
@@ -346,7 +350,7 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
     {creator.step === 1 && <section className="type-selection-stage">
       <div className="type-selection-cards">
         {prisonerTypes.map((type) => <button type="button" key={type.id} className={`type-selection-card ${creator.prisonerType === type.id ? 'selected' : ''}`} onClick={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} aria-pressed={creator.prisonerType === type.id} data-testid={`button-prisoner-type-${type.id}`}>
-          <div className={`type-selection-card-art type-art-${type.id}`} style={{ backgroundImage: `url("${prisonerAsset}")` }}><span className="type-selection-ruler">200<br />190<br />180<br />170<br />160<br />150</span><span className="type-selection-note">{type.id === 'bull' ? 'SIŁA<br />OTWIERA<br />DRZWI.' : type.id === 'rat' ? 'ZAWSZE<br />ZNAJDĘ<br />DROGĘ.' : type.id === 'fox' ? 'PLAN<br />ZAWSZE<br />WYGRYWA.' : 'RÓWNOWAGA<br />TO SIŁA.'}</span></div>
+          <div className={`type-selection-card-art type-art-${type.id}`}><img src={type.id === 'bull' ? bullAsset : type.id === 'rat' ? ratAsset : type.id === 'fox' ? foxAsset : wolfAsset} alt="" /></div>
           <div className="type-selection-card-body"><h2>{type.name}</h2><strong>{type.specialty}</strong><p>{type.description}</p><div className="type-selection-stats">{typeStatLabels.map((label, index) => <div className="type-selection-stat" key={label}><span>{label}</span><div><i style={{ width: `${typeStatValues[type.id][index]}%` }} /></div></div>)}</div></div>
         </button>)}
       </div>
