@@ -618,6 +618,9 @@ button { font: inherit; }
 .appearance-tile:hover { transform: translateY(-1px); border-color: #abb4aa; }
 .appearance-tile.selected { border: 2px solid var(--prison-orange); box-shadow: 0 0 0 1px rgba(225,122,46,.22); }
 .appearance-tile > span { position: absolute; right: 3px; bottom: 1px; z-index: 1; color: rgba(255,255,255,.76); font: 8px 'Barlow Condensed'; }
+.appearance-tile > .appearance-thumb { inset: 0; right: auto; bottom: auto; z-index: 0; display: block; width: 100%; height: 100%; border: 0; background-repeat: no-repeat; opacity: .96; }
+.appearance-tile > .appearance-tile-label { right: 3px; bottom: 1px; z-index: 2; padding: 0 2px; background: rgba(7, 12, 14, .62); }
+.appearance-tile::before, .appearance-tile::after { display: none; }
 .appearance-tile::before, .appearance-tile::after { content: ''; position: absolute; }
 .appearance-tile::before { width: 22px; height: 27px; left: 50%; top: 3px; transform: translateX(-50%); border-radius: 45% 45% 42% 42%; background: linear-gradient(135deg, #af7355 0 43%, #5d382d 44% 100%); box-shadow: 0 -7px 0 1px #1e2020; }
 .appearance-tile::after { width: 19px; height: 6px; left: 50%; top: 18px; transform: translateX(-50%); border-top: 2px solid #1e1818; border-bottom: 1px solid rgba(20,20,20,.75); }

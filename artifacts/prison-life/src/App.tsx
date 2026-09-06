@@ -51,6 +51,7 @@ import {
 import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864145.png';
 import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
 import prisonerAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_12_30_1788711187677.png';
+import characterAtlas from '@assets/ChatGPT_Image_6_wrz_2026,_18_15_29_1788711335404.png';
 import gameSceneArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_50_39_1788709841559.png';
 
 const queryClient = new QueryClient();
@@ -85,44 +86,84 @@ type AppearanceKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'outfit' | 'skin';
 type Appearance = Record<AppearanceKey, number>;
 type AccountData = { email: string; password: string; confirmPassword: string };
 type PrisonerType = 'bull' | 'rat' | 'fox' | 'wolf';
-type Option = { name: string; short: string; swatch: string };
+type AtlasCrop = { x: number; y: number; width: number; height: number };
+type Option = { name: string; short: string; swatch: string; crop?: AtlasCrop };
+
+const atlasCrops: Record<AppearanceKey, AtlasCrop[]> = {
+  face: [
+    { x: 530, y: 42, width: 112, height: 145 },
+    { x: 645, y: 42, width: 112, height: 145 },
+    { x: 760, y: 42, width: 112, height: 145 },
+    { x: 875, y: 42, width: 112, height: 145 },
+  ],
+  hair: [
+    { x: 8, y: 181, width: 113, height: 145 },
+    { x: 124, y: 181, width: 113, height: 145 },
+    { x: 240, y: 181, width: 113, height: 145 },
+    { x: 356, y: 181, width: 113, height: 145 },
+  ],
+  beard: [
+    { x: 516, y: 181, width: 113, height: 145 },
+    { x: 632, y: 181, width: 113, height: 145 },
+    { x: 748, y: 181, width: 113, height: 145 },
+    { x: 864, y: 181, width: 113, height: 145 },
+  ],
+  tattoo: [
+    { x: 1050, y: 181, width: 116, height: 145 },
+    { x: 1170, y: 181, width: 116, height: 145 },
+    { x: 1290, y: 181, width: 116, height: 145 },
+    { x: 1410, y: 181, width: 116, height: 145 },
+  ],
+  outfit: [
+    { x: 10, y: 337, width: 145, height: 145 },
+    { x: 160, y: 337, width: 145, height: 145 },
+    { x: 310, y: 337, width: 145, height: 145 },
+    { x: 460, y: 337, width: 145, height: 145 },
+  ],
+  skin: [
+    { x: 1165, y: 42, width: 112, height: 145 },
+    { x: 1280, y: 42, width: 112, height: 145 },
+    { x: 1395, y: 42, width: 112, height: 145 },
+    { x: 1480, y: 42, width: 55, height: 145 },
+  ],
+};
 
 const appearanceOptions: Record<AppearanceKey, Option[]> = {
   face: [
-    { name: 'Kanciasta', short: '01', swatch: 'face-one' },
-    { name: 'Blizna', short: '02', swatch: 'face-two' },
-    { name: 'Surowa', short: '03', swatch: 'face-three' },
-    { name: 'Zmęczona', short: '04', swatch: 'face-four' },
+    { name: 'Kanciasta', short: '01', swatch: 'face-one', crop: atlasCrops.face[0] },
+    { name: 'Blizna', short: '02', swatch: 'face-two', crop: atlasCrops.face[1] },
+    { name: 'Surowa', short: '03', swatch: 'face-three', crop: atlasCrops.face[2] },
+    { name: 'Zmęczona', short: '04', swatch: 'face-four', crop: atlasCrops.face[3] },
   ],
   hair: [
-    { name: 'Krótka', short: '01', swatch: 'hair-one' },
-    { name: 'Wygolona', short: '02', swatch: 'hair-two' },
-    { name: 'Gęsta', short: '03', swatch: 'hair-three' },
-    { name: 'Irokez', short: '04', swatch: 'hair-four' },
+    { name: 'Krótka', short: '01', swatch: 'hair-one', crop: atlasCrops.hair[0] },
+    { name: 'Wygolona', short: '02', swatch: 'hair-two', crop: atlasCrops.hair[1] },
+    { name: 'Gęsta', short: '03', swatch: 'hair-three', crop: atlasCrops.hair[2] },
+    { name: 'Irokez', short: '04', swatch: 'hair-four', crop: atlasCrops.hair[3] },
   ],
   beard: [
-    { name: 'Brak', short: '01', swatch: 'beard-none' },
-    { name: 'Cień', short: '02', swatch: 'beard-shadow' },
-    { name: 'Broda', short: '03', swatch: 'beard-full' },
-    { name: 'Wąs', short: '04', swatch: 'beard-mustache' },
+    { name: 'Brak', short: '01', swatch: 'beard-none', crop: atlasCrops.beard[0] },
+    { name: 'Cień', short: '02', swatch: 'beard-shadow', crop: atlasCrops.beard[1] },
+    { name: 'Broda', short: '03', swatch: 'beard-full', crop: atlasCrops.beard[2] },
+    { name: 'Wąs', short: '04', swatch: 'beard-mustache', crop: atlasCrops.beard[3] },
   ],
   tattoo: [
-    { name: 'Brak', short: '01', swatch: 'tattoo-none' },
-    { name: 'Pająk', short: '02', swatch: 'tattoo-spider' },
-    { name: 'Czaszka', short: '03', swatch: 'tattoo-skull' },
-    { name: 'Litery', short: '04', swatch: 'tattoo-letters' },
+    { name: 'Brak', short: '01', swatch: 'tattoo-none', crop: atlasCrops.tattoo[0] },
+    { name: 'Pająk', short: '02', swatch: 'tattoo-spider', crop: atlasCrops.tattoo[1] },
+    { name: 'Czaszka', short: '03', swatch: 'tattoo-skull', crop: atlasCrops.tattoo[2] },
+    { name: 'Litery', short: '04', swatch: 'tattoo-letters', crop: atlasCrops.tattoo[3] },
   ],
   outfit: [
-    { name: 'Pomarańczowy', short: '01', swatch: 'outfit-orange' },
-    { name: 'Biały', short: '02', swatch: 'outfit-white' },
-    { name: 'Stalowy', short: '03', swatch: 'outfit-steel' },
-    { name: 'Kombinezon', short: '04', swatch: 'outfit-slate' },
+    { name: 'Pomarańczowy', short: '01', swatch: 'outfit-orange', crop: atlasCrops.outfit[0] },
+    { name: 'Biały', short: '02', swatch: 'outfit-white', crop: atlasCrops.outfit[1] },
+    { name: 'Stalowy', short: '03', swatch: 'outfit-steel', crop: atlasCrops.outfit[2] },
+    { name: 'Kombinezon', short: '04', swatch: 'outfit-slate', crop: atlasCrops.outfit[3] },
   ],
   skin: [
-    { name: 'Jasna', short: '01', swatch: 'skin-light' },
-    { name: 'Oliwkowa', short: '02', swatch: 'skin-olive' },
-    { name: 'Brązowa', short: '03', swatch: 'skin-brown' },
-    { name: 'Ciemna', short: '04', swatch: 'skin-dark' },
+    { name: 'Jasna', short: '01', swatch: 'skin-light', crop: atlasCrops.skin[0] },
+    { name: 'Oliwkowa', short: '02', swatch: 'skin-olive', crop: atlasCrops.skin[1] },
+    { name: 'Brązowa', short: '03', swatch: 'skin-brown', crop: atlasCrops.skin[2] },
+    { name: 'Ciemna', short: '04', swatch: 'skin-dark', crop: atlasCrops.skin[3] },
   ],
 };
 
@@ -277,6 +318,16 @@ function RegistrationProgress({ step, onStepChange }: { step: number; onStepChan
   return <div className="registration-progress" aria-label="Postęp rejestracji">{stepLabels.map((label, index) => <button type="button" className={`progress-step ${step === index + 1 ? 'current' : ''} ${step > index + 1 ? 'complete' : ''}`} key={label} onClick={() => onStepChange?.(index + 1)} aria-current={step === index + 1 ? 'step' : undefined} data-testid={`button-progress-${index + 1}`}><span className="progress-number">{step > index + 1 ? <Check size={14} /> : `0${index + 1}`}</span><span>{label}</span></button>)}</div>;
 }
 
+function AtlasThumb({ crop }: { crop?: AtlasCrop }) {
+  if (!crop) return null;
+  const boxWidth = 48;
+  const boxHeight = 35;
+  const scale = Math.min(boxWidth / crop.width, boxHeight / crop.height);
+  const left = (boxWidth - crop.width * scale) / 2 - crop.x * scale;
+  const top = (boxHeight - crop.height * scale) / 2 - crop.y * scale;
+  return <span className="appearance-thumb" aria-hidden="true" style={{ backgroundImage: `url("${characterAtlas}")`, backgroundSize: `${1536 * scale}px ${1024 * scale}px`, backgroundPosition: `${left}px ${top}px` }} />;
+}
+
 function AppearanceSelector({ appearance, onChange }: { appearance: Appearance; onChange: (key: AppearanceKey, value: number) => void }) {
   const categories: Array<[AppearanceKey, string]> = [['face', 'TWARZ'], ['hair', 'FRYZURA'], ['beard', 'ZAROST'], ['tattoo', 'TATUAŻE'], ['outfit', 'UBRANIE'], ['skin', 'KOLOR SKÓRY']];
   return (
@@ -288,7 +339,7 @@ function AppearanceSelector({ appearance, onChange }: { appearance: Appearance; 
           <div className="appearance-row-heading"><span>{label}</span><small>{options[selected].name}</small></div>
           <div className="appearance-options">
             <button type="button" className="carousel-arrow" onClick={() => onChange(key, (selected - 1 + options.length) % options.length)} aria-label={`Poprzednia opcja: ${label}`} data-testid={`button-appearance-prev-${key}`}><ChevronLeft size={16} /></button>
-            <div className="appearance-tiles">{options.map((option, index) => <button type="button" key={option.name} className={`appearance-tile ${option.swatch} ${selected === index ? 'selected' : ''}`} onClick={() => onChange(key, index)} aria-label={`${label}: ${option.name}`} aria-pressed={selected === index} data-testid={`button-appearance-${key}-${index + 1}`}><span>{option.short}</span></button>)}</div>
+            <div className="appearance-tiles">{options.map((option, index) => <button type="button" key={option.name} className={`appearance-tile ${option.swatch} ${selected === index ? 'selected' : ''}`} onClick={() => onChange(key, index)} aria-label={`${label}: ${option.name}`} aria-pressed={selected === index} data-testid={`button-appearance-${key}-${index + 1}`}><AtlasThumb crop={option.crop} /><span className="appearance-tile-label">{option.short}</span></button>)}</div>
             <button type="button" className="carousel-arrow" onClick={() => onChange(key, (selected + 1) % options.length)} aria-label={`Następna opcja: ${label}`} data-testid={`button-appearance-next-${key}`}><ChevronRight size={16} /></button>
           </div>
         </div>;
