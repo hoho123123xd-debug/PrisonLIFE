@@ -3593,6 +3593,7 @@
 }
 .inventory-character .character-preview::before,
 .inventory-character .character-preview::after,
+.inventory-character .character-photo,
 .inventory-character .preview-ruler,
 .inventory-character .preview-stamp,
 .inventory-character .preview-id {
@@ -3856,6 +3857,323 @@
   white-space: nowrap;
 }
 
+/* Black market screen — keeps the supplied shop composition inside the existing shell. */
+.game-shell-page .game-content-market {
+  display: block;
+  overflow: hidden;
+  padding: var(--game-space);
+}
+.market-view {
+  --market-line: rgba(172, 190, 181, .22);
+  --market-muted: #89958d;
+  --market-bright: #e9e5d9;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: clamp(140px, 22%, 190px) auto minmax(0, 1fr) auto;
+  gap: var(--game-space);
+  overflow: hidden;
+  isolation: isolate;
+}
+.market-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(90deg, rgba(5, 10, 12, .92), rgba(6, 12, 14, .72) 46%, rgba(5, 10, 11, .92)),
+    repeating-linear-gradient(90deg, rgba(160, 128, 87, .05) 0 1px, transparent 1px 54px),
+    repeating-linear-gradient(0deg, rgba(190, 204, 193, .025) 0 1px, transparent 1px 5px),
+    radial-gradient(ellipse at 64% 25%, rgba(154, 91, 43, .24), transparent 34%),
+    linear-gradient(140deg, #1b2424, #080f12 68%);
+  pointer-events: none;
+}
+.market-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, transparent 34%, rgba(0, 0, 0, .38) 100%);
+  pointer-events: none;
+}
+.market-hero {
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 18px clamp(14px, 2vw, 27px);
+  overflow: hidden;
+  border: 1px solid var(--market-line);
+  background:
+    linear-gradient(90deg, rgba(7, 13, 15, .97) 0%, rgba(8, 14, 16, .8) 37%, rgba(8, 13, 14, .42) 100%),
+    repeating-linear-gradient(100deg, rgba(210, 166, 105, .06) 0 2px, transparent 2px 18px),
+    radial-gradient(ellipse at 72% 50%, rgba(154, 83, 39, .3), transparent 38%),
+    #101a1c;
+  box-shadow: inset 0 -20px 42px rgba(0, 0, 0, .42), 0 7px 19px rgba(0, 0, 0, .25);
+}
+.market-hero::after {
+  content: 'M';
+  position: absolute;
+  right: 28%;
+  bottom: -27px;
+  color: rgba(221, 205, 169, .12);
+  font: italic 700 126px 'Oswald';
+  transform: rotate(-12deg);
+}
+.market-hero-copy {
+  position: relative;
+  z-index: 1;
+}
+.market-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--game-orange-soft);
+  font: 12px 'Oswald';
+  letter-spacing: .12em;
+}
+.market-hero h1 {
+  margin: 0;
+  color: #f0ede4;
+  font: 700 clamp(37px, 5vw, 67px) / .87 'Oswald';
+  letter-spacing: .02em;
+  text-shadow: 3px 4px 0 rgba(0, 0, 0, .43);
+}
+.market-hero p {
+  margin: 11px 0 0;
+  color: #c2c6bb;
+  font: 12px 'Barlow Condensed';
+  letter-spacing: .06em;
+}
+.market-hero-mark {
+  position: absolute;
+  right: 29%;
+  top: 22%;
+  color: rgba(217, 197, 157, .29);
+  font: italic 700 clamp(14px, 1.35vw, 20px) / .94 'Oswald';
+  letter-spacing: .04em;
+  transform: rotate(-6deg);
+}
+.market-hero-mark em {
+  color: rgba(221, 117, 47, .55);
+  font-style: normal;
+}
+.market-cash-panel {
+  position: absolute;
+  z-index: 1;
+  top: 12px;
+  right: 12px;
+  min-width: 139px;
+  padding: 11px 13px 9px;
+  border: 1px solid #394a45;
+  background: rgba(5, 14, 16, .78);
+  box-shadow: 0 8px 14px rgba(0, 0, 0, .25);
+}
+.market-cash-panel span {
+  display: block;
+  color: #9da99e;
+  font: 10px 'Barlow Condensed';
+  letter-spacing: .12em;
+}
+.market-cash-panel strong {
+  display: block;
+  margin-top: 3px;
+  color: #58bc6f;
+  font: 700 clamp(21px, 2.2vw, 31px) / 1 'Oswald';
+  letter-spacing: .04em;
+}
+.market-toolbar {
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--market-line);
+  background: rgba(7, 14, 16, .74);
+}
+.market-filters {
+  min-width: 0;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+}
+.market-filters button {
+  min-width: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 11px;
+  border: 1px solid #2d3c39;
+  color: #89948e;
+  background: rgba(15, 25, 27, .82);
+  cursor: pointer;
+  font: 11px 'Barlow Condensed';
+  letter-spacing: .04em;
+  transition: .18s;
+}
+.market-filters button:hover,
+.market-filters button.active {
+  border-color: var(--game-orange);
+  color: #f5d8b3;
+  background: linear-gradient(180deg, rgba(135, 66, 27, .8), rgba(47, 29, 19, .88));
+  box-shadow: 0 0 13px rgba(230, 123, 47, .18);
+}
+.market-filters button.active svg { color: var(--game-orange-soft); }
+.market-availability {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 6px 10px;
+  color: #a4aea4;
+  font: 10px 'Barlow Condensed';
+  white-space: nowrap;
+}
+.market-availability span,
+.market-availability button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.market-availability b {
+  color: #e8e4d8;
+  font-weight: 500;
+}
+.market-availability button {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid #30413c;
+  color: #a4aea4;
+  background: rgba(14, 25, 27, .66);
+  cursor: pointer;
+  font: inherit;
+}
+.market-availability button:hover { border-color: var(--game-orange); color: var(--game-orange-soft); }
+.market-availability button b { color: #b6beb4; }
+.market-item-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--game-space);
+}
+.market-item-card {
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(90px, .76fr) minmax(0, 1.24fr);
+  grid-template-rows: 1fr auto;
+  padding: 8px 9px;
+  border: 1px solid #354641;
+  background:
+    linear-gradient(145deg, rgba(30, 42, 42, .64), rgba(7, 14, 16, .92)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .024) 0 1px, transparent 1px 4px);
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.market-item-card:hover,
+.market-item-card.selected {
+  border-color: #ed7d2e;
+  box-shadow: inset 0 0 22px rgba(230, 117, 37, .13), 0 0 13px rgba(230, 117, 37, .16);
+}
+.market-item-card.selected::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgba(255, 163, 77, .53);
+  pointer-events: none;
+}
+.market-item-art {
+  min-width: 0;
+  grid-row: 1 / -1;
+  display: grid;
+  place-items: center;
+  color: #b9c4bc;
+  filter: drop-shadow(0 7px 6px rgba(0, 0, 0, .65));
+}
+.market-art-phone svg { color: #9ba8a5; transform: rotate(17deg); }
+.market-art-lighter svg { color: #b5c0b5; }
+.market-art-lockpick svg { color: #bac2b7; transform: rotate(-23deg); }
+.market-art-bandage svg { color: #d3c6ad; }
+.market-art-knife svg { color: #d3d5c9; transform: rotate(-28deg); }
+.market-art-cigarettes svg { color: #c6ab87; }
+.market-item-copy {
+  min-width: 0;
+  align-self: center;
+  padding-left: 4px;
+}
+.market-item-copy h2 {
+  margin: 0;
+  color: #eee9de;
+  font: 700 16px / 1 'Oswald';
+  letter-spacing: .04em;
+}
+.market-item-copy p {
+  max-width: 150px;
+  margin: 6px 0 0;
+  color: #9ca59c;
+  font: 11px / 1.15 'Barlow Condensed';
+}
+.market-item-footer {
+  min-width: 0;
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: end;
+  gap: 8px;
+  padding: 6px 0 0 4px;
+}
+.market-item-footer span {
+  overflow: hidden;
+  color: #8b978f;
+  font: 10px 'Barlow Condensed';
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.market-item-footer strong {
+  color: #58bc6f;
+  font: 700 18px 'Oswald';
+  white-space: nowrap;
+}
+.market-item-footer button {
+  min-width: 68px;
+  height: 30px;
+  border: 1px solid #f49335;
+  color: #23150b;
+  background: linear-gradient(90deg, #ee7628, #f69a3d);
+  cursor: pointer;
+  font: 700 12px 'Barlow Condensed';
+  transition: .18s;
+}
+.market-item-footer button:hover { background: #ffae53; }
+.market-footnote {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 6px 12px;
+  border: 1px solid rgba(161, 178, 169, .18);
+  color: #87938b;
+  background: rgba(7, 14, 16, .68);
+  font: 10px / 1.25 'Barlow Condensed';
+}
+.market-footnote span {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.market-footnote svg { flex: 0 0 auto; color: #a5afa5; }
+.market-footnote small { color: #6f7b74; font: inherit; }
+.market-footnote em {
+  color: #9ba49a;
+  font: italic 13px 'Oswald';
+  white-space: nowrap;
+}
+
 @media (min-width: 641px) and (max-width: 960px) {
   .game-shell-page {
     grid-template-rows: clamp(60px, 8vh, 72px) minmax(0, 1fr) clamp(34px, 5vh, 42px);
@@ -3892,6 +4210,10 @@
     grid-template-columns: none;
     grid-template-rows: none;
     gap: 0;
+  }
+  .game-shell-page .game-content-market {
+    display: block;
+    overflow: hidden;
   }
   .game-shell-page .game-board {
     display: contents;
@@ -4139,4 +4461,73 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: repeat(4, minmax(78px, 1fr));
   }
+}
+
+@media (max-width: 640px) {
+  .game-shell-page .game-content-market {
+    height: auto;
+    min-height: 100%;
+    overflow: auto;
+  }
+  .market-view {
+    height: auto;
+    min-height: 100%;
+    grid-template-rows: auto auto auto auto;
+    overflow: visible;
+  }
+  .market-hero {
+    min-height: 174px;
+    align-items: start;
+    padding: 18px 13px;
+  }
+  .market-hero h1 { font-size: clamp(38px, 12vw, 54px); }
+  .market-hero p {
+    max-width: 210px;
+    margin-top: 9px;
+    font-size: 11px;
+  }
+  .market-hero-mark { display: none; }
+  .market-cash-panel {
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+    min-width: 126px;
+    padding: 8px 10px 7px;
+  }
+  .market-cash-panel strong { font-size: 23px; }
+  .market-toolbar {
+    display: block;
+    min-height: 0;
+  }
+  .market-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .market-filters button {
+    min-height: 34px;
+    min-width: 0;
+  }
+  .market-availability {
+    justify-content: space-between;
+    padding: 7px;
+    border-top: 1px solid rgba(172, 190, 181, .14);
+  }
+  .market-availability button { padding-inline: 7px; }
+  .market-item-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    gap: 7px;
+  }
+  .market-item-card { min-height: 144px; }
+  .market-item-copy h2 { font-size: 17px; }
+  .market-item-copy p { max-width: 190px; }
+  .market-footnote {
+    min-height: 73px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+    padding: 9px;
+  }
+  .market-footnote em { align-self: flex-end; }
 }

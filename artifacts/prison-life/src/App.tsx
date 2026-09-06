@@ -39,8 +39,13 @@ import {
   Mail,
   Menu,
   MessageSquare,
+  Grid2X2,
+  Info,
+  MoreHorizontal,
+  Package,
   PanelRight,
   Plus,
+  RefreshCw,
   Scale,
   ScrollText,
   Send,
@@ -48,6 +53,7 @@ import {
   Settings,
   Shirt as ShirtIcon,
   ShoppingCart,
+  Smartphone,
   Swords,
   Timer,
   Table,
@@ -57,6 +63,7 @@ import {
   UserRoundPen,
   Users,
   Wind,
+  Wrench,
   X,
   Youtube,
   Zap,
@@ -489,7 +496,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE MISJE</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsReferenceView onNotice={showNotice} /> : activeSection === 'market' ? <BlackMarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsReferenceView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -563,77 +570,74 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
 }
 
-type MarketFilter = 'ALL' | 'USABLE' | 'EQUIPMENT' | 'OTHER';
-
-type MarketProduct = {
+type MarketCategory = 'ALL' | 'USABLE' | 'GEAR' | 'OTHER';
+type MarketItem = {
   id: string;
   name: string;
-  description: string;
+  category: Exclude<MarketCategory, 'ALL'>;
   price: number;
-  category: Exclude<MarketFilter, 'ALL'>;
-  icon: typeof Archive;
+  owned: number;
+  description: string;
+  icon: typeof Shield;
+  iconClass: string;
 };
 
-const marketProducts: MarketProduct[] = [
-  { id: 'phone', name: 'TELEFON', description: 'Pozwala na kontakt z innymi więźniami.', price: 500, category: 'USABLE', icon: Archive },
-  { id: 'lighter-market', name: 'ZAPALNICZKA', description: 'Przydatna w wielu sytuacjach.', price: 120, category: 'USABLE', icon: Zap },
-  { id: 'picks', name: 'WYTRYCH', description: 'Ułatwia otwieranie zamkniętych drzwi.', price: 300, category: 'EQUIPMENT', icon: Crosshair },
-  { id: 'bandage-market', name: 'BANDAŻ', description: 'Przywraca część zdrowia.', price: 150, category: 'USABLE', icon: Archive },
-  { id: 'knife-market', name: 'NÓŻ', description: 'Niebezpieczne narzędzie w rękach więźnia.', price: 400, category: 'EQUIPMENT', icon: Swords },
-  { id: 'cigarettes-market', name: 'PAPIEROSY', description: 'Zmniejszają stres.', price: 80, category: 'OTHER', icon: Wind },
+const marketItems: MarketItem[] = [
+  { id: 'phone', name: 'TELEFON', category: 'OTHER', price: 500, owned: 0, description: 'Pozwala na kontakt z innymi więźniami.', icon: Smartphone, iconClass: 'market-art-phone' },
+  { id: 'lighter', name: 'ZAPALNICZKA', category: 'USABLE', price: 120, owned: 1, description: 'Przydatna w wielu sytuacjach.', icon: Zap, iconClass: 'market-art-lighter' },
+  { id: 'lockpick', name: 'WYTRYCH', category: 'GEAR', price: 300, owned: 0, description: 'Ułatwia otwieranie zamkniętych drzwi.', icon: Wrench, iconClass: 'market-art-lockpick' },
+  { id: 'bandage', name: 'BANDAŻ', category: 'USABLE', price: 150, owned: 2, description: 'Przywraca część zdrowia.', icon: Plus, iconClass: 'market-art-bandage' },
+  { id: 'knife', name: 'NÓŻ', category: 'GEAR', price: 400, owned: 0, description: 'Niebezpieczne narzędzie w rękach więźnia.', icon: Swords, iconClass: 'market-art-knife' },
+  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', price: 80, owned: 3, description: 'Zmniejszają stres.', icon: Wind, iconClass: 'market-art-cigarettes' },
 ];
 
-function BlackMarketView({ onNotice }: { onNotice: (message: string) => void }) {
-  const [filter, setFilter] = useState<MarketFilter>('ALL');
-  const [balance, setBalance] = useState(1250);
-  const [owned, setOwned] = useState<Record<string, number>>({ 'lighter-market': 1, 'bandage-market': 2, 'cigarettes-market': 3 });
-  const filters: Array<{ id: MarketFilter; label: string; icon: typeof Archive }> = [
-    { id: 'ALL', label: 'WSZYSTKO', icon: Archive },
-    { id: 'USABLE', label: 'UŻYTKOWE', icon: Zap },
-    { id: 'EQUIPMENT', label: 'SPRZĘT', icon: Crosshair },
-    { id: 'OTHER', label: 'INNE', icon: Wind },
+function MarketView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [filter, setFilter] = useState<MarketCategory>('ALL');
+  const [selectedId, setSelectedId] = useState('phone');
+  const [cash, setCash] = useState(1250);
+  const [items, setItems] = useState(marketItems);
+  const filteredItems = filter === 'ALL' ? items : items.filter((item) => item.category === filter);
+  const filters: Array<{ id: MarketCategory; label: string; icon: typeof Shield }> = [
+    { id: 'ALL', label: 'WSZYSTKO', icon: Grid2X2 },
+    { id: 'USABLE', label: 'UŻYTKOWE', icon: Wrench },
+    { id: 'GEAR', label: 'SPRZĘT', icon: Swords },
+    { id: 'OTHER', label: 'INNE', icon: MoreHorizontal },
   ];
-  const visibleProducts = filter === 'ALL' ? marketProducts : marketProducts.filter((product) => product.category === filter);
 
-  const buyProduct = (product: MarketProduct) => {
-    if (balance < product.price) {
-      onNotice(`Nie stać Cię na przedmiot: ${product.name.toLowerCase()}.`);
+  const buyItem = (item: MarketItem) => {
+    if (cash < item.price) {
+      onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - cash} $.`);
       return;
     }
-    setBalance((current) => current - product.price);
-    setOwned((current) => ({ ...current, [product.id]: (current[product.id] ?? 0) + 1 }));
-    onNotice(`Kupiono: ${product.name.toLowerCase()}.`);
+    setCash((current) => current - item.price);
+    setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, owned: entry.owned + 1 } : entry));
+    onNotice(`Kupiono: ${item.name.toLowerCase()}.`);
   };
 
-  return <section className="market-view" style={{ '--market-art-url': `url("${cellReference}")` } as CSSProperties} data-testid="market-view">
+  return <section className="market-view" data-testid="market-view">
     <header className="market-hero">
-      <div>
-        <span className="eyebrow">HANDEL</span>
+      <div className="market-hero-copy">
+        <span className="market-kicker">HANDEL</span>
         <h1>CZARNY RYNEK</h1>
         <p>TUTAJ ZNAJDZIESZ RZECZY, KTÓRYCH NIE KUPISZ W SKLEPIE.</p>
       </div>
-      <div className="market-hero-copy">DOBRE<br />RZECZY<br /><strong>MAJĄ SWOJĄ<br />CENĘ.</strong></div>
+      <div className="market-hero-mark">DOBRE<br />RZECZY<br />MAJĄ<br />SWOJĄ<br /><em>CENĘ</em></div>
+      <div className="market-cash-panel"><span>GOTÓWKA</span><strong>$ {cash.toLocaleString('pl-PL')}</strong></div>
     </header>
-    <div className="market-balance"><span>GOTÓWKA</span><strong>$ {balance.toLocaleString('pl-PL')}</strong></div>
-    <div className="market-hero-art" />
     <div className="market-toolbar">
-      <div className="market-filters" role="tablist" aria-label="Filtry czarnego rynku">
-        {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} role="tab" aria-selected={filter === id}><FilterIcon size={14} />{label}</button>)}
+      <div className="market-filters" role="tablist" aria-label="Kategorie czarnego rynku">
+        {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} role="tab" aria-selected={filter === id} data-testid={`market-filter-${id.toLowerCase()}`}><FilterIcon size={15} />{label}</button>)}
       </div>
-      <div className="market-toolbar-status"><span><Archive size={15} /> DOSTĘPNE PRZEDMIOTY: {visibleProducts.length}</span><button onClick={() => onNotice('Oferta czarnego rynku została odświeżona.')}><Timer size={14} /> ODŚWIEŻ <small>00:42:17</small></button></div>
+      <div className="market-availability"><span><Package size={16} /> DOSTĘPNE PRZEDMIOTY: <b>{items.length}</b></span><button onClick={() => onNotice('Dostawa została sprawdzona. Nowe przedmioty pojawią się wkrótce.')}><RefreshCw size={15} /> ODŚWIEŻ <b>00:42:17</b></button></div>
     </div>
-    <div className="market-products">
-      {visibleProducts.map((product) => {
-        const ProductIcon = product.icon;
-        return <article className="market-product-card" key={product.id}>
-          <div className={`market-product-art market-product-art-${product.id}`}><ProductIcon size={76} strokeWidth={1.05} /></div>
-          <div className="market-product-copy"><h2>{product.name}</h2><p>{product.description}</p><small>Posiadasz: {owned[product.id] ?? 0}</small></div>
-          <strong className="market-product-price">$ {product.price}</strong>
-          <button className="market-buy-button" onClick={() => buyProduct(product)}>KUP</button>
-        </article>;
-      })}
+    <div className="market-item-grid">
+      {filteredItems.map((item) => <article key={item.id} className={`market-item-card ${selectedId === item.id ? 'selected' : ''}`} onClick={() => setSelectedId(item.id)} data-testid={`market-item-${item.id}`}>
+        <div className={`market-item-art ${item.iconClass}`}><item.icon size={65} strokeWidth={1.15} /></div>
+        <div className="market-item-copy"><h2>{item.name}</h2><p>{item.description}</p></div>
+        <div className="market-item-footer"><span>Posiadasz: {item.owned}</span><strong>$ {item.price}</strong><button onClick={(event) => { event.stopPropagation(); buyItem(item); }} data-testid={`market-buy-${item.id}`}>KUP</button></div>
+      </article>)}
     </div>
-    <footer className="market-note"><span><CircleDollarSign size={15} /> Ceny i dostępność przedmiotów na czarnym rynku mogą się zmieniać. Sprawdź regularnie nowe dostawy.</span><em>„W więzieniu wszystko ma swoją cenę.”</em></footer>
+    <footer className="market-footnote"><span><Info size={16} /> Ceny i dostępność przedmiotów na czarnym rynku mogą się zmieniać.<br /><small>Sprawdzaj regularnie nowe dostawy.</small></span><em>„W więzieniu wszystko ma swoją cenę.”</em></footer>
   </section>;
 }
 
