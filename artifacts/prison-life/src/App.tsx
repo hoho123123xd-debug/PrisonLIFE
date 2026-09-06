@@ -24,12 +24,12 @@ import {
   Droplets,
   Dumbbell,
   BedDouble,
+  Gem,
   Eye,
   Facebook,
   Flag,
   Gamepad2,
   Heart,
-  Info,
   Instagram,
   Lightbulb,
   KeyRound,
@@ -421,6 +421,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     xp: 120,
     xpMax: 500,
     gold: 250,
+    points: 3,
     energy: 100,
     hp: 100,
     reputation: 0,
@@ -473,7 +474,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
        <div className="game-player-summary"><img className="game-header-avatar" src={prisonerAsset} alt="" /><div className="game-player-name"><strong>{gameData.nickname.toUpperCase()}</strong><span>POZIOM {gameData.level}</span><div className="game-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div></div>
-      <div className="game-resources"><span className="resource-money"><CircleDollarSign size={18} /> {gameData.gold}</span><span className="resource-energy"><Zap size={18} /> {gameData.energy} / 100</span><span className="resource-health"><Heart size={18} /> {gameData.hp} / 100</span></div>
+       <div className="game-resources"><span className="resource-money"><CircleDollarSign size={18} /> {gameData.gold}</span><span className="resource-points"><Gem size={18} /><span className="resource-points-copy"><b>{gameData.points}</b><small>PUNKTY</small></span></span><span className="resource-energy"><Zap size={18} /> {gameData.energy} / 100</span><span className="resource-health"><Heart size={18} /> {gameData.hp} / 100</span></div>
       <div className="game-header-actions"><button aria-label="Powiadomienia" className="header-icon-button notification-button" onClick={() => showNotice('Nie masz nowych powiadomień.')}><Bell size={18} /><b>3</b></button><button aria-label="Ustawienia" className="header-icon-button" onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')}><Settings size={18} /></button><button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /> WYLOGUJ SIĘ <ArrowRight size={15} /></button></div>
     </header>
     <div className="game-layout">
@@ -777,8 +778,6 @@ const fightOpponents: FightOpponent[] = [
   { id: 'kosa', name: 'KOSA', level: 3, difficulty: 'ŚREDNI', className: 'WOJOWNIK', asset: prisonerAsset, stats: { sila: 12, kondycja: 11, zrecznosc: 9, technika: 10, charakter: 11 }, rewardMoney: [60, 100], rewardXp: [35, 65] },
 ];
 
-const fightStatMax = 20;
-
 function FightView({ creator, gameData, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; onNotice: (message: string) => void; onReturn: () => void }) {
   const [selectedId, setSelectedId] = useState<FightOpponentId>(fightOpponents[0].id);
   const opponent = fightOpponents.find((item) => item.id === selectedId)!;
@@ -806,47 +805,51 @@ function FightView({ creator, gameData, onNotice, onReturn }: { creator: Creator
       </button>;
     })}</div>
 
-    <div className="fight-compare">
-      <div className="fight-side fight-side-player">
-        <span className="fight-side-photo" style={{ backgroundImage: `url("${playerAsset}")` }} />
-        <div className="fight-side-body">
-          <span className="fight-side-tag">GRACZ</span>
-          <h2>{gameData.nickname.toUpperCase()}</h2>
-          <span className="fight-side-meta">POZIOM {gameData.level} | KLASA: {playerClassName}</span>
-          <div className="fight-side-stats">{fightStatMeta.map(({ key, label, icon: Icon }) => <div className="fight-stat-row" key={key}><span className="fight-stat-label"><Icon size={13} /> {label}</span><b>{playerStats[key]}</b><div className="fight-stat-bar"><i style={{ width: `${Math.min(100, (playerStats[key] / fightStatMax) * 100)}%` }} /></div></div>)}</div>
-        </div>
+    <div className="fight-arena">
+      <div className="fight-fighter fight-fighter-player">
+        <span className="fight-fighter-tag">TY</span>
+        <span className="fight-fighter-portrait" style={{ backgroundImage: `url("${playerAsset}")` }} />
+        <div className="fight-fighter-info"><strong>{gameData.nickname.toUpperCase()}</strong><span>POZIOM {gameData.level} • KLASA: {playerClassName}</span></div>
       </div>
-
-      <div className="fight-center">
-        <span className="fight-vs">VS</span>
-        <div className="fight-chance">
-          <span className="fight-chance-label"><Scale size={14} /> TWOJE SZANSE</span>
-          <strong>{winChance}%</strong>
-          <div className="fight-chance-bar"><i style={{ width: `${winChance}%` }} /></div>
-        </div>
-        <div className="fight-rewards">
-          <span className="fight-rewards-title">MOŻLIWE NAGRODY</span>
-          <div className="fight-reward-row"><CircleDollarSign size={13} /><span>{opponent.rewardMoney[0]}–{opponent.rewardMoney[1]}</span></div>
-          <div className="fight-reward-row"><Award size={13} /><span>{opponent.rewardXp[0]}–{opponent.rewardXp[1]} XP</span></div>
-          <div className="fight-reward-row"><Plus size={13} /><span>Reputacja</span></div>
-        </div>
-      </div>
-
-      <div className="fight-side fight-side-opponent">
-        <div className="fight-side-body">
-          <span className="fight-side-tag">PRZECIWNIK</span>
-          <h2>{opponent.name}</h2>
-          <span className="fight-side-meta">POZIOM {opponent.level} | KLASA: {opponent.className}</span>
-          <div className="fight-side-stats">{fightStatMeta.map(({ key, label, icon: Icon }) => <div className="fight-stat-row" key={key}><span className="fight-stat-label"><Icon size={13} /> {label}</span><b>{opponent.stats[key]}</b><div className="fight-stat-bar"><i style={{ width: `${Math.min(100, (opponent.stats[key] / fightStatMax) * 100)}%` }} /></div></div>)}</div>
-        </div>
-        <span className="fight-side-photo" style={{ backgroundImage: `url("${opponent.asset}")` }} />
+      <div className="fight-arena-vs"><span>VS</span></div>
+      <div className="fight-fighter fight-fighter-opponent">
+        <span className="fight-fighter-tag">PRZECIWNIK</span>
+        <span className="fight-fighter-portrait" style={{ backgroundImage: `url("${opponent.asset}")` }} />
+        <div className="fight-fighter-info"><strong>{opponent.name}</strong><span>POZIOM {opponent.level} • KLASA: {opponent.className}</span></div>
       </div>
     </div>
 
-    <footer className="fight-actions">
-      <button className="fight-back" onClick={onReturn}><ArrowLeft size={16} /> POWRÓT</button>
-      <button className="fight-attack" onClick={handleAttack} data-testid="fight-attack-button"><Swords size={19} /><span>ATAKUJ<small>ROZPOCZNIJ WALKĘ</small></span></button>
-      <p className="fight-hint"><Info size={14} /> Wynik walki zależy od statystyk, poziomu, klasy postaci i aktualnej formy. Silniejszy przeciwnik to większe ryzyko, ale też lepsze nagrody.</p>
+    <div className="fight-tug-stats">{fightStatMeta.map(({ key, label, icon: Icon }) => {
+      const playerValue = playerStats[key];
+      const opponentValue = opponent.stats[key];
+      const playerShare = (playerValue / (playerValue + opponentValue || 1)) * 100;
+      return <div className="fight-tug-row" key={key}>
+        <b className="fight-tug-value fight-tug-value-player">{playerValue}</b>
+        <div className="fight-tug-track">
+          <i className="fight-tug-fill-player" style={{ width: `${playerShare}%` }} />
+          <i className="fight-tug-fill-opponent" style={{ width: `${100 - playerShare}%` }} />
+          <span className="fight-tug-label"><Icon size={12} /> {label}</span>
+        </div>
+        <b className="fight-tug-value fight-tug-value-opponent">{opponentValue}</b>
+      </div>;
+    })}</div>
+
+    <footer className="fight-footer">
+      <button className="fight-back" onClick={onReturn} aria-label="Powrót"><ArrowLeft size={16} /></button>
+      <div className="fight-chance">
+        <span className="fight-chance-label"><Scale size={13} /> TWOJE SZANSE NA WYGRANĄ</span>
+        <strong>{winChance}%</strong>
+        <div className="fight-chance-bar"><i style={{ width: `${winChance}%` }} /></div>
+      </div>
+      <div className="fight-rewards">
+        <span className="fight-rewards-title">MOŻLIWE NAGRODY</span>
+        <div className="fight-rewards-list">
+          <span><CircleDollarSign size={13} /> {opponent.rewardMoney[0]}–{opponent.rewardMoney[1]}</span>
+          <span><Award size={13} /> {opponent.rewardXp[0]}–{opponent.rewardXp[1]} XP</span>
+          <span><Plus size={13} /> Reputacja</span>
+        </div>
+      </div>
+      <button className="fight-attack" onClick={handleAttack} data-testid="fight-attack-button"><Swords size={19} /><span>ATAKUJ<small>ROZPOCZNIJ POJEDYNEK</small></span></button>
     </footer>
   </section>;
 }

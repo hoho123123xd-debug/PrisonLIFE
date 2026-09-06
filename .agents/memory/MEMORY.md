@@ -2,3 +2,4 @@
 - [Registration scene compositing](registration-scene-compositing.md) — keep the character cutout and prison environment as separate visual layers to avoid duplicate subjects.
 - [Game shell styling](game-shell-styling.md) — keep the game viewport styles isolated from the public landing and prisoner-intake screens.
 - [Registration stage layout](registration-stage-layout.md) — the supplied intake mockup is the source of truth: stage 1 uses four full-height columns including prisoner type.
+- [Prison Life build environment](prison-life-build-env.md) — the Vite build requires both PORT and BASE_PATH to be provided explicitly.
