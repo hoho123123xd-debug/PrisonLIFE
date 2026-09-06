@@ -567,12 +567,16 @@
   gap: 8px;
 }
 .cell-development-scene {
-  min-height: 0;
   position: relative;
-  width: 100%;
-  height: auto;
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  min-height: 0;
   aspect-ratio: 3 / 2;
-  align-self: start;
+  align-self: center;
+  justify-self: center;
   overflow: hidden;
   border: 1px solid #53625d;
   background: #0b1113;
