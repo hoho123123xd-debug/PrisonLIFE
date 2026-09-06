@@ -384,34 +384,18 @@
   letter-spacing: .15em;
   text-align: center;
 }
+.registration-page .registration-body .type-selection-ability-icon {
+  display: inline-block;
+  margin-right: 5px;
+  font-family: sans-serif;
+  font-size: 1.05em;
+  letter-spacing: 0;
+}
 .registration-page .registration-body .type-selection-card-body > p {
   min-height: 28px;
   margin: 7px 0 7px;
   color: #9ca49e;
   font: 11px/1.25 'Barlow Condensed';
-}
-.registration-page .registration-body .type-selection-stats {
-  display: grid;
-  gap: 4px;
-}
-.registration-page .registration-body .type-selection-stat {
-  display: grid;
-  grid-template-columns: 84px 1fr;
-  align-items: center;
-  gap: 6px;
-  color: #c3c7bc;
-  font: 9px 'Barlow Condensed';
-  letter-spacing: .04em;
-}
-.registration-page .registration-body .type-selection-stat > div {
-  height: 6px;
-  overflow: hidden;
-  background: repeating-linear-gradient(90deg, #242d2e 0 9px, transparent 9px 12px);
-}
-.registration-page .registration-body .type-selection-stat i {
-  display: block;
-  height: 100%;
-  background: repeating-linear-gradient(90deg, var(--prison-orange) 0 9px, transparent 9px 12px);
 }
 .registration-page .registration-body .type-selection-footer-copy {
   display: flex;
@@ -500,7 +484,7 @@
     display: none;
   }
   .registration-page .registration-header-step-1 + .registration-body .type-selection-card-art {
-    height: clamp(205px, 31dvh, 320px);
+    height: clamp(605px, calc(31dvh + 400px), 720px);
     min-height: 0;
     flex: 0 0 auto;
   }

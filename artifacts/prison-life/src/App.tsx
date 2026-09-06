@@ -51,9 +51,13 @@ import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864
 import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
 import prisonerAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_12_30_1788711187677.png';
 import bullAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_57_13_1788713844519.png';
+import femaleBullAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_03_12_1788715039687.png';
 import ratAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_57_44_1788713877886.png';
+import femaleRatAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_04_23_1788715066292.png';
 import foxAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_58_23_1788713918595.png';
+import femaleFoxAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_09_1788715078788.png';
 import wolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_59_09_1788713957701.png';
+import femaleWolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_54_1788715089958.png';
 import gameSceneArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_50_39_1788709841559.png';
 
 const queryClient = new QueryClient();
@@ -95,21 +99,31 @@ const prisonerTypes: Array<{
   name: string;
   specialty: string;
   description: string;
-  stats: string[];
+  abilityIcon: string;
+  abilityTitle: string;
+  abilityDescription: string;
 }> = [
-  { id: 'bull', name: 'BYK', specialty: 'SIŁA • ŻYCIE', description: 'Brutalny i nieustępliwy. Zadaje dużo obrażeń i ma wysoką wytrzymałość.', stats: ['SIŁA 85', 'ŻYCIE 90'] },
-  { id: 'rat', name: 'SZCZUR', specialty: 'SZYBKOŚĆ • UNIKI', description: 'Szybki, sprytny, trudny do złapania. Zawsze znajdzie wyjście.', stats: ['ZWINNOŚĆ 88', 'UNIKI 82'] },
-  { id: 'fox', name: 'LIS', specialty: 'TECHNIKA • TAKTYKA', description: 'Myśli kilka kroków naprzód. Wykorzystuje słabości przeciwnika.', stats: ['TECHNIKA 86', 'TAKTYKA 79'] },
-  { id: 'wolf', name: 'WILK', specialty: 'BALANS', description: 'Uniwersalny styl gry. Dobry w każdej sytuacji.', stats: ['BALANS 80', 'INSTYNKT 78'] },
+  { id: 'bull', name: 'BYK', specialty: 'SERIA ATAKÓW', description: 'W walce może wykonać serię kolejnych ataków. Każdy kolejny cios zadaje obrażenia, ale jest słabszy od poprzedniego.', abilityIcon: '🥊', abilityTitle: 'Seria ataków', abilityDescription: 'Może wykonać kilka ataków pod rząd.' },
+  { id: 'rat', name: 'SZCZUR', specialty: 'UNIKI', description: 'Ma zwiększoną szansę na uniknięcie ataku przeciwnika. Udany unik pozwala mu uniknąć otrzymania obrażeń.', abilityIcon: '🐀', abilityTitle: 'Uniki', abilityDescription: 'Ma zwiększoną szansę na uniknięcie ataku.' },
+  { id: 'fox', name: 'LIS', specialty: 'KONTRATAK', description: 'Specjalizuje się w kontratakach. Po otrzymaniu ciosu ma szansę natychmiast odpowiedzieć własnym atakiem.', abilityIcon: '🦊', abilityTitle: 'Kontratak', abilityDescription: 'Może natychmiast odpowiedzieć po otrzymaniu ciosu.' },
+  { id: 'wolf', name: 'WILK', specialty: 'DOBIJANIE', description: 'Specjalizuje się w dobijaniu przeciwników. Jego ataki stają się skuteczniejsze, gdy przeciwnik ma mało zdrowia.', abilityIcon: '🐺', abilityTitle: 'Dobijanie', abilityDescription: 'Jest skuteczniejszy przeciwko osłabionym przeciwnikom.' },
 ];
 
-const typeStatLabels = ['SIŁA', 'WYTRZYMAŁOŚĆ', 'SZYBKOŚĆ', 'TECHNIKA', 'UNIKI'];
-const typeStatValues: Record<PrisonerType, number[]> = {
-  bull: [88, 96, 46, 28, 18],
-  rat: [48, 36, 94, 42, 88],
-  fox: [58, 44, 62, 94, 70],
-  wolf: [76, 78, 70, 66, 62],
-};
+function getPrisonerDisplayName(type: typeof prisonerTypes[number], gender: Gender) {
+  if (gender === 'female' && type.id === 'bull') return 'BYCZYCA';
+  if (gender === 'female' && type.id === 'rat') return 'SZCZURZYCA';
+  if (gender === 'female' && type.id === 'fox') return 'LISICA';
+  if (gender === 'female' && type.id === 'wolf') return 'WILCZYCA';
+  return type.name;
+}
+
+function getPrisonerAsset(type: typeof prisonerTypes[number], gender: Gender) {
+  if (gender === 'female' && type.id === 'bull') return femaleBullAsset;
+  if (gender === 'female' && type.id === 'rat') return femaleRatAsset;
+  if (gender === 'female' && type.id === 'fox') return femaleFoxAsset;
+  if (gender === 'female' && type.id === 'wolf') return femaleWolfAsset;
+  return type.id === 'bull' ? bullAsset : type.id === 'rat' ? ratAsset : type.id === 'fox' ? foxAsset : wolfAsset;
+}
 
 const stepLabels = ['POSTAĆ', 'TYP', 'DANE', 'GOTOWE'];
 
@@ -317,8 +331,8 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
   );
 }
 
-function TypeCard({ type, selected, onSelect, compact = false }: { type: typeof prisonerTypes[number]; selected: boolean; onSelect: () => void; compact?: boolean }) {
-  return <button type="button" className={`type-card ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={onSelect} aria-pressed={selected} data-testid={`button-prisoner-type-${type.id}`}><span className={`type-avatar type-${type.id}`}><span>{type.name.slice(0, 1)}</span></span><span className="type-card-content"><strong>{type.name}</strong><em>{type.specialty}</em>{!compact && <><small>{type.description}</small><i>{type.stats.join('  /  ')}</i></>}</span>{selected && <Check className="type-check" size={17} />}</button>;
+function TypeCard({ type, selected, onSelect, compact = false, displayName = type.name }: { type: typeof prisonerTypes[number]; selected: boolean; onSelect: () => void; compact?: boolean; displayName?: string }) {
+  return <button type="button" className={`type-card ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={onSelect} aria-pressed={selected} data-testid={`button-prisoner-type-${type.id}`}><span className={`type-avatar type-${type.id}`}><span>{displayName.slice(0, 1)}</span></span><span className="type-card-content"><strong>{displayName}</strong><em>{type.specialty}</em>{!compact && <><small>{type.description}</small><i>{type.abilityIcon} {type.abilityTitle}</i></>}</span>{selected && <Check className="type-check" size={17} />}</button>;
 }
 
 function TypeRail({ selectedType, onSelect, heading = 'WYBIERZ TYP WIĘŹNIA', compact = false }: { selectedType: PrisonerType; onSelect: (type: PrisonerType) => void; heading?: string; compact?: boolean }) {
@@ -359,14 +373,14 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
       <div className="type-selection-footer-copy"><span>WYBIERZ TYP WIĘŹNIA</span><small>KAŻDY TYP TO INNA DROGA. WYBIERZ MĄDRZE.</small></div>
       <div className="type-selection-cards">
         {prisonerTypes.map((type) => <button type="button" key={type.id} className={`type-selection-card ${creator.prisonerType === type.id ? 'selected' : ''}`} onClick={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} aria-pressed={creator.prisonerType === type.id} data-testid={`button-prisoner-type-${type.id}`}>
-          <div className={`type-selection-card-art type-art-${type.id}`}><img src={type.id === 'bull' ? bullAsset : type.id === 'rat' ? ratAsset : type.id === 'fox' ? foxAsset : wolfAsset} alt="" /></div>
-          <div className="type-selection-card-body"><h2>{type.name}</h2><strong>{type.specialty}</strong><p>{type.description}</p><div className="type-selection-stats">{typeStatLabels.map((label, index) => <div className="type-selection-stat" key={label}><span>{label}</span><div><i style={{ width: `${typeStatValues[type.id][index]}%` }} /></div></div>)}</div></div>
+          <div className={`type-selection-card-art type-art-${type.id}`}><img src={getPrisonerAsset(type, creator.gender)} alt="" /></div>
+           <div className="type-selection-card-body"><h2>{getPrisonerDisplayName(type, creator.gender)}</h2><strong><span className="type-selection-ability-icon" aria-hidden="true">{type.abilityIcon}</span>{type.abilityTitle}</strong><p>{type.abilityDescription}</p></div>
         </button>)}
       </div>
     </section>}
-    {creator.step === 2 && <section className="step-screen type-step"><div className="step-heading"><div className="eyebrow">Krok 02 / Specjalizacja</div><h1>WYBIERZ <span>SWOJĄ DROGĘ</span></h1><p>Każdy typ więźnia otwiera inną ścieżkę rozwoju. Wybierz specjalizację, która pasuje do Twojej strategii.</p></div><div className="type-selection-grid">{prisonerTypes.map((type) => <TypeCard key={type.id} type={type} selected={creator.prisonerType === type.id} onSelect={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} />)}</div><div className="mini-summary"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div><span>WYBRANY TYP</span><strong>{selectedType.name}</strong><p>{selectedType.description}</p></div></div></section>}
+    {creator.step === 2 && <section className="step-screen type-step"><div className="step-heading"><div className="eyebrow">Krok 02 / Specjalizacja</div><h1>WYBIERZ <span>SWOJĄ DROGĘ</span></h1><p>Każdy typ więźnia otwiera inną ścieżkę rozwoju. Wybierz specjalizację, która pasuje do Twojej strategii.</p></div><div className="type-selection-grid">{prisonerTypes.map((type) => <TypeCard key={type.id} type={type} displayName={getPrisonerDisplayName(type, creator.gender)} selected={creator.prisonerType === type.id} onSelect={() => setCreator((current) => ({ ...current, prisonerType: type.id }))} />)}</div><div className="mini-summary"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div><span>WYBRANY TYP</span><strong>{getPrisonerDisplayName(selectedType, creator.gender)}</strong><p>{selectedType.description}</p></div></div></section>}
     {creator.step === 3 && <section className="step-screen account-step"><div className="step-heading"><div className="eyebrow">Krok 03 / Kartoteka</div><h1>DANE <span>WIĘŹNIA</span></h1><p>Twoja kartoteka jest prawie gotowa. Podaj dane, których użyjesz, aby wrócić do swojej historii.</p></div><form className="account-form" onSubmit={(event) => { event.preventDefault(); goNext(); }}><label><span><Mail size={15} /> E-MAIL</span><input type="email" autoComplete="email" value={creator.account.email} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, email: event.target.value }, accountError: '' }))} placeholder="więzień@prisonlife.pl" data-testid="input-auth-email" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="new-password" minLength={6} value={creator.account.password} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, password: event.target.value }, accountError: '' }))} placeholder="minimum 6 znaków" data-testid="input-auth-password" required /></label><label><span><KeyRound size={15} /> POWTÓRZ HASŁO</span><input type="password" autoComplete="new-password" value={creator.account.confirmPassword} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, confirmPassword: event.target.value }, accountError: '' }))} placeholder="powtórz hasło" data-testid="input-auth-confirm" required /></label>{creator.accountError && <div className="form-error">{creator.accountError}</div>}<button type="submit" className="account-form-submit">SPRAWDŹ DANE <ArrowRight size={16} /></button></form><div className="account-side-note"><span>IDENTYFIKATOR</span><strong>{creator.nickname.toUpperCase() || 'NOWY WIĘZIEŃ'}</strong><small>#A-47291 / INTAKE</small><p>Dane konta są używane wyłącznie do logowania do Prison Life.</p></div></section>}
-    {creator.step === 4 && <section className="step-screen summary-step"><div className="step-heading"><div className="eyebrow">Krok 04 / Kontrola</div><h1>WSZYSTKO <span>GOTOWE</span></h1><p>Sprawdź swoją kartotekę. Możesz cofnąć się i zmienić dowolny wybór.</p></div><div className="summary-grid"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div className="summary-details"><div className="summary-block"><span className="summary-label">KSYWA</span><strong>{creator.nickname.toUpperCase()}</strong><button onClick={() => changeStep(1)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-block"><span className="summary-label">TYP WIĘŹNIA</span><strong>{selectedType.name}</strong><em>{selectedType.specialty}</em><button onClick={() => changeStep(2)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-stats">{selectedType.stats.map((stat) => <span key={stat}>{stat}</span>)}</div><div className="summary-block account-summary"><span className="summary-label">DANE KONTA</span><strong>{creator.account.email}</strong><small>Hasło zabezpieczone</small><button onClick={() => changeStep(3)}>EDYTUJ <ChevronRight size={14} /></button></div></div></div></section>}
+    {creator.step === 4 && <section className="step-screen summary-step"><div className="step-heading"><div className="eyebrow">Krok 04 / Kontrola</div><h1>WSZYSTKO <span>GOTOWE</span></h1><p>Sprawdź swoją kartotekę. Możesz cofnąć się i zmienić dowolny wybór.</p></div><div className="summary-grid"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div className="summary-details"><div className="summary-block"><span className="summary-label">KSYWA</span><strong>{creator.nickname.toUpperCase()}</strong><button onClick={() => changeStep(1)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-block"><span className="summary-label">TYP WIĘŹNIA</span><strong>{getPrisonerDisplayName(selectedType, creator.gender)}</strong><em>{selectedType.specialty}</em><button onClick={() => changeStep(2)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-stats"><span>{selectedType.abilityIcon} {selectedType.abilityTitle}</span><span>{selectedType.abilityDescription}</span></div><div className="summary-block account-summary"><span className="summary-label">DANE KONTA</span><strong>{creator.account.email}</strong><small>Hasło zabezpieczone</small><button onClick={() => changeStep(3)}>EDYTUJ <ChevronRight size={14} /></button></div></div></div></section>}
   </RegistrationShell>;
 }
 
