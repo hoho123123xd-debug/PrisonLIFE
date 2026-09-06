@@ -621,7 +621,7 @@ function CellDevelopmentView({ onNotice }: { onNotice: (message: string) => void
         </div>
         <section className="cell-level-preview">
           <div className="cell-development-panel-title">PODGLĄD POZIOMÓW</div>
-          <div className="cell-level-cards">{[1, 2, 3, 4, 5].map((level) => <button className={`cell-level-card ${selected.level === level ? 'active' : ''}`} key={level} onClick={() => onNotice(`Podglądasz ${selected.label.toLowerCase()} na poziomie ${level}.`)}><span className={`cell-level-thumb ${selected.thumbClass}`} style={{ backgroundImage: `url("${cellBackground}")` }} /><small>Poziom {level}</small></button>)}</div>
+          <div className="cell-level-cards">{Array.from({ length: 20 }, (_, index) => index + 1).map((level) => <button className={`cell-level-card ${selected.level === level ? 'active' : ''}`} key={level} onClick={() => onNotice(`Podglądasz ${selected.label.toLowerCase()} na poziomie ${level}.`)}><span className={`cell-level-thumb ${selected.thumbClass}`} style={{ backgroundImage: `url("${cellBackground}")` }} /><small>Poziom {level}</small></button>)}</div>
         </section>
       </div>
 

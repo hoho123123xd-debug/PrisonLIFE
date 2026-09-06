@@ -663,16 +663,20 @@
 }
 .cell-level-cards {
   height: calc(100% - 31px);
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 7px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
   padding: 7px;
+  scrollbar-color: #a8663a #182322;
+  scrollbar-width: thin;
 }
 .cell-level-card {
   min-width: 0;
   width: 100%;
-  max-width: 112px;
-  justify-self: center;
+  flex: 0 0 82px;
+  max-width: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -682,6 +686,16 @@
   color: #bfc5ba;
   background: rgba(21, 29, 30, .55);
   cursor: pointer;
+}
+.cell-level-cards::-webkit-scrollbar {
+  height: 6px;
+}
+.cell-level-cards::-webkit-scrollbar-track {
+  background: #182322;
+}
+.cell-level-cards::-webkit-scrollbar-thumb {
+  border: 1px solid #182322;
+  background: #a8663a;
 }
 .cell-level-card:hover,
 .cell-level-card.active {
@@ -896,7 +910,7 @@
     min-height: 0;
   }
   .cell-level-card {
-    max-width: 86px;
+    flex-basis: 70px;
   }
   .cell-development-details {
     grid-template-rows: minmax(0, 1fr) 134px;
