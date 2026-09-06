@@ -27,6 +27,7 @@ import {
   Gem,
   Eye,
   Facebook,
+  Footprints as FootprintsIcon,
   Flag,
   Gamepad2,
   Heart,
@@ -45,6 +46,7 @@ import {
   Send,
   Shield,
   Settings,
+  Shirt as ShirtIcon,
   ShoppingCart,
   Swords,
   Timer,
@@ -479,7 +481,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : ''}`}>
+       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'equipment' ? 'game-content-equipment' : ''}`}>
         {activeSection === 'cell' ? <div className="game-board">
            <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
           <aside className="game-right-column">
@@ -487,7 +489,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
             <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
               <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
           </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
          {activeSection === 'cell' && <section className="game-bottom-grid">
           <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
           <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
@@ -559,6 +561,118 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+type InventoryFilter = 'ALL' | 'USABLE' | 'WEAPON' | 'OTHER';
+
+type InventoryItem = {
+  id: string;
+  name: string;
+  category: Exclude<InventoryFilter, 'ALL'>;
+  quantity: number;
+  description: string;
+  rarity: string;
+  icon: typeof Shield;
+};
+
+const inventoryItems: InventoryItem[] = [
+  { id: 'razor', name: 'ŻYLETKA', category: 'WEAPON', quantity: 1, description: 'Ostry kawałek metalu. Może być przydatny w wielu sytuacjach.', rarity: 'ZWYKŁY', icon: Swords },
+  { id: 'lighter', name: 'ZAPALNICZKA', category: 'USABLE', quantity: 1, description: 'Mała, wysłużona zapalniczka. Działa, kiedy naprawdę jej potrzebujesz.', rarity: 'ZWYKŁY', icon: Zap },
+  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', quantity: 3, description: 'Kilka papierosów. W bloku zawsze znajdzie się ktoś, kto ich potrzebuje.', rarity: 'ZWYKŁY', icon: Wind },
+  { id: 'bread', name: 'CHLEB', category: 'USABLE', quantity: 2, description: 'Porcja chleba ze stołówki. Prosta rzecz, ale nigdy nie wiadomo, kiedy się przyda.', rarity: 'ZWYKŁY', icon: Archive },
+  { id: 'water', name: 'WODA', category: 'USABLE', quantity: 1, description: 'Butelka wody na długi dzień za kratami.', rarity: 'ZWYKŁY', icon: Droplets },
+  { id: 'towel', name: 'RĘCZNIK', category: 'OTHER', quantity: 1, description: 'Szorstki ręcznik z łaźni. Nie wygląda dobrze, ale spełnia swoje zadanie.', rarity: 'ZWYKŁY', icon: Shield },
+  { id: 'soap', name: 'MYDŁO', category: 'USABLE', quantity: 1, description: 'Zwykłe więzienne mydło. Czystość też buduje reputację.', rarity: 'ZWYKŁY', icon: Droplets },
+  { id: 'bandage', name: 'BANDAŻ', category: 'USABLE', quantity: 2, description: 'Podstawowy opatrunek na drobne urazy po treningu lub walce.', rarity: 'ZWYKŁY', icon: Plus },
+  { id: 'notebook', name: 'NOTATNIK', category: 'OTHER', quantity: 1, description: 'Kilka pustych stron. Dobre pomysły warto zapisać, zanim znikną.', rarity: 'ZWYKŁY', icon: ScrollText },
+  { id: 'knife', name: 'NÓŻ', category: 'WEAPON', quantity: 1, description: 'Krótki, ostry nóż. Lepiej mieć go przy sobie niż szukać go w potrzebie.', rarity: 'ZWYKŁY', icon: Crosshair },
+];
+
+const inventoryEquipment = [
+  { id: 'head', label: 'GŁOWA', slot: 'Czapka', icon: Shield },
+  { id: 'face', label: 'TWARZ', slot: 'Maska', icon: UserRound },
+  { id: 'top', label: 'GÓRA', slot: 'Koszula', icon: ShirtIcon },
+  { id: 'bottom', label: 'NOGI', slot: 'Spodnie', icon: Archive },
+  { id: 'left-hand', label: 'DŁOŃ (L)', slot: 'Puste', icon: Swords },
+  { id: 'right-hand', label: 'DŁOŃ (P)', slot: 'Puste', icon: Crosshair },
+  { id: 'feet', label: 'BUTY', slot: 'Obuwie', icon: FootprintsIcon },
+];
+
+function InventoryView({ creator, onNotice }: { creator: CreatorState; onNotice: (message: string) => void }) {
+  const [filter, setFilter] = useState<InventoryFilter>('ALL');
+  const [selectedId, setSelectedId] = useState('razor');
+  const selectedItem = inventoryItems.find((item) => item.id === selectedId) ?? inventoryItems[0];
+  const filteredItems = filter === 'ALL' ? inventoryItems : inventoryItems.filter((item) => item.category === filter);
+  const filters: Array<{ id: InventoryFilter; label: string; icon?: typeof Shield }> = [
+    { id: 'ALL', label: 'WSZYSTKIE', icon: Backpack },
+    { id: 'USABLE', label: 'UŻYTKOWE', icon: Droplets },
+    { id: 'WEAPON', label: 'BROŃ', icon: Swords },
+    { id: 'OTHER', label: 'INNE', icon: Plus },
+  ];
+
+  const selectItem = (item: InventoryItem) => setSelectedId(item.id);
+
+  return <section className="inventory-view" style={{ '--inventory-art-url': `url("${cellReference}")` } as CSSProperties} data-testid="inventory-view">
+    <header className="inventory-heading">
+      <div>
+        <h1>EKWIPUNEK</h1>
+        <p>TWOJE PRZEDMIOTY. WSZYSTKO, CO MASZ PRZY SOBIE.</p>
+      </div>
+      <div className="inventory-heading-mark">NIEWIELE<br />RZECZY<br />ALE WSZYSTKO<br />MA ZNACZENIE.</div>
+    </header>
+    <div className="inventory-layout">
+      <section className="inventory-equipment-panel game-panel">
+        <div className="inventory-panel-title">WYPOSAŻENIE</div>
+        <div className="inventory-equipment-stage">
+          <div className="inventory-slot-column inventory-slot-column-left">
+            {inventoryEquipment.filter((slot) => ['head', 'top', 'left-hand'].includes(slot.id)).map((slot) => <InventoryEquipmentSlot key={slot.id} slot={slot} onClick={() => onNotice(`${slot.label}: miejsce wyposażenia jest gotowe.`)} />)}
+          </div>
+          <div className="inventory-character">
+            <GamePortrait creator={creator} />
+            <span className="inventory-character-shadow" />
+          </div>
+          <div className="inventory-slot-column inventory-slot-column-right">
+            {inventoryEquipment.filter((slot) => ['face', 'bottom', 'right-hand', 'feet'].includes(slot.id)).map((slot) => <InventoryEquipmentSlot key={slot.id} slot={slot} onClick={() => onNotice(`${slot.label}: miejsce wyposażenia jest gotowe.`)} />)}
+          </div>
+        </div>
+      </section>
+      <section className="inventory-items-panel game-panel">
+        <div className="inventory-items-header">
+          <div className="inventory-panel-title">PRZEDMIOTY <span>(8/20)</span></div>
+          <div className="inventory-filters" role="tablist" aria-label="Filtry ekwipunku">
+            {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} role="tab" aria-selected={filter === id} data-testid={`inventory-filter-${id.toLowerCase()}`}>{FilterIcon && <FilterIcon size={13} />}{label}</button>)}
+          </div>
+        </div>
+        <div className="inventory-item-grid">
+          {filteredItems.map((item) => <button key={item.id} className={`inventory-item-card ${selectedId === item.id ? 'selected' : ''}`} onClick={() => selectItem(item)} data-testid={`inventory-item-${item.id}`}>
+            <span className={`inventory-item-art inventory-art-${item.id}`}><item.icon size={39} strokeWidth={1.35} /></span>
+            <span className="inventory-item-name">{item.name}</span>
+            <b>{item.quantity}</b>
+          </button>)}
+          {Array.from({ length: Math.max(0, 10 - filteredItems.length) }).map((_, index) => <span className="inventory-item-card inventory-item-empty" key={`empty-${index}`} aria-hidden="true" />)}
+        </div>
+      </section>
+      <section className="inventory-detail-panel game-panel">
+        <div className={`inventory-detail-art inventory-art-${selectedItem.id}`}><selectedItem.icon size={88} strokeWidth={1.1} /></div>
+        <div className="inventory-detail-copy">
+          <div className="inventory-detail-title"><h2>{selectedItem.name}</h2><span>{selectedItem.rarity}</span></div>
+          <p>{selectedItem.description}</p>
+          <div className="inventory-detail-actions">
+            <button className="inventory-action-primary" onClick={() => onNotice(`Używasz przedmiotu: ${selectedItem.name.toLowerCase()}.`)}>UŻYJ</button>
+            <button onClick={() => onNotice(`Wyposażasz: ${selectedItem.name.toLowerCase()}.`)}>WYPOSAŻ</button>
+            <button onClick={() => onNotice(`Przenosisz: ${selectedItem.name.toLowerCase()}.`)}>PRZENIEŚ</button>
+            <button className="inventory-delete" aria-label={`Usuń ${selectedItem.name}`} onClick={() => onNotice(`Nie można usunąć ${selectedItem.name.toLowerCase()} w trybie demonstracyjnym.`)}><Archive size={17} /></button>
+          </div>
+        </div>
+        <span className="inventory-detail-count">Posiadasz: {selectedItem.quantity}</span>
+      </section>
+    </div>
+  </section>;
+}
+
+function InventoryEquipmentSlot({ slot, onClick }: { slot: (typeof inventoryEquipment)[number]; onClick: () => void }) {
+  const SlotIcon = slot.icon;
+  return <button className={`inventory-equipment-slot inventory-slot-${slot.id}`} onClick={onClick}><span>{slot.label}</span><SlotIcon size={slot.id === 'top' || slot.id === 'bottom' ? 36 : 29} /><small>{slot.slot}</small></button>;
 }
 
 type TrainingExercise = {
