@@ -67,6 +67,7 @@ import femaleFoxAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_09_17887150787
 import wolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_59_09_1788713957701.png';
 import femaleWolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_54_1788715089958.png';
 import cellBackground from './assets/cell/cell-background.webp';
+import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
 
 const queryClient = new QueryClient();
@@ -692,7 +693,7 @@ const cellSlots: CellSlot[] = [
 
 function CellScene({ visited, onHotspot }: { visited: Set<HotspotId>; onHotspot: (id: HotspotId) => void }) {
   return <div className="cell-scene" data-testid="cell-scene">
-    <div className="scene-artwork" style={{ backgroundImage: `url("${cellBackground}")` }} aria-label="Widok celi więźnia" role="img" />
+    <div className="scene-artwork" style={{ backgroundImage: `url("${cellReference}")` }} aria-label="Widok celi więźnia" role="img" />
     {cellSlots.map((slot) => <CellHotspot key={slot.id} {...slot} onClick={() => onHotspot(slot.id)} active={visited.has(slot.id)} />)}
   </div>;
 }
