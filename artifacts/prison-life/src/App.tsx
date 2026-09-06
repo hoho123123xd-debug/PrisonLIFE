@@ -466,7 +466,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setChatMessage('');
   };
 
-  return <main className={`game-shell-page ${activeSection === 'cell' ? 'game-cell-screen' : ''}`}>
+  return <main className="game-shell-page">
     <header className="game-header">
       <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>

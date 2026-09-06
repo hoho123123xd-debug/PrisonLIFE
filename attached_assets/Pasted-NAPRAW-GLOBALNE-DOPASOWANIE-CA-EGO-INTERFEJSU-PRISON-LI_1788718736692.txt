@@ -1,0 +1,119 @@
+NAPRAW GLOBALNE DOPASOWANIE CAŁEGO INTERFEJSU PRISON LIFE DO EKRANU.
+
+Nie poprawiaj pojedynczo ekranu „Cela”, „Trening”, „Praca” itd. Nie dodawaj wyjątków dla konkretnych widoków. Znajdź wspólny, najwyższy layout aplikacji oraz globalne style, które odpowiadają za wielkość całego UI, i napraw problem tam.
+
+Najważniejsza zasada aplikacji:
+
+Na desktopie i tablecie CAŁY INTERFEJS GRY ma zawsze mieścić się w aktualnym viewportcie — bez przewijania strony w pionie i bez elementów wypadających poza ekran.
+
+To oznacza, że przy mniejszej wysokości lub szerokości ekranu:
+
+kontenery, odstępy, teksty i panele mają automatycznie się kompaktować,
+
+scena, panele boczne i dolne moduły mają dzielić dostępną przestrzeń,
+
+żaden element nie może zwiększać wysokości dokumentu,
+
+nie wolno wymagać od gracza przewijania strony, aby zobaczyć istotne części danego ekranu.
+
+Nie zmieniaj wyglądu, kolorów, assetów, fontów, tekstów, ikon ani funkcjonalności. Zmień tylko mechanizm rozmiarów i układu.
+
+Wprowadź jeden wspólny system:
+
+Cała aplikacja ma mieć dokładnie wysokość viewportu:
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.app-shell {
+  width: 100%;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+Header ma stałą, ale responsywną wysokość. Reszta aplikacji zawsze zajmuje wyłącznie pozostałą wysokość:
+
+.app-shell {
+  display: grid;
+  grid-template-rows: clamp(48px, 6vh, 76px) minmax(0, 1fr);
+}
+
+Wszystko pod headerem ma być jednym globalnym gridem: sidebar + główna treść. Nie stosuj wysokości wynikających z contentu.
+
+.app-body {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: clamp(140px, 11vw, 220px) minmax(0, 1fr);
+  overflow: hidden;
+}
+
+Każdy ekran ma być osadzony w tym samym main-content i otrzymywać dokładnie dostępne miejsce:
+
+.main-content {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+Każdy widok wewnątrz głównej treści musi używać height: 100%, min-height: 0 oraz CSS Grid/Flex z minmax(0, 1fr). Nie używaj:
+
+min-height: 100vh,
+
+wysokości sztywno powiększających ekran,
+
+dużych stałych padding/gap,
+
+globalnych max-width, które zostawiają pustą przestrzeń,
+
+width: 100vw,
+
+transform: scale(),
+
+zoom,
+
+przewijania body.
+
+Wszystkie wspólne wymiary mają być responsywne przez clamp(): wysokość headera, sidebar, paddingi, odstępy, rozmiar fontów, ikon oraz paneli. Nie zostawiaj ich jako dużych stałych wartości px.
+
+Przykład:
+
+:root {
+  --space: clamp(6px, 0.7vw, 16px);
+  --panel-padding: clamp(8px, 1vw, 20px);
+  --title-size: clamp(14px, 1.25vw, 26px);
+  --text-size: clamp(10px, 0.75vw, 14px);
+}
+
+Jeżeli ekran ma scenę + prawy panel + dolne moduły, jego wysokość musi zostać podzielona gridem. Scena nie może samodzielnie ustalać wysokości i wypychać dołu:
+
+.screen-with-panels {
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) clamp(110px, 18vh, 210px);
+  gap: var(--space);
+  overflow: hidden;
+}
+
+Obraz/scena ma zajmować tylko przestrzeń wyznaczoną przez grid. Zachowaj proporcje grafiki przez object-fit: contain lub background-size: contain; nie pozwalaj, aby proporcja obrazu zwiększała wysokość layoutu.
+
+Do wszystkich elementów będących dziećmi grid/flex dodaj tam, gdzie potrzebne:
+
+min-width: 0;
+min-height: 0;
+
+To jest konieczne, aby panele rzeczywiście mogły się kurczyć zamiast wypychać layout poza viewport.
+
+Jeśli konkretny panel ma więcej treści niż może pokazać w danej wysokości, przewijany może być wyłącznie jego środek/lista, nigdy cała strona. Nagłówek, nawigacja, scena i najważniejsze panele muszą pozostać widoczne.
+
+Zastosuj ten system do wspólnego layoutu tak, aby automatycznie działał na wszystkich obecnych i przyszłych ekranach.
