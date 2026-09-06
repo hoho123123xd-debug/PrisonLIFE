@@ -3,6 +3,7 @@
 @import 'tw-animate-css';
 @import './game-shell.css';
 @import './game-shell-overrides.css';
+@import './registration-overrides.css';
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));

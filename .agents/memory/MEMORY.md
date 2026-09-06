@@ -1,2 +1,3 @@
 - [Registration scene compositing](registration-scene-compositing.md) — keep the character cutout and prison environment as separate visual layers to avoid duplicate subjects.
 - [Game shell styling](game-shell-styling.md) — keep the game viewport styles isolated from the public landing and prisoner-intake screens.
+- [Registration stage layout](registration-stage-layout.md) — stage 1 is identity and appearance only; prisoner type selection belongs exclusively to stage 2.
