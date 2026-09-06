@@ -578,31 +578,29 @@ type MarketItem = {
   price: number;
   owned: number;
   description: string;
+  stat: string;
+  rarity: 'POSPOLITY' | 'NIEPOSPOLITY' | 'RZADKI';
+  statIcon: typeof Shield;
   icon: typeof Shield;
   iconClass: string;
 };
 
 const marketItems: MarketItem[] = [
-  { id: 'phone', name: 'TELEFON', category: 'OTHER', price: 500, owned: 0, description: 'Pozwala na kontakt z innymi więźniami.', icon: Smartphone, iconClass: 'market-art-phone' },
-  { id: 'lighter', name: 'ZAPALNICZKA', category: 'USABLE', price: 120, owned: 1, description: 'Przydatna w wielu sytuacjach.', icon: Zap, iconClass: 'market-art-lighter' },
-  { id: 'lockpick', name: 'WYTRYCH', category: 'GEAR', price: 300, owned: 0, description: 'Ułatwia otwieranie zamkniętych drzwi.', icon: Wrench, iconClass: 'market-art-lockpick' },
-  { id: 'bandage', name: 'BANDAŻ', category: 'USABLE', price: 150, owned: 2, description: 'Przywraca część zdrowia.', icon: Plus, iconClass: 'market-art-bandage' },
-  { id: 'knife', name: 'NÓŻ', category: 'GEAR', price: 400, owned: 0, description: 'Niebezpieczne narzędzie w rękach więźnia.', icon: Swords, iconClass: 'market-art-knife' },
-  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', price: 80, owned: 3, description: 'Zmniejszają stres.', icon: Wind, iconClass: 'market-art-cigarettes' },
+  { id: 'rose', name: 'RÓŻA', category: 'OTHER', price: 250, owned: 0, description: 'Daje siłę, kiedy jest naprawdę ciężko.', stat: '+3 Siła', rarity: 'POSPOLITY', statIcon: Dumbbell, icon: Heart, iconClass: 'market-art-rose' },
+  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', price: 80, owned: 3, description: 'Zmniejszają stres i poprawiają nastrój.', stat: '-10 Stres', rarity: 'POSPOLITY', statIcon: Heart, icon: Wind, iconClass: 'market-art-cigarettes' },
+  { id: 'knife', name: 'NÓŻ', category: 'GEAR', price: 400, owned: 0, description: 'Niebezpieczne narzędzie. Przydaje się w trudnych sytuacjach.', stat: '+5 Zręczność', rarity: 'NIEPOSPOLITY', statIcon: Crosshair, icon: Swords, iconClass: 'market-art-knife' },
+  { id: 'supplement', name: 'ODŻYWKA', category: 'USABLE', price: 300, owned: 0, description: 'Wspomaga regenerację i rozwój mięśni.', stat: '+10 Kondycja', rarity: 'NIEPOSPOLITY', statIcon: Heart, icon: Dumbbell, iconClass: 'market-art-supplement' },
+  { id: 'phone', name: 'TELEFON', category: 'OTHER', price: 500, owned: 0, description: 'Pozwala na kontakt z innymi więźniami.', stat: '+4 Technika', rarity: 'RZADKI', statIcon: Wrench, icon: Smartphone, iconClass: 'market-art-phone' },
+  { id: 'tattoo', name: 'ZESTAW DO TATUAŻU', category: 'GEAR', price: 350, owned: 0, description: 'Trwała pamiątka. Zwiększa respekt.', stat: '+5 Charakter', rarity: 'NIEPOSPOLITY', statIcon: Crown, icon: Award, iconClass: 'market-art-tattoo' },
+  { id: 'tablets', name: 'TABLETKI', category: 'USABLE', price: 200, owned: 0, description: 'Pomagają się skupić i działają pobudzająco.', stat: '+10 Energia', rarity: 'POSPOLITY', statIcon: Zap, icon: Plus, iconClass: 'market-art-tablets' },
+  { id: 'beer', name: 'BIMBER', category: 'USABLE', price: 180, owned: 0, description: 'Mocny alkohol z więziennej produkcji. Poprawia nastrój, ale ma skutki uboczne.', stat: '-15 Stres   -10 Kondycja', rarity: 'POSPOLITY', statIcon: Heart, icon: Droplets, iconClass: 'market-art-beer' },
+  { id: 'lockpick', name: 'WYTRYCHY', category: 'GEAR', price: 450, owned: 0, description: 'Ułatwiają otwieranie zamkniętych drzwi.', stat: '+10 Technika', rarity: 'RZADKI', statIcon: LockKeyhole, icon: Wrench, iconClass: 'market-art-lockpick' },
 ];
 
 function MarketView({ onNotice }: { onNotice: (message: string) => void }) {
-  const [filter, setFilter] = useState<MarketCategory>('ALL');
-  const [selectedId, setSelectedId] = useState('phone');
   const [cash, setCash] = useState(1250);
   const [items, setItems] = useState(marketItems);
-  const filteredItems = filter === 'ALL' ? items : items.filter((item) => item.category === filter);
-  const filters: Array<{ id: MarketCategory; label: string; icon: typeof Shield }> = [
-    { id: 'ALL', label: 'WSZYSTKO', icon: Grid2X2 },
-    { id: 'USABLE', label: 'UŻYTKOWE', icon: Wrench },
-    { id: 'GEAR', label: 'SPRZĘT', icon: Swords },
-    { id: 'OTHER', label: 'INNE', icon: MoreHorizontal },
-  ];
+  const filteredItems = items;
 
   const buyItem = (item: MarketItem) => {
     if (cash < item.price) {
@@ -614,30 +612,29 @@ function MarketView({ onNotice }: { onNotice: (message: string) => void }) {
     onNotice(`Kupiono: ${item.name.toLowerCase()}.`);
   };
 
-  return <section className="market-view" data-testid="market-view">
+  return <section className="market-view market-reference-view" data-testid="market-view">
     <header className="market-hero">
       <div className="market-hero-copy">
-        <span className="market-kicker">HANDEL</span>
         <h1>CZARNY RYNEK</h1>
         <p>TUTAJ ZNAJDZIESZ RZECZY, KTÓRYCH NIE KUPISZ W SKLEPIE.</p>
       </div>
-      <div className="market-hero-mark">DOBRE<br />RZECZY<br />MAJĄ<br />SWOJĄ<br /><em>CENĘ</em></div>
-      <div className="market-cash-panel"><span>GOTÓWKA</span><strong>$ {cash.toLocaleString('pl-PL')}</strong></div>
+      <div className="market-hero-mark">DOBRE<br />RZECZY<br />MAJĄ<br /><em>SWOJĄ CENĘ</em></div>
     </header>
-    <div className="market-toolbar">
-      <div className="market-filters" role="tablist" aria-label="Kategorie czarnego rynku">
-        {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} role="tab" aria-selected={filter === id} data-testid={`market-filter-${id.toLowerCase()}`}><FilterIcon size={15} />{label}</button>)}
-      </div>
-      <div className="market-availability"><span><Package size={16} /> DOSTĘPNE PRZEDMIOTY: <b>{items.length}</b></span><button onClick={() => onNotice('Dostawa została sprawdzona. Nowe przedmioty pojawią się wkrótce.')}><RefreshCw size={15} /> ODŚWIEŻ <b>00:42:17</b></button></div>
+    <div className="market-refresh-strip">
+      <button className="market-refresh-offer" onClick={() => onNotice('Asortyment został odświeżony.')}><RefreshCw size={26} /><span><strong>ODŚWIEŻ ASORTYMENT</strong><small>Nowe przedmioty za: <b>3 pkt</b></small></span><em><Crown size={16} /> 3</em></button>
+      <div className="market-offer-time"><Timer size={19} /><span>DO KOŃCA OFERTY:</span><b>00:42:17</b></div>
+      <div className="market-offer-note">Asortyment zmienia się automatycznie.<br />Niektóre przedmioty są unikalne.</div>
     </div>
     <div className="market-item-grid">
-      {filteredItems.map((item) => <article key={item.id} className={`market-item-card ${selectedId === item.id ? 'selected' : ''}`} onClick={() => setSelectedId(item.id)} data-testid={`market-item-${item.id}`}>
-        <div className={`market-item-art ${item.iconClass}`}><item.icon size={65} strokeWidth={1.15} /></div>
-        <div className="market-item-copy"><h2>{item.name}</h2><p>{item.description}</p></div>
-        <div className="market-item-footer"><span>Posiadasz: {item.owned}</span><strong>$ {item.price}</strong><button onClick={(event) => { event.stopPropagation(); buyItem(item); }} data-testid={`market-buy-${item.id}`}>KUP</button></div>
-      </article>)}
+      {filteredItems.map((item) => { const ItemIcon = item.icon; const StatIcon = item.statIcon; return <article key={item.id} className={`market-item-card ${item.iconClass}`} data-testid={`market-item-${item.id}`}>
+        <div className="market-item-art"><ItemIcon size={68} strokeWidth={1.05} /></div>
+        <div className="market-item-copy"><div className="market-item-title"><h2>{item.name}</h2><em className={`market-rarity market-rarity-${item.rarity.toLowerCase()}`}>{item.rarity}</em></div><p>{item.description}</p><span className="market-item-stat"><StatIcon size={15} /> {item.stat}</span></div>
+        <div className="market-item-footer"><strong>$ {item.price}</strong><button onClick={() => buyItem(item)} data-testid={`market-buy-${item.id}`}>KUP</button></div>
+      </article>; })}
     </div>
-    <footer className="market-footnote"><span><Info size={16} /> Ceny i dostępność przedmiotów na czarnym rynku mogą się zmieniać.<br /><small>Sprawdzaj regularnie nowe dostawy.</small></span><em>„W więzieniu wszystko ma swoją cenę.”</em></footer>
+    <footer className="market-footnote"><span><Info size={16} /> Ceny na czarnym rynku mogą się zmieniać. Nie wszystko jest legalne. Korzystasz na własne ryzyko.</span>
+      <em>„Nie wszystko da się kupić...”</em>
+    </footer>
   </section>;
 }
 
