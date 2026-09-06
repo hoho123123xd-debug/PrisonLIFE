@@ -46,6 +46,220 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Registration — intake room / premium game pass */
+.registration-page {
+  min-height: 100dvh;
+  background:
+    linear-gradient(90deg, rgba(3, 6, 8, .9), rgba(8, 15, 17, .38) 42%, rgba(3, 6, 8, .82)),
+    linear-gradient(0deg, rgba(3, 6, 7, .95), transparent 30%, rgba(4, 8, 10, .72)),
+    var(--artwork-url) center 30% / cover fixed, #080d10;
+}
+.registration-page .prison-shell { width: min(calc(100% - 72px), 1480px); }
+.registration-page .registration-header {
+  min-height: 84px;
+  background: linear-gradient(180deg, rgba(2, 5, 7, .97), rgba(6, 10, 12, .78));
+  border-bottom-color: rgba(210, 218, 207, .2);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .3);
+}
+.registration-page .registration-header-inner { min-height: 84px; grid-template-columns: 235px minmax(360px, 1fr) 235px; gap: 30px; }
+.registration-header .brand-name { font-size: 28px; }
+.registration-header .brand-tagline { font-size: 8px; }
+.registration-page .registration-progress { width: min(100%, 570px); }
+.progress-step {
+  border: 0; padding: 0; background: transparent; cursor: pointer;
+  transition: color .2s ease, transform .2s ease;
+}
+.progress-step:hover { color: #d9ddd3; transform: translateY(-1px); }
+.progress-step.current:hover { color: var(--prison-orange-light); }
+.progress-number { box-shadow: 0 0 0 4px rgba(3, 8, 10, .55); }
+.registration-page .registration-body {
+  width: 100%; min-height: calc(100dvh - 220px); padding: 26px 0 42px;
+}
+.registration-body > .back-home { margin-left: 2px; }
+.registration-page .creator-screen {
+  width: 100%;
+  grid-template-columns: minmax(220px, .9fr) minmax(270px, 1.1fr) minmax(440px, 1.85fr) minmax(310px, 1.2fr);
+  gap: 22px; margin-top: 22px; align-items: stretch;
+}
+.registration-page .creator-intro { min-height: 650px; padding: 25px 12px 0 4px; }
+.registration-page .creator-intro h1 {
+  margin: 19px 0 20px; font-size: clamp(48px, 4vw, 70px); line-height: .83;
+  text-shadow: 3px 4px 0 rgba(0, 0, 0, .38);
+}
+.registration-page .creator-intro p { max-width: 280px; font-size: 14px; line-height: 1.55; color: #abb2aa; }
+.registration-page .nickname-field {
+  max-width: 295px; margin-top: 42px; padding-top: 17px;
+  border-top: 1px solid rgba(176, 188, 179, .28);
+}
+.registration-page .nickname-field > div {
+  min-height: 50px; margin-top: 10px; padding-inline: 13px;
+  border-color: #64706b; background: rgba(4, 9, 11, .86);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .025), 0 12px 24px rgba(0, 0, 0, .17);
+}
+.registration-page .nickname-field input { height: 47px; font-size: 15px; }
+.registration-page .nickname-field::after {
+  content: '#A-47291  /  INTAKE'; display: block; margin-top: 12px;
+  color: #bd7650; font: 11px 'Barlow Condensed'; letter-spacing: .14em;
+}
+.registration-page .creator-customize, .registration-page .type-rail, .registration-page .character-preview {
+  border-color: rgba(173, 185, 177, .34);
+  box-shadow: 0 22px 42px rgba(0, 0, 0, .26), inset 0 1px rgba(255, 255, 255, .035);
+}
+.registration-page .creator-customize {
+  min-height: 650px; padding: 23px 17px 18px;
+  background: linear-gradient(145deg, rgba(68, 77, 70, .18), transparent 28%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 1px, transparent 1px 5px),
+    rgba(7, 14, 16, .92);
+}
+.registration-page .panel-heading { font-size: 21px; padding-bottom: 13px; border-bottom: 1px solid rgba(171, 183, 173, .2); }
+.panel-heading small { font-size: 11px; margin-top: 6px; }
+.registration-page .appearance-list { gap: 16px; margin-top: 19px; }
+.registration-page .appearance-row-heading { margin-bottom: 8px; font-size: 12px; }
+.registration-page .appearance-row-heading small { font-size: 11px; }
+.registration-page .appearance-options { grid-template-columns: 22px 1fr 22px; gap: 6px; }
+.registration-page .appearance-tiles { gap: 6px; }
+.registration-page .appearance-tile {
+  height: 48px; border-color: #4c5a55;
+  background: linear-gradient(135deg, rgba(126, 138, 127, .16), transparent 55%), #182226;
+  box-shadow: inset 0 -9px 12px rgba(0, 0, 0, .25);
+}
+.registration-page .appearance-tile::before {
+  width: 25px; height: 31px; top: 5px;
+  background: linear-gradient(120deg, #bd896c 0 36%, #85513d 37% 75%, #3f2b28 76%);
+  box-shadow: 0 -8px 0 1px #1b1d1c, 0 4px 6px rgba(0, 0, 0, .5);
+}
+.registration-page .appearance-tile::after { top: 21px; width: 22px; height: 8px; border-top-width: 2px; }
+.registration-page .appearance-tile > span { right: 5px; bottom: 3px; color: #d8d8cc; font-size: 9px; }
+.registration-page .appearance-tile:hover { border-color: #d1d5c8; transform: translateY(-2px); }
+.registration-page .appearance-tile.selected { border-color: var(--prison-orange-light); box-shadow: inset 0 0 0 1px var(--prison-orange), 0 5px 14px rgba(225, 122, 46, .18); }
+.registration-page .carousel-arrow { width: 22px; height: 38px; border: 1px solid rgba(157, 170, 160, .2); background: rgba(4, 8, 10, .55); }
+.registration-page .carousel-arrow:hover { background: rgba(225, 122, 46, .12); }
+.registration-page .character-preview-wrap { min-width: 0; height: 100%; }
+.registration-page .character-preview {
+  min-height: 650px; height: 100%;
+  background:
+    linear-gradient(90deg, rgba(3, 7, 9, .78), transparent 23%, rgba(7, 12, 13, .12) 53%, rgba(2, 5, 7, .85)),
+    linear-gradient(0deg, rgba(3, 5, 6, .93), transparent 26%, rgba(19, 23, 20, .2)),
+    var(--registration-artwork-url) 58% 54% / auto 185%,
+    repeating-linear-gradient(90deg, #1b2524 0 56px, #283330 57px, #111a1b 60px);
+  background-blend-mode: normal, normal, normal, multiply;
+}
+.registration-page .character-preview::before {
+  content: ''; top: 35px; right: 33px; width: 98px; height: 116px;
+  border: 6px solid rgba(10, 13, 13, .72); border-bottom-width: 8px;
+  background: repeating-linear-gradient(90deg, rgba(24, 27, 24, .9) 0 6px, transparent 6px 27px),
+    linear-gradient(145deg, rgba(229, 199, 132, .82), rgba(92, 110, 87, .12) 64%);
+  box-shadow: 0 0 34px rgba(225, 184, 105, .2), inset 0 0 24px rgba(255, 231, 174, .22);
+  transform: skewY(-4deg); opacity: .83;
+}
+.registration-page .character-preview::after {
+  background: repeating-linear-gradient(90deg, transparent 0 59px, rgba(13, 17, 16, .54) 60px 63px),
+    linear-gradient(90deg, rgba(0, 0, 0, .48), transparent 20%, transparent 71%, rgba(0, 0, 0, .58)),
+    linear-gradient(0deg, rgba(0, 0, 0, .48), transparent 26%);
+}
+.registration-page .character-svg {
+  width: min(100%, 470px); height: calc(100% - 30px); min-height: 640px; margin: -4px auto 0;
+  filter: contrast(1.11) saturate(.86) drop-shadow(0 19px 15px rgba(0, 0, 0, .58));
+  transform: scale(1.03); transform-origin: center bottom;
+}
+.registration-page .preview-ruler { top: 100px; bottom: 72px; left: 13px; font-size: 11px; }
+.registration-page .preview-ruler span { background: rgba(20, 29, 28, .78); }
+.registration-page .preview-stamp { top: 15px; left: 17px; font-size: 10px; }
+.registration-page .preview-id { padding: 14px 19px; background: rgba(4, 8, 10, .9); }
+.registration-page .id-name { font-size: 20px; letter-spacing: .1em; }
+.registration-page .id-number { font-size: 13px; }
+.registration-page .type-rail {
+  min-height: 650px; padding: 23px 15px 15px;
+  background: linear-gradient(140deg, rgba(68, 77, 70, .16), transparent 34%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.016) 0 1px, transparent 1px 5px),
+    rgba(7, 14, 16, .93);
+}
+.registration-page .type-rail .section-kicker { font-size: 21px; padding-bottom: 11px; border-bottom: 1px solid rgba(171, 183, 173, .2); }
+.registration-page .rail-hint { margin: 7px 0 17px; font-size: 10px; line-height: 1.4; }
+.registration-page .type-cards { gap: 10px; }
+.registration-page .type-card { min-height: 125px; padding: 10px; gap: 13px; border-color: #40504b; background: rgba(5, 11, 13, .72); }
+.registration-page .type-card:hover { transform: translateX(2px); border-color: #a3afa4; background: rgba(41, 48, 45, .7); }
+.registration-page .type-card.selected { border-color: var(--prison-orange-light); box-shadow: inset 4px 0 var(--prison-orange), 0 5px 18px rgba(0, 0, 0, .22); }
+.registration-page .type-avatar { width: 74px; height: 102px; border-right-color: rgba(255,255,255,.13); background: linear-gradient(155deg, #435250, #11191b 72%); }
+.registration-page .type-avatar::before { width: 42px; height: 53px; top: 14px; background: linear-gradient(135deg, #b27b5d, #4a302a); box-shadow: 0 -10px 0 3px #171a19; }
+.registration-page .type-avatar::after { top: 61px; width: 65px; height: 52px; background: linear-gradient(160deg, #3f4c4a, #151c1d); }
+.registration-page .type-avatar span { font-size: 38px; margin-bottom: 7px; }
+.registration-page .type-card-content { gap: 5px; }
+.registration-page .type-card strong { font-size: 21px; }
+.registration-page .type-card em { font-size: 11px; }
+.registration-page .type-card small { max-width: 194px; font-size: 11px; line-height: 1.3; }
+.registration-page .type-card i { font-size: 10px; }
+.registration-page .type-check { right: 10px; top: 10px; }
+.registration-page .type-card.compact { min-height: 112px; }
+.registration-page .type-card.compact .type-avatar { width: 67px; height: 91px; }
+.registration-page .type-card.compact .type-avatar::after { top: 56px; }
+.registration-action-bar {
+  background: linear-gradient(90deg, rgba(4, 9, 11, .98), rgba(12, 20, 21, .9), rgba(4, 9, 11, .98));
+  border-color: rgba(193, 204, 194, .24); box-shadow: 0 -12px 30px rgba(0, 0, 0, .2);
+}
+.registration-actions { min-height: 76px; }
+.registration-actions .btn-primary { min-width: 238px; min-height: 50px; font-size: 16px; box-shadow: 0 6px 0 rgba(118, 55, 18, .4); }
+.registration-actions .btn-primary:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(118, 55, 18, .4); }
+.registration-account-link { font-size: 12px; }
+.registration-footer { background: rgba(4, 8, 10, .96); }
+.step-screen { max-width: 1120px; }
+.step-heading h1 { font-size: clamp(52px, 6vw, 82px); text-shadow: 3px 4px 0 rgba(0,0,0,.36); }
+.type-selection-grid .type-card { min-height: 165px; }
+.summary-grid > .character-preview-wrap .character-preview { min-height: 570px; }
+.summary-grid > .character-preview-wrap .character-svg { height: 585px; }
+
+@media (max-width: 1230px) and (min-width: 761px) {
+  .registration-page .prison-shell { width: min(calc(100% - 40px), 1120px); }
+  .registration-header-inner { grid-template-columns: 190px 1fr 190px; gap: 12px; }
+  .registration-page .creator-screen { grid-template-columns: minmax(190px, .8fr) minmax(225px, 1fr) minmax(360px, 1.45fr) minmax(260px, 1.05fr); gap: 14px; }
+  .registration-page .creator-intro, .registration-page .creator-customize, .registration-page .type-rail { min-height: 600px; }
+  .registration-page .creator-intro, .registration-page .creator-customize, .registration-page .character-preview-wrap, .registration-page .type-rail { grid-column: auto; grid-row: auto; }
+  .registration-page .character-preview { min-height: 600px; }
+  .registration-page .character-svg { min-height: 590px; }
+  .registration-page .type-card { min-height: 108px; }
+  .registration-page .type-avatar { width: 61px; height: 86px; }
+  .registration-page .type-card small { font-size: 10px; }
+}
+
+@media (max-width: 760px) {
+  .registration-page { background-attachment: scroll; }
+  .registration-page .registration-header { min-height: auto; }
+  .registration-page .registration-header-inner { display: flex; min-height: 76px; flex-wrap: wrap; padding-block: 13px; }
+  .registration-page .registration-header .brand { margin-right: auto; }
+  .registration-page .registration-login { display: none; }
+  .registration-page .prison-shell { width: min(calc(100% - 28px), 590px); }
+  .registration-header-inner { min-height: 76px; }
+  .registration-progress { margin-top: 14px; }
+  .progress-step { font-size: 9px; gap: 6px; }
+  .progress-number { width: 23px; height: 23px; }
+  .registration-body { min-height: 0; padding-bottom: 26px; }
+  .registration-page .creator-screen { display: flex; flex-direction: column; gap: 17px; margin-top: 16px; }
+  .registration-page .creator-intro { min-height: 0; padding: 5px 0 0; }
+  .registration-page .creator-intro h1 { margin: 14px 0 16px; font-size: clamp(44px, 13vw, 64px); }
+  .registration-page .creator-intro p { max-width: 460px; }
+  .registration-page .nickname-field { max-width: 100%; margin-top: 25px; }
+  .registration-page .creator-screen > .character-preview-wrap { width: 100%; }
+  .registration-page .character-preview { min-height: 530px; height: 530px; }
+  .registration-page .character-svg { min-height: 520px; height: 520px; width: min(100%, 360px); }
+  .registration-page .character-preview::before { right: 18px; width: 78px; height: 95px; }
+  .registration-page .preview-ruler { top: 88px; bottom: 65px; }
+  .registration-page .creator-customize, .registration-page .type-rail { min-height: 0; }
+  .registration-page .creator-customize { padding: 18px 14px; }
+  .registration-page .appearance-list { gap: 13px; }
+  .registration-page .appearance-tile { height: 47px; }
+  .registration-page .type-rail { padding: 18px 13px 14px; }
+  .registration-page .type-card, .registration-page .type-card.compact { min-height: 104px; }
+  .registration-page .type-avatar, .registration-page .type-card.compact .type-avatar { width: 64px; height: 86px; }
+  .registration-page .type-card small { max-width: none; }
+  .registration-actions { min-height: 72px; }
+  .registration-actions .btn-primary { min-width: 155px; min-height: 46px; font-size: 14px; }
+  .registration-actions .btn { min-width: 112px; }
+  .step-screen { margin-top: 24px; }
+  .step-heading h1 { font-size: 54px; }
+  .summary-grid > .character-preview-wrap .character-preview { min-height: 470px; height: 470px; }
+  .summary-grid > .character-preview-wrap .character-svg { min-height: 460px; height: 460px; }
+}
+
 :root {
   --background: 216 24% 6%;
   --foreground: 38 13% 86%;
@@ -410,7 +624,7 @@ button { font: inherit; }
 .face-four::before { filter: grayscale(.5); opacity: .8; }
 .hair-two::before { box-shadow: 0 -3px 0 1px #1b1c1d; }.hair-three::before { box-shadow: 0 -10px 0 1px #101112; }.hair-four::before { box-shadow: 0 -9px 0 1px #131415; border-radius: 35% 35% 42% 42%; }
 .beard-none::after { opacity: 0; }.beard-shadow::after { height: 11px; background: #282021; border: 0; border-radius: 40%; }.beard-full::after { height: 16px; background: #21191a; border: 0; border-radius: 35% 35% 48% 48%; }.beard-mustache::after { top: 20px; width: 16px; height: 3px; background: #21191a; border: 0; }
-.tattoo-none::after { display: none; }.tattoo-spider::after { content: '✣'; color: #1d2020; font-size: 15px; background: transparent; top: 7px; left: 5px; }.tattoo-skull::after { content: '☠'; color: #1d2020; font-size: 14px; background: transparent; top: 7px; left: 5px; }.tattoo-letters::after { content: 'A 7'; color: #1d2020; font: 900 10px 'Oswald'; background: transparent; top: 9px; left: 4px; }
+.tattoo-none::after { display: none; }.tattoo-spider::after { content: ''; width: 13px; height: 13px; border: 2px solid #1d2020; border-radius: 50%; background: transparent; top: 7px; left: 5px; box-shadow: 0 0 0 3px rgba(29,32,32,.22); }.tattoo-skull::after { content: ''; width: 13px; height: 13px; border: 2px solid #1d2020; border-radius: 45% 45% 38% 38%; background: linear-gradient(90deg, transparent 42%, #1d2020 43% 57%, transparent 58%); top: 7px; left: 5px; }.tattoo-letters::after { content: 'A 7'; color: #1d2020; font: 900 10px 'Oswald'; background: transparent; top: 9px; left: 4px; }
 .outfit-orange::before, .outfit-white::before, .outfit-steel::before, .outfit-slate::before { width: 31px; height: 29px; top: 7px; background: #bd5e22; border-radius: 3px 3px 0 0; box-shadow: none; }
 .outfit-orange::after { width: 3px; height: 26px; left: 50%; top: 8px; background: #3b271f; }.outfit-white::before { background: #b1b0a6; }.outfit-steel::before { background: #4d6165; }.outfit-slate::before { background: #263e44; }
 .skin-light::before, .skin-olive::before, .skin-brown::before, .skin-dark::before { width: 27px; height: 27px; top: 4px; border: 0; box-shadow: none; }.skin-light::before { background: #bd8060; }.skin-olive::before { background: #9e6047; }.skin-brown::before { background: #754532; }.skin-dark::before { background: #4c2c26; }
@@ -449,6 +663,110 @@ button { font: inherit; }
 
 @media (max-width: 1050px) {
   .registration-header-inner { grid-template-columns: 170px 1fr 170px; gap: 12px; }.registration-login { flex-direction: column; gap: 4px; align-items: end; }.creator-screen { grid-template-columns: 180px minmax(205px, .9fr) minmax(220px, 1fr); }.creator-intro { grid-row: span 2; }.creator-customize { grid-column: 1 / 2; grid-row: 2; }.creator-screen > .character-preview-wrap { grid-column: 2 / 3; grid-row: 1 / 3; }.creator-screen > .type-rail { grid-column: 3 / 4; grid-row: 1 / 3; }
+}
+
+/* Realistic prisoner composite: the generated cutout is the primary stage asset.
+   The SVG remains in the DOM for the existing game-screen contract, but the
+   registration flow renders the photographic layer and appearance overlays. */
+.character-figure {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 440px);
+  height: calc(100% - 34px);
+  min-height: 470px;
+  margin: 18px auto 0;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  isolation: isolate;
+}
+.character-photo {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 16px 18px rgba(0,0,0,.72));
+  transition: filter .28s ease, transform .28s ease;
+}
+.character-svg { display: none; }
+.character-figure .character-svg { display: none !important; }
+.character-figure::after {
+  content: '';
+  position: absolute;
+  z-index: 2;
+  left: 21%;
+  right: 21%;
+  bottom: 0;
+  height: 15%;
+  background: radial-gradient(ellipse, rgba(0,0,0,.82), transparent 68%);
+  pointer-events: none;
+}
+.figure-hair,
+.figure-beard,
+.figure-scar,
+.figure-tattoo,
+.figure-outfit-wash {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  pointer-events: none;
+}
+.figure-hair {
+  top: 9%;
+  left: 37%;
+  width: 26%;
+  height: 11%;
+  border-radius: 52% 48% 35% 35%;
+  background: #151719;
+  box-shadow: 0 3px 0 rgba(0,0,0,.55), inset 0 -8px 8px rgba(62,44,35,.35);
+  opacity: .94;
+}
+.figure-hair-2 { left: 35%; width: 30%; height: 9%; border-radius: 45% 45% 22% 22%; background: #0e1011; }
+.figure-hair-3 { top: 7%; left: 33%; width: 34%; height: 14%; border-radius: 45% 45% 32% 32%; background: #111315; box-shadow: 0 -7px 0 -2px #222427, 0 -12px 0 -4px #0d0f10; }
+.figure-beard {
+  top: 23%;
+  left: 42%;
+  width: 16%;
+  height: 6%;
+  border-radius: 35% 35% 45% 45%;
+  background: rgba(24,18,18,.78);
+  filter: blur(.3px);
+}
+.figure-beard-2 { top: 22%; left: 40%; width: 20%; height: 9%; background: rgba(21,16,17,.86); }
+.figure-beard-3 { top: 23%; left: 43%; width: 14%; height: 3%; background: rgba(24,18,18,.86); }
+.figure-scar { top: 14%; left: 55%; width: 2px; height: 8%; background: rgba(220,157,123,.9); transform: rotate(13deg); box-shadow: 0 0 0 1px rgba(78,37,29,.55); }
+.figure-tattoo { top: 34%; left: 23%; width: 14%; height: 21%; opacity: .9; border: 2px solid rgba(20,24,23,.72); border-radius: 45% 45% 36% 36%; transform: rotate(-12deg); }
+.figure-tattoo-2 { border-radius: 48%; box-shadow: inset 0 0 0 5px rgba(20,24,23,.44), 0 0 0 4px rgba(20,24,23,.22); }
+.figure-tattoo-3 { border: 0; background: repeating-linear-gradient(160deg, transparent 0 8px, rgba(20,24,23,.75) 9px 11px); }
+.figure-outfit-wash {
+  z-index: 2;
+  top: 31%;
+  left: 29%;
+  width: 42%;
+  height: 50%;
+  mix-blend-mode: color;
+  opacity: .7;
+  background: #3f646b;
+  transition: background .25s ease;
+}
+.figure-outfit-1 .figure-outfit-wash { background: #c5c5bb; }
+.figure-outfit-2 .figure-outfit-wash { background: #40575e; }
+.figure-outfit-3 .figure-outfit-wash { background: #233c43; }
+.figure-skin-0 .character-photo { filter: sepia(.05) saturate(1.05) drop-shadow(0 16px 18px rgba(0,0,0,.72)); }
+.figure-skin-2 .character-photo { filter: sepia(.12) saturate(1.23) hue-rotate(-8deg) drop-shadow(0 16px 18px rgba(0,0,0,.72)); }
+.figure-skin-3 .character-photo { filter: sepia(.18) saturate(.78) brightness(.82) drop-shadow(0 16px 18px rgba(0,0,0,.72)); }
+
+@media (max-width: 760px) {
+  .character-figure {
+    min-height: 475px;
+    height: 475px;
+    width: min(100%, 390px);
+    margin-top: 8px;
+  }
 }
 @media (max-width: 760px) {
   .registration-header { min-height: auto; }.registration-header-inner { display: flex; min-height: 75px; flex-wrap: wrap; padding-block: 13px; }.registration-header .brand { margin-right: auto; }.registration-header .brand-name { font-size: 22px; }.registration-header .brand-tagline { display: none; }.registration-progress { order: 3; width: 100%; margin-top: 12px; }.registration-login { display: none; }.registration-body { padding-top: 16px; }.creator-screen { display: flex; flex-direction: column; gap: 16px; margin-top: 15px; }.creator-intro { order: 0; padding-top: 0; }.creator-intro h1 { font-size: 44px; margin: 11px 0; }.creator-intro p { max-width: 420px; }.nickname-field { max-width: 390px; margin-top: 18px; }.creator-screen > .character-preview-wrap { order: 1; width: min(100%, 390px); align-self: center; }.character-preview { min-height: 490px; }.character-svg { height: 500px; }.creator-customize { order: 2; width: 100%; }.type-rail { order: 3; width: 100%; }.appearance-list { gap: 15px; }.appearance-tile { height: 43px; }.registration-actions { min-height: 78px; }.registration-actions .btn { min-width: 125px; padding-inline: 14px; }.registration-actions .btn-primary { min-width: 160px; }.registration-account-link { font-size: 10px; }.registration-account-link button { margin-left: 4px; padding-inline: 8px; }.registration-footer-inner { min-height: 110px; flex-wrap: wrap; gap: 12px 18px; padding-block: 18px; }.registration-footer-inner > span { font-size: 10px; }.registration-footer .brand { flex-basis: 100%; }.registration-social { margin-left: auto; }.registration-footer-inner em { display: none; }.step-screen { margin-top: 24px; }.step-heading h1 { font-size: 47px; }.type-selection-grid { grid-template-columns: 1fr; }.type-selection-grid .type-card { min-height: 115px; }.account-step { display: flex; flex-direction: column; gap: 20px; }.account-step .step-heading { order: 0; }.account-form { width: 100%; padding: 18px; }.account-form-submit { display: flex; min-height: 45px; align-items: center; justify-content: center; gap: 10px; border: 1px solid var(--prison-orange); color: #1d120b; background: var(--prison-orange); cursor: pointer; font: 700 13px 'Barlow Condensed'; letter-spacing: .08em; }.account-side-note { width: 100%; order: 2; }.summary-grid { grid-template-columns: 1fr; }.summary-grid > .character-preview-wrap { width: min(100%, 370px); margin: 0 auto; }.summary-details { width: 100%; }.auth-header { padding: 0 18px; }.auth-header .brand-name { font-size: 22px; }.auth-return { padding: 9px 8px; font-size: 10px; }.auth-card { padding: 27px 21px; }.auth-card h1 { font-size: 38px; }.auth-quote { display: none; }.game-header { padding: 0 15px; }.game-resources { gap: 8px; font-size: 11px; }.game-resources button { margin-left: 0; padding: 7px; }.game-sidebar { width: 54px; padding: 12px 5px; }.game-sidebar button { justify-content: center; padding: 13px 0; }.game-sidebar button svg { width: 19px; }.game-sidebar button { font-size: 0; }.game-main { padding: 31px 15px; }.game-welcome { align-items: start; flex-direction: column; }.game-welcome h1 { font-size: 39px; }.game-dashboard-grid { grid-template-columns: 1fr; }.game-status-card { min-height: 330px; }

@@ -35,6 +35,8 @@ import {
   Zap,
 } from 'lucide-react';
 import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864145.png';
+import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
+import prisonerAsset from '@assets/generated_images/prisoner-realistic-cutout.png';
 
 const queryClient = new QueryClient();
 
@@ -256,8 +258,8 @@ function PublicFooter({ onNavigate, onNotice }: { onNavigate: (screen: Screen) =
   );
 }
 
-function RegistrationProgress({ step }: { step: number }) {
-  return <div className="registration-progress" aria-label="Postęp rejestracji">{stepLabels.map((label, index) => <div className={`progress-step ${step === index + 1 ? 'current' : ''} ${step > index + 1 ? 'complete' : ''}`} key={label}><span className="progress-number">{step > index + 1 ? <Check size={14} /> : `0${index + 1}`}</span><span>{label}</span></div>)}</div>;
+function RegistrationProgress({ step, onStepChange }: { step: number; onStepChange?: (step: number) => void }) {
+  return <div className="registration-progress" aria-label="Postęp rejestracji">{stepLabels.map((label, index) => <button type="button" className={`progress-step ${step === index + 1 ? 'current' : ''} ${step > index + 1 ? 'complete' : ''}`} key={label} onClick={() => onStepChange?.(index + 1)} aria-current={step === index + 1 ? 'step' : undefined} data-testid={`button-progress-${index + 1}`}><span className="progress-number">{step > index + 1 ? <Check size={14} /> : `0${index + 1}`}</span><span>{label}</span></button>)}</div>;
 }
 
 function AppearanceSelector({ appearance, onChange }: { appearance: Appearance; onChange: (key: AppearanceKey, value: number) => void }) {
@@ -270,9 +272,9 @@ function AppearanceSelector({ appearance, onChange }: { appearance: Appearance; 
         return <div className="appearance-row" key={key}>
           <div className="appearance-row-heading"><span>{label}</span><small>{options[selected].name}</small></div>
           <div className="appearance-options">
-            <button className="carousel-arrow" onClick={() => onChange(key, (selected - 1 + options.length) % options.length)} aria-label={`Poprzednia opcja: ${label}`}><ChevronLeft size={16} /></button>
-            <div className="appearance-tiles">{options.map((option, index) => <button key={option.name} className={`appearance-tile ${option.swatch} ${selected === index ? 'selected' : ''}`} onClick={() => onChange(key, index)} aria-label={`${label}: ${option.name}`} aria-pressed={selected === index}><span>{option.short}</span></button>)}</div>
-            <button className="carousel-arrow" onClick={() => onChange(key, (selected + 1) % options.length)} aria-label={`Następna opcja: ${label}`}><ChevronRight size={16} /></button>
+            <button type="button" className="carousel-arrow" onClick={() => onChange(key, (selected - 1 + options.length) % options.length)} aria-label={`Poprzednia opcja: ${label}`} data-testid={`button-appearance-prev-${key}`}><ChevronLeft size={16} /></button>
+            <div className="appearance-tiles">{options.map((option, index) => <button type="button" key={option.name} className={`appearance-tile ${option.swatch} ${selected === index ? 'selected' : ''}`} onClick={() => onChange(key, index)} aria-label={`${label}: ${option.name}`} aria-pressed={selected === index} data-testid={`button-appearance-${key}-${index + 1}`}><span>{option.short}</span></button>)}</div>
+            <button type="button" className="carousel-arrow" onClick={() => onChange(key, (selected + 1) % options.length)} aria-label={`Następna opcja: ${label}`} data-testid={`button-appearance-next-${key}`}><ChevronRight size={16} /></button>
           </div>
         </div>;
       })}
@@ -291,7 +293,14 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
       <div className="preview-ruler" aria-hidden="true"><span>180</span><span>170</span><span>160</span><span>150</span><span>140</span></div>
       <div className="character-preview" data-testid="character-preview">
         <div className="preview-stamp">PRISON LIFE<br /><b>INTAKE / 2026</b></div>
-        <svg className="character-svg" viewBox="0 0 360 620" role="img" aria-label={`Podgląd więźnia ${displayName}`}>
+        <div className={`character-figure figure-skin-${appearance.skin} figure-outfit-${appearance.outfit} figure-face-${appearance.face}`} data-testid="character-figure">
+          <img className="character-photo" src={prisonerAsset} alt={`Podgląd więźnia ${displayName}`} />
+          {appearance.hair > 0 && <span className={`figure-hair figure-hair-${appearance.hair}`} aria-hidden="true" />}
+          {appearance.beard > 0 && <span className={`figure-beard figure-beard-${appearance.beard}`} aria-hidden="true" />}
+          {appearance.face === 1 && <span className="figure-scar" aria-hidden="true" />}
+          {appearance.tattoo > 0 && <span className={`figure-tattoo figure-tattoo-${appearance.tattoo}`} aria-hidden="true" />}
+          {appearance.outfit > 0 && <span className="figure-outfit-wash" aria-hidden="true" />}
+          <svg className="character-svg" viewBox="0 0 360 620" role="img" aria-label={`Podgląd więźnia ${displayName}`}>
           <defs><linearGradient id="skinGradient" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stopColor={skin} /><stop offset=".6" stopColor={skin} stopOpacity=".96" /><stop offset="1" stopColor="#3d2420" /></linearGradient><linearGradient id="clothGradient" x1="0" x2="1"><stop stopColor={outfit} /><stop offset=".52" stopColor={outfit} stopOpacity=".92" /><stop offset="1" stopColor="#1d2425" /></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="7" stdDeviation="6" floodColor="#000" floodOpacity=".5" /></filter></defs>
           <ellipse cx="180" cy="595" rx="115" ry="16" fill="#000" opacity=".5" />
           <g filter="url(#shadow)">
@@ -333,7 +342,8 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
           </g>
           {appearance.outfit === 0 && <path d="M165 430 L159 570 180 589 201 570 195 430Z" fill="#c65b22" opacity=".95" />}
           {appearance.outfit !== 0 && <path d="M159 425 L151 570 177 590 180 438 183 590 209 570 201 425Z" fill={outfit} opacity=".95" />}
-        </svg>
+          </svg>
+        </div>
         <div className="preview-id"><span className="id-name">{displayName.toUpperCase()}</span><span className="id-number">#A-47291</span></div>
       </div>
     </div>
@@ -341,7 +351,7 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
 }
 
 function TypeCard({ type, selected, onSelect, compact = false }: { type: typeof prisonerTypes[number]; selected: boolean; onSelect: () => void; compact?: boolean }) {
-  return <button className={`type-card ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={onSelect} aria-pressed={selected}><span className={`type-avatar type-${type.id}`}><span>{type.name.slice(0, 1)}</span></span><span className="type-card-content"><strong>{type.name}</strong><em>{type.specialty}</em>{!compact && <><small>{type.description}</small><i>{type.stats.join('  /  ')}</i></>}</span>{selected && <Check className="type-check" size={17} />}</button>;
+  return <button type="button" className={`type-card ${selected ? 'selected' : ''} ${compact ? 'compact' : ''}`} onClick={onSelect} aria-pressed={selected} data-testid={`button-prisoner-type-${type.id}`}><span className={`type-avatar type-${type.id}`}><span>{type.name.slice(0, 1)}</span></span><span className="type-card-content"><strong>{type.name}</strong><em>{type.specialty}</em>{!compact && <><small>{type.description}</small><i>{type.stats.join('  /  ')}</i></>}</span>{selected && <Check className="type-check" size={17} />}</button>;
 }
 
 function TypeRail({ selectedType, onSelect, heading = 'WYBIERZ TYP WIĘŹNIA', compact = false }: { selectedType: PrisonerType; onSelect: (type: PrisonerType) => void; heading?: string; compact?: boolean }) {
@@ -351,8 +361,8 @@ function TypeRail({ selectedType, onSelect, heading = 'WYBIERZ TYP WIĘŹNIA', c
 function RegistrationShell({ step, children, onNavigate, onStepChange, onNext, onCreate }: {
   step: number; children: ReactNode; onNavigate: (screen: Screen) => void; onStepChange: (step: number) => void; onNext: () => void; onCreate: () => void;
 }) {
-  return <main className="registration-page" style={{ '--artwork-url': `url("${prisonArtwork}")` } as CSSProperties}>
-    <header className="registration-header"><div className="prison-shell registration-header-inner"><Brand onNavigate={onNavigate} /><RegistrationProgress step={step} /><div className="registration-login"><span>MASZ JUŻ KONTO?</span><button onClick={() => onNavigate('login')} data-testid="button-registration-login">ZALOGUJ SIĘ</button></div></div></header>
+  return <main className="registration-page" style={{ '--artwork-url': `url("${prisonArtwork}")`, '--registration-artwork-url': `url("${registrationEnvironment}")` } as CSSProperties}>
+    <header className="registration-header"><div className="prison-shell registration-header-inner"><Brand onNavigate={onNavigate} /><RegistrationProgress step={step} onStepChange={onStepChange} /><div className="registration-login"><span>MASZ JUŻ KONTO?</span><button onClick={() => onNavigate('login')} data-testid="button-registration-login">ZALOGUJ SIĘ</button></div></div></header>
     <div className="prison-shell registration-body">{step === 1 && <button className="back-home" onClick={() => onNavigate('home')}><ArrowLeft size={14} /> POWRÓT NA STRONĘ GŁÓWNĄ</button>}{children}</div>
     <div className="registration-action-bar"><div className="prison-shell registration-actions">{step > 1 ? <button className="btn btn-outline" onClick={() => onStepChange(step - 1)}><ArrowLeft size={16} /> WSTECZ</button> : <div className="registration-account-link">MASZ JUŻ KONTO? <button onClick={() => onNavigate('login')}>ZALOGUJ SIĘ</button></div>}{step === 4 ? <button className="btn btn-primary" onClick={onCreate} data-testid="button-create-prisoner">UTWÓRZ WIĘŹNIA <ArrowRight size={17} /></button> : <button className="btn btn-primary" onClick={onNext} data-testid="button-registration-next">DALEJ <ArrowRight size={17} /></button>}</div></div>
     <footer className="registration-footer"><div className="prison-shell registration-footer-inner"><Brand onNavigate={onNavigate} compact /><span>REGULAMIN</span><span>POLITYKA PRYWATNOŚCI</span><span>FAQ</span><span>KONTAKT</span><div className="registration-social"><Gamepad2 size={15} /><Facebook size={15} /><Youtube size={15} /><Instagram size={15} /></div><em>PRAWDZIWE HISTORIE<br />ZACZYNAJĄ SIĘ W WIĘZIENIU...</em></div></footer>

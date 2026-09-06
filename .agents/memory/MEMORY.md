@@ -1,0 +1,1 @@
+- [Registration scene compositing](registration-scene-compositing.md) — keep the character cutout and prison environment as separate visual layers to avoid duplicate subjects.

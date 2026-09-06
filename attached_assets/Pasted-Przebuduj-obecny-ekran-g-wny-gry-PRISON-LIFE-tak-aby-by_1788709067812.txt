@@ -1,0 +1,522 @@
+Przebuduj obecny ekran główny gry PRISON LIFE tak, aby był możliwie wiernym odwzorowaniem załączonej referencji graficznej.
+
+ZAŁĄCZONA REFERENCJA JEST SOURCE OF TRUTH DLA TEGO EKRANU.
+
+Nie projektuj własnego dashboardu.
+Nie upraszczaj layoutu.
+Nie zamieniaj go w standardowy panel SaaS.
+Nie zmieniaj rozmieszczenia elementów według własnego uznania.
+
+Chcę uzyskać praktycznie ten sam efekt wizualny, strukturę, proporcje, hierarchię oraz klimat jak na referencji.
+
+==================================================
+GŁÓWNY CEL
+==================================================
+
+Stwórz ekran główny gry po zalogowaniu.
+
+To ma wyglądać jak prawdziwa przeglądarkowa gra RPG, a nie aplikacja webowa.
+
+Klimat:
+
+REALISTYCZNE WIĘZIENIE
+MROCZNY
+BRUTALNY
+INDUSTRIALNY
+ZUŻYTY
+CIĘŻKI
+
+Materiały:
+- beton
+- stal
+- rdza
+- kraty
+- stare lampy
+- brudne powierzchnie
+- mocne cienie
+- subtelne ślady zużycia
+
+Kolorystyka:
+- prawie czarny grafit
+- ciemna zieleń
+- brudna biel
+- szarości
+- rdzawy pomarańcz jako główny kolor akcentów
+
+==================================================
+UKŁAD EKRANU
+==================================================
+
+Zachowaj dokładnie logikę layoutu widoczną na referencji.
+
+CAŁOŚĆ:
+
+┌──────────────────────────────────────────────────────────────┐
+│ LOGO │ PROFIL / LVL / XP │ WALUTA │ ENERGIA │ HP │ IKONY    │
+├────────────┬─────────────────────────────────────┬───────────┤
+│            │                                     │           │
+│  NAWIGACJA │             TWOJA CELA              │ MÓJ       │
+│            │                                     │ WIĘZIEŃ   │
+│  CELA      │                                     │           │
+│  WIADOMOŚCI│         DUŻA POSTAĆ                 │ STATYSTYKI│
+│  WALKA     │                                     │           │
+│  TRENING   │       INTERAKTYWNA CELA             │ ZADANIA   │
+│  PRACA     │                                     │           │
+│  EKWIPUNEK │                                     │           │
+│  CZARNY    │                                     │           │
+│  RYNEK     │                                     │           │
+│  ZADANIA   │                                     │           │
+│  GANG      │                                     │           │
+│  RANKING   │                                     │           │
+├────────────┴─────────────────┬───────────────────┴───────────┤
+│ WIADOMOŚCI / CHAT            │ OSTATNIE WYDARZENIA           │
+└──────────────────────────────┴──────────────────────────────┘
+
+==================================================
+HEADER
+==================================================
+
+Na samej górze:
+
+PO LEWEJ:
+logo PRISON LIFE.
+
+Pod logo mały slogan:
+
+TU ZACZYNA SIĘ PRAWDZIWA GRA
+
+Następnie panel gracza:
+
+PORTRET POSTACI
+KOSA
+POZIOM 1
+120 / 500 XP
+
+Pasek XP.
+
+Dalej:
+
+💰 250
+
+⚡ 100 / 100
+
+❤️ 100 / 100
+
+Po prawej:
+
+powiadomienia
+ustawienia
+wylogowanie
+
+Header ma być ciemny, metalowy, z cienkimi obramowaniami.
+
+==================================================
+LEWE MENU
+==================================================
+
+To jest bardzo ważny element.
+
+Menu ma być pionowe i wyglądać jak UI gry.
+
+Pozycje:
+
+CELA
+WIADOMOŚCI
+WALKA
+TRENING
+PRACA
+EKWIPUNEK
+CZARNY RYNEK
+ZADANIA
+GANG
+RANKING
+
+NIE używaj:
+
+EKIPA
+SKLEP
+
+Mają być dokładnie:
+
+GANG
+
+oraz:
+
+CZARNY RYNEK
+
+CELA jest aktywna.
+
+Aktywny element:
+- rdzawo-pomarańczowe podświetlenie
+- delikatny glow
+- jasna ikona
+- wyraźne zaznaczenie
+
+WIADOMOŚCI ma mieć czerwony badge:
+
+3
+
+Każda pozycja ma własną ikonę.
+
+Ikony mają być spójne z estetyką gry.
+
+==================================================
+CENTRUM — CELA
+==================================================
+
+To najważniejsza część ekranu.
+
+Nie twórz zwykłego prostokątnego panelu.
+
+Cela ma być dużą, realistyczną sceną.
+
+W środku znajduje się:
+
+KOSA
+
+czyli aktualna postać gracza.
+
+Postać ma być duża i dobrze widoczna.
+
+Wykorzystaj wygląd postaci stworzony podczas rejestracji.
+
+Jeżeli użytkownik stworzył inną postać, tutaj ma pojawić się JEGO postać.
+
+Cela:
+
+- betonowe ściany
+- łóżko
+- stolik
+- szafka
+- telewizor
+- sprzęt treningowy
+- stare lampy
+- kraty
+- małe okno
+- więzienne graffiti
+- zużyta podłoga
+- metalowe elementy
+
+Całość ma mieć głębię i wyglądać jak scena z gry.
+
+==================================================
+INTERAKTYWNE ELEMENTY CELI
+==================================================
+
+Elementy celi mają być klikalne.
+
+ŁÓŻKO
+
+Po najechaniu / kliknięciu:
+
+ŁÓŻKO
+Odpocznij i odzyskaj siły
+
+SZAFKA
+
+SZAFKA
+Przechowuj swoje rzeczy
+
+STÓŁ
+
+STÓŁ
+Wykonuj zadania
+
+TRENING
+
+TRENING
+Popraw swoje statystyki
+
+Nie wystarczy sam hover.
+
+Kliknięcie ma uruchamiać odpowiednią funkcję / przejście do odpowiedniego ekranu.
+
+Jeżeli dana funkcja nie jest jeszcze zaimplementowana, przygotuj strukturę pod jej późniejsze podłączenie.
+
+==================================================
+PRAWA KOLUMNA — MÓJ WIĘZIEŃ
+==================================================
+
+Panel:
+
+MÓJ WIĘZIEŃ
+
+Przycisk:
+
+EDYTUJ
+
+Następnie:
+
+KOSA
+#A-7421
+
+POZIOM 1
+
+120 / 500 XP
+
+Pasek doświadczenia.
+
+Pod spodem statystyki:
+
+SIŁA             10
+KONDYCJA         10
+ZRĘCZNOŚĆ        10
+TECHNIKA         10
+CHARAKTER        10
+
+Każda statystyka ma:
+- charakterystyczną ikonę
+- pasek
+- wartość liczbową
+
+Niżej:
+
+REPUTACJA
+0
+
+RANGA
+NOWY
+
+Na dole cytat:
+
+„ZA KRATAMI WSZYSCY
+JESTEŚMY RÓWNI...
+ALE NIE NA DŁUGO.”
+
+==================================================
+PRAWY DOLNY PANEL — ZADANIA
+==================================================
+
+Panel:
+
+AKTUALNE ZADANIA
+
+oraz:
+
+ZOBACZ WSZYSTKIE
+
+Zadania:
+
+PIERWSZE KROKI
+Zdobądź 100 $ z pracy lub walk.
+
+TRENING CZYNI MISTRZA
+Wykonaj 3 treningi siły.
+
+POZNAJ CELE
+Kliknij wszystkie interaktywne elementy w celi.
+
+Każde zadanie:
+- ikona
+- tytuł
+- opis
+- pasek progresu
+- licznik
+
+==================================================
+DOLNA CZĘŚĆ
+==================================================
+
+Pod główną sceną celi:
+
+LEWA:
+WIADOMOŚCI
+
+Przykładowe wiadomości:
+
+Rychu
+Siema, będziesz dziś na dziedzińcu?
+
+Beton
+Załatwiłem temat. Odezwij się.
+
+Szczur
+Masz towar, o którym gadaliśmy?
+
+Dodaj:
+
++ NOWA WIADOMOŚĆ
+
+Obok:
+
+CZAT: ODDZIAŁ A
+
+Zakładki:
+
+ODDZIAŁ A
+GLOBALNY
+GANG
+
+Czat ma wyglądać jak element prawdziwej gry.
+
+Nie jak Discord.
+
+Po prawej:
+
+OSTATNIE WYDARZENIA
+
+Przykłady:
+
+Wygrałeś walkę z Grubym. +50 $
+
+Zakończyłeś trening siły. +8 XP
+
+Ktoś dołączył do oddziału A.
+
+Przegrałeś walkę z Szakalem. -20 $
+
+Otrzymałeś nową wiadomość.
+
+==================================================
+FOOTER
+==================================================
+
+Na dole strony:
+
+© 2026 Prison Life. Wszystkie prawa zastrzeżone.
+
+Regulamin
+Polityka prywatności
+Kontakt
+Pomoc
+
+==================================================
+STYL UI
+==================================================
+
+Bardzo ważne:
+
+Nie rób zwykłych kart z:
+border-radius: 12px
+box-shadow
+gradient background
+
+Nie chcę typowego nowoczesnego dashboardu.
+
+UI powinno wyglądać jak element wyposażenia więzienia.
+
+Używaj:
+- ostrych / lekko zaokrąglonych narożników
+- metalowych ramek
+- cienkich linii
+- subtelnych tekstur
+- mocnych kontrastów
+- cieni
+- małych pomarańczowych akcentów
+- czerwieni tylko dla alertów
+- zieleni dla pozytywnych wartości
+
+==================================================
+TYPOGRAFIA
+==================================================
+
+Użyj charakterystycznej, skondensowanej typografii.
+
+Nagłówki:
+mocne
+industrialne
+lekko distressed
+
+Tekst:
+czytelny, jasny, kompaktowy.
+
+Nie używaj przypadkowych fontów systemowych.
+
+==================================================
+RESPONSYWNOŚĆ
+==================================================
+
+Desktop jest priorytetem.
+
+Najpierw odtwórz referencję na desktopie.
+
+Dopiero potem przygotuj mobile.
+
+Na mobile:
+- lewe menu może przejść w hamburger
+- dolna nawigacja może stać się bottom navigation
+- prawa kolumna może przejść pod scenę
+- czat i wydarzenia mogą zostać ułożone pionowo
+
+Nie zmieniaj jednak stylistyki.
+
+==================================================
+FUNKCJONALNOŚĆ
+==================================================
+
+To nie ma być statyczny mockup.
+
+Podłącz istniejącą aplikację.
+
+Muszą działać:
+
+- CELA
+- WIADOMOŚCI
+- WALKA
+- TRENING
+- PRACA
+- EKWIPUNEK
+- CZARNY RYNEK
+- ZADANIA
+- GANG
+- RANKING
+
+Kliknięcie pozycji menu ma zmieniać ekran / route.
+
+Postać ma pochodzić z danych utworzonych podczas rejestracji.
+
+Statystyki i poziom mają być przechowywane w stanie aplikacji.
+
+Kliknięcie interaktywnych elementów celi ma wykonywać odpowiednią akcję lub prowadzić do odpowiedniego ekranu.
+
+==================================================
+BARDZO WAŻNE — REFERENCJA
+==================================================
+
+Nie interpretuj załączonego obrazu jako „inspiracji”.
+
+ODTWÓRZ JEGO KOMPOZYCJĘ.
+
+Zwróć szczególną uwagę na:
+
+- proporcje lewej nawigacji
+- szerokość centralnej sceny
+- szerokość prawego panelu
+- wysokość headera
+- rozmieszczenie dolnych paneli
+- wielkość postaci
+- wielkość elementów UI
+- odstępy
+- obramowania
+- hierarchię informacji
+- kolorystykę
+- tekstury
+- kontrast.
+
+Nie zmniejszaj całego interfejsu.
+
+Nie umieszczaj wszystkiego w małym centralnym kontenerze z ogromnymi marginesami.
+
+Interfejs ma wykorzystywać praktycznie cały ekran.
+
+==================================================
+NAJWAŻNIEJSZE
+==================================================
+
+Najpierw osiągnij jakość wizualną możliwie najbliższą referencji.
+
+Dopiero później optymalizuj kod.
+
+Nie twórz nowego designu.
+
+Nie zmieniaj nazw:
+
+WIADOMOŚCI
+CZARNY RYNEK
+GANG
+
+Nie zmieniaj ich na:
+EKIPA
+SKLEP
+
+To jest docelowy język interfejsu PRISON LIFE.
