@@ -1,7 +1,7 @@
-/* Stage 1 is the visual identity workspace. Type selection belongs only to
-   stage 2, so the remaining columns expand to fill the registration canvas. */
+/* The creator follows the supplied intake mockup: identity, appearance,
+   character preview, and prisoner type are four full-height columns. */
 .registration-page .registration-body .creator-screen {
-  grid-template-columns: minmax(220px, .78fr) minmax(330px, 1fr) minmax(470px, 1.55fr);
+  grid-template-columns: minmax(205px, .8fr) minmax(300px, 1.14fr) minmax(420px, 1.34fr) minmax(285px, .9fr);
   min-height: calc(100dvh - 255px);
   align-items: stretch;
 }
@@ -23,9 +23,19 @@
   height: 100%;
   min-height: 0;
 }
+.registration-page .registration-body .creator-screen > .type-rail {
+  height: 100%;
+  min-height: calc(100dvh - 255px);
+  overflow: hidden;
+}
+.registration-page .registration-body .creator-screen > .type-rail .type-cards {
+  gap: 10px;
+}
+.registration-page .registration-body .creator-screen > .type-rail .type-card {
+  min-height: 100px;
+}
 
-/* Stage 2 uses the full registration width instead of the compact sidebar
-   that was previously shown beside the appearance editor. */
+/* Stage 2 remains available as the larger specialization view. */
 .registration-page .step-screen {
   width: 100%;
   max-width: none;
@@ -66,11 +76,14 @@
 
 @media (max-width: 1050px) {
   .registration-page .registration-body .creator-screen {
-    grid-template-columns: 190px minmax(250px, .9fr) minmax(300px, 1.2fr);
+    grid-template-columns: 180px minmax(245px, .9fr) minmax(300px, 1.15fr);
   }
   .registration-page .registration-body .creator-intro,
   .registration-page .registration-body .creator-customize,
   .registration-page .registration-body .creator-screen > .character-preview-wrap {
+    min-height: calc(100dvh - 255px);
+  }
+  .registration-page .registration-body .creator-screen > .type-rail {
     min-height: calc(100dvh - 255px);
   }
   .registration-page .type-step .type-selection-grid {
@@ -87,6 +100,11 @@
   .registration-page .registration-body .creator-screen > .character-preview-wrap {
     min-height: 0;
     height: auto;
+  }
+  .registration-page .registration-body .creator-screen > .type-rail {
+    min-height: 0;
+    height: auto;
+    overflow: visible;
   }
   .registration-page .registration-body .creator-screen > .character-preview-wrap .character-preview {
     min-height: 530px;
