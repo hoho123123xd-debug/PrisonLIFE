@@ -869,8 +869,8 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
           onDragOver={(event) => { event.preventDefault(); setDragOverInventory(true); }}
           onDragLeave={() => setDragOverInventory(false)}
           onDrop={handleInventoryDrop}
-        >{characterInventoryItemsData.map(({ id, name, asset, rarity }) => <button
-          className={`character-inventory-item ${equippedItemIds.has(id) ? 'equipped' : ''}`}
+        >{characterInventoryItemsData.filter(({ id }) => !equippedItemIds.has(id)).map(({ id, name, asset, rarity }) => <button
+          className="character-inventory-item"
           key={id}
           title={name}
           draggable
@@ -879,9 +879,8 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
         >
           <span className={`character-inventory-rarity tone-${rarity}`} />
           <img src={asset} alt={name} />
-          {equippedItemIds.has(id) && <span className="character-inventory-equipped-badge"><Check size={11} /></span>}
         </button>)}
-        {Array.from({ length: Math.max(0, characterInventoryPageSize - characterInventoryItemsData.length) }).map((_, index) => <span className="character-inventory-item empty" key={`empty-${index}`} aria-hidden="true" />)}</div>
+        {Array.from({ length: Math.max(0, characterInventoryPageSize - (characterInventoryItemsData.length - equippedItemIds.size)) }).map((_, index) => <span className="character-inventory-item empty" key={`empty-${index}`} aria-hidden="true" />)}</div>
         <div className="character-inventory-pagination">
           <button onClick={() => setInventoryPage((page) => Math.max(1, page - 1))} aria-label="Poprzednia strona"><ChevronLeft size={15} /></button>
           <span>{inventoryPage}/{inventoryPageCount}</span>
