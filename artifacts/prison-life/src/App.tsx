@@ -12,6 +12,7 @@ import {
   Backpack,
   BarChart3,
   Bell,
+  BookOpen,
   Brain,
   BriefcaseBusiness,
   Building2,
@@ -19,26 +20,35 @@ import {
   CheckCircle2,
   CircleDollarSign,
   ChevronRight,
+  Coffee,
   Coins,
+  Compass,
   Activity,
   ChevronLeft,
   Clover,
   Crosshair,
   Crown,
+  CupSoda,
   Dices,
+  Droplet,
   Droplets,
   Dumbbell,
   BedDouble,
+  Fish,
   Gem,
+  Ghost,
+  GlassWater,
   Eye,
   Facebook,
   Footprints as FootprintsIcon,
   Flag,
   Gamepad2,
+  HandFist,
   Heart,
   Instagram,
   Lightbulb,
   KeyRound,
+  Leaf,
   LockKeyhole,
   LogOut,
   Mail,
@@ -50,8 +60,10 @@ import {
   MoreHorizontal,
   Package,
   PanelRight,
+  PawPrint,
   Plus,
   RefreshCw,
+  Sandwich,
   Scale,
   ScanFace,
   Scissors,
@@ -59,19 +71,24 @@ import {
   Search,
   Send,
   Shield,
+  ShieldCheck,
   Settings,
   Shirt as ShirtIcon,
   ShoppingCart,
   Smartphone,
+  Soup,
   Sparkles,
+  Star,
   Swords,
   Timer,
   Table,
   Trophy,
   Tv,
+  Utensils,
   UserRound,
   UserRoundPen,
   Users,
+  Wallet,
   Watch,
   Wind,
   Wrench,
@@ -620,16 +637,20 @@ function useActionLock() {
   return run;
 }
 
-// Player progress (gold, stat levels, equipped/owned items, market stock) is
-// persisted to localStorage so it survives switching sections/tabs and page
-// reloads, instead of resetting whenever a view remounts.
+// Player progress (gold, points, stat levels, equipped/owned items, the
+// current Sklep/Czarny Rynek offer rotation) is persisted to localStorage so
+// it survives switching sections/tabs and page reloads, instead of resetting
+// whenever a view remounts.
 const PROGRESS_STORAGE_KEY = 'prison-life-progress';
+type OfferState = { ids: string[]; refreshedAt: number };
 type PersistedProgress = {
   balance: number;
+  points: number;
   stats: Record<string, number>;
   equipped: Record<string, string | null>;
   ownedItemIds: string[];
-  marketOwned: Record<string, number>;
+  shopOffer: OfferState;
+  marketOffer: OfferState;
 };
 function loadPersistedProgress(): Partial<PersistedProgress> {
   try {
@@ -638,6 +659,25 @@ function loadPersistedProgress(): Partial<PersistedProgress> {
   } catch {
     return {};
   }
+}
+
+// Sklep/Czarny Rynek offer rotation: pick OFFER_SIZE random ids from a pool
+// (Fisher-Yates shuffle), refreshable manually for points or automatically
+// once OFFER_REFRESH_MS has elapsed since the last roll.
+const OFFER_SIZE = 9;
+const OFFER_REFRESH_MS = 24 * 60 * 60 * 1000;
+const OFFER_REFRESH_COST = 1;
+function pickRandomOfferIds(pool: { id: string }[], count: number): string[] {
+  const ids = pool.map((entry) => entry.id);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  return ids.slice(0, Math.min(count, ids.length));
+}
+function rollOfferIfStale(saved: OfferState | undefined, pool: { id: string }[]): OfferState {
+  if (saved && saved.ids.length && Date.now() - saved.refreshedAt < OFFER_REFRESH_MS) return saved;
+  return { ids: pickRandomOfferIds(pool, OFFER_SIZE), refreshedAt: Date.now() };
 }
 
 type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
@@ -655,20 +695,37 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [savedProgress] = useState(loadPersistedProgress);
   const wallet = useWallet(savedProgress.balance ?? 250);
+  const pointsWallet = useWallet(savedProgress.points ?? 3);
   const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
   const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterDefaultOwnedItemIds));
-  const [marketItemsState, setMarketItemsState] = useState<MarketItem[]>(() => marketItems.map((item) => ({ ...item, owned: savedProgress.marketOwned?.[item.id] ?? item.owned })));
+  const [shopOffer, setShopOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.shopOffer, legalGoodsPool));
+  const [marketOffer, setMarketOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.marketOffer, illegalGoodsPool));
+  const offerRunLocked = useActionLock();
+  const refreshShopOffer = () => offerRunLocked('refresh-shop', () => {
+    if (!pointsWallet.canAfford(OFFER_REFRESH_COST)) { showNotice(`Potrzebujesz ${OFFER_REFRESH_COST} pkt, aby odświeżyć ofertę.`); return; }
+    if (!pointsWallet.removeMoney(OFFER_REFRESH_COST)) { showNotice('Nie udało się odświeżyć oferty.'); return; }
+    setShopOffer({ ids: pickRandomOfferIds(legalGoodsPool, OFFER_SIZE), refreshedAt: Date.now() });
+    showNotice('Asortyment sklepu został odświeżony.');
+  });
+  const refreshMarketOffer = () => offerRunLocked('refresh-market', () => {
+    if (!pointsWallet.canAfford(OFFER_REFRESH_COST)) { showNotice(`Potrzebujesz ${OFFER_REFRESH_COST} pkt, aby odświeżyć ofertę.`); return; }
+    if (!pointsWallet.removeMoney(OFFER_REFRESH_COST)) { showNotice('Nie udało się odświeżyć oferty.'); return; }
+    setMarketOffer({ ids: pickRandomOfferIds(illegalGoodsPool, OFFER_SIZE), refreshedAt: Date.now() });
+    showNotice('Asortyment czarnego rynku został odświeżony.');
+  });
   useEffect(() => {
     const data: PersistedProgress = {
       balance: wallet.balance,
+      points: pointsWallet.balance,
       stats: Object.fromEntries(characterStats.map((stat) => [stat.key, stat.value])),
       equipped,
       ownedItemIds: Array.from(ownedItemIds),
-      marketOwned: Object.fromEntries(marketItemsState.map((item) => [item.id, item.owned])),
+      shopOffer,
+      marketOffer,
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-  }, [wallet.balance, characterStats, equipped, ownedItemIds, marketItemsState]);
+  }, [wallet.balance, pointsWallet.balance, characterStats, equipped, ownedItemIds, shopOffer, marketOffer]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
@@ -676,7 +733,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     xp: 120,
     xpMax: 500,
     gold: wallet.balance,
-    points: 3,
+    points: pointsWallet.balance,
     energy: 100,
     hp: 100,
     reputation: 0,
@@ -735,7 +792,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} items={marketItemsState} setItems={setMarketItemsState} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1149,89 +1206,69 @@ function GangView({ onNotice }: { onNotice: (message: string) => void }) {
   </section>;
 }
 
-type MarketCategory = 'ALL' | 'USABLE' | 'GEAR' | 'OTHER';
-type MarketItem = {
-  id: string;
-  name: string;
-  category: Exclude<MarketCategory, 'ALL'>;
-  price: number;
-  owned: number;
-  description: string;
-  stat: string;
-  rarity: 'POSPOLITY' | 'NIEPOSPOLITY' | 'RZADKI';
-  statIcon: typeof Shield;
-  icon: typeof Shield;
-  iconClass: string;
-};
+// Sklep (legal) and Czarny Rynek (illegal) share one mechanic: a rotating
+// selection of offers drawn from a pool, refreshable early for points.
+// GameShell owns the offer-picking/persistence; these components only
+// render whatever offer list they're handed and know how to buy one item.
+type LegalGood = { id: string; name: string; price: number; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
+const legalGenericGoods: LegalGood[] = [
+  { id: 'tshirt', name: 'Koszulka', price: 60, render: { kind: 'icon', icon: ShirtIcon } },
+  { id: 'shorts', name: 'Spodenki', price: 80, render: { kind: 'icon', icon: Package } },
+  { id: 'sneakers', name: 'Buty sportowe', price: 120, render: { kind: 'icon', icon: FootprintsIcon } },
+  { id: 'gym-hoodie', name: 'Bluza', price: 150, render: { kind: 'icon', icon: ShirtIcon } },
+  { id: 'towel', name: 'Ręcznik', price: 50, render: { kind: 'icon', icon: Droplet } },
+  { id: 'toothpaste-set', name: 'Pasta i szczoteczka', price: 40, render: { kind: 'icon', icon: Sparkles } },
+  { id: 'soap-bar', name: 'Mydło', price: 25, render: { kind: 'icon', icon: Droplets } },
+  { id: 'slides', name: 'Klapki', price: 70, render: { kind: 'icon', icon: FootprintsIcon } },
+  { id: 'notebook-set', name: 'Notes i długopis', price: 35, render: { kind: 'icon', icon: ScrollText } },
+];
+// Equip-catalog goods (weapon excluded — that stays a black-market matter):
+// buying one still lands straight in the character's equipment inventory.
+const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => item.slot !== 'weapon').map((item) => ({ id: item.id, name: item.name, price: item.price, render: { kind: 'image', src: item.asset } }));
+const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods];
+const legalEquipIds = new Set(legalEquipGoods.map((item) => item.id));
 
-const marketItems: MarketItem[] = [
-  { id: 'rose', name: 'RÓŻA', category: 'OTHER', price: 250, owned: 0, description: 'Daje siłę, kiedy jest naprawdę ciężko.', stat: '+3 Siła', rarity: 'POSPOLITY', statIcon: Dumbbell, icon: Heart, iconClass: 'market-art-rose' },
-  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', price: 80, owned: 3, description: 'Zmniejszają stres i poprawiają nastrój.', stat: '-10 Stres', rarity: 'POSPOLITY', statIcon: Heart, icon: Wind, iconClass: 'market-art-cigarettes' },
-  { id: 'knife', name: 'NÓŻ', category: 'GEAR', price: 400, owned: 0, description: 'Niebezpieczne narzędzie. Przydaje się w trudnych sytuacjach.', stat: '+5 Zręczność', rarity: 'NIEPOSPOLITY', statIcon: Crosshair, icon: Swords, iconClass: 'market-art-knife' },
-  { id: 'supplement', name: 'ODŻYWKA', category: 'USABLE', price: 300, owned: 0, description: 'Wspomaga regenerację i rozwój mięśni.', stat: '+10 Kondycja', rarity: 'NIEPOSPOLITY', statIcon: Heart, icon: Dumbbell, iconClass: 'market-art-supplement' },
-  { id: 'phone', name: 'TELEFON', category: 'OTHER', price: 500, owned: 0, description: 'Pozwala na kontakt z innymi więźniami.', stat: '+4 Technika', rarity: 'RZADKI', statIcon: Wrench, icon: Smartphone, iconClass: 'market-art-phone' },
-  { id: 'tattoo', name: 'ZESTAW DO TATUAŻU', category: 'GEAR', price: 350, owned: 0, description: 'Trwała pamiątka. Zwiększa respekt.', stat: '+5 Charakter', rarity: 'NIEPOSPOLITY', statIcon: Crown, icon: Award, iconClass: 'market-art-tattoo' },
-  { id: 'tablets', name: 'TABLETKI', category: 'USABLE', price: 200, owned: 0, description: 'Pomagają się skupić i działają pobudzająco.', stat: '+10 Energia', rarity: 'POSPOLITY', statIcon: Zap, icon: Plus, iconClass: 'market-art-tablets' },
-  { id: 'beer', name: 'BIMBER', category: 'USABLE', price: 180, owned: 0, description: 'Mocny alkohol z więziennej produkcji. Poprawia nastrój, ale ma skutki uboczne.', stat: '-15 Stres   -10 Kondycja', rarity: 'POSPOLITY', statIcon: Heart, icon: Droplets, iconClass: 'market-art-beer' },
-  { id: 'lockpick', name: 'WYTRYCHY', category: 'GEAR', price: 450, owned: 0, description: 'Ułatwiają otwieranie zamkniętych drzwi.', stat: '+10 Technika', rarity: 'RZADKI', statIcon: LockKeyhole, icon: Wrench, iconClass: 'market-art-lockpick' },
+type IllegalGood = { id: string; name: string; price: number; icon: typeof Shield };
+const illegalGoodsPool: IllegalGood[] = [
+  { id: 'prison-knife', name: 'Nóż więzienny', price: 450, icon: Swords },
+  { id: 'knuckles', name: 'Kastet', price: 380, icon: HandFist },
+  { id: 'amphetamine', name: 'Amfetamina (mała porcja)', price: 250, icon: Package },
+  { id: 'shiv', name: 'Sztylet', price: 600, icon: Crosshair },
+  { id: 'steroids', name: 'Sterydy', price: 350, icon: Dumbbell },
+  { id: 'weed', name: 'Marihuana', price: 180, icon: Leaf },
+  { id: 'burner-phone', name: 'Telefon', price: 1200, icon: Smartphone },
+  { id: 'tattoo-kit', name: 'Zestaw do tatuażu', price: 520, icon: Award },
+  { id: 'stolen-watch', name: 'Zegarek (skradziony)', price: 410, icon: Watch },
 ];
 
-function MarketView({ wallet, items, setItems, onNotice }: { wallet: Wallet; items: MarketItem[]; setItems: Dispatch<SetStateAction<MarketItem[]>>; onNotice: (message: string) => void }) {
+// Which gang currently controls the black market — a static snapshot for
+// now (no live gang-war simulation yet), applied as a real surcharge on
+// every purchase so the panel isn't purely decorative.
+type GangControlEntry = { id: string; name: string; cut: number; icon: typeof Shield; controlling?: boolean };
+const blackMarketGangControl: GangControlEntry[] = [
+  { id: 'czerwone-wilki', name: 'CZERWONE WILKI', cut: 15, icon: PawPrint, controlling: true },
+  { id: 'zelazne-piesci', name: 'ŻELAZNE PIĘŚCI', cut: 10, icon: HandFist },
+  { id: 'cienie', name: 'CIENIE', cut: 8, icon: Ghost },
+  { id: 'polnoc', name: 'PÓŁNOC', cut: 5, icon: Compass },
+  { id: 'bractwo', name: 'BRACTWO', cut: 5, icon: ShieldCheck },
+];
+const blackMarketTaxCut = blackMarketGangControl.find((entry) => entry.controlling)?.cut ?? 0;
+
+function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, pointsBalance, onRefresh, onNotice }: {
+  wallet: Wallet;
+  offers: LegalGood[];
+  ownedItemIds: Set<string>;
+  setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
+  refreshCost: number;
+  pointsBalance: number;
+  onRefresh: () => void;
+  onNotice: (message: string) => void;
+}) {
   const runLocked = useActionLock();
-  const filteredItems = items;
 
-  const buyItem = (item: MarketItem) => runLocked(`buy-${item.id}`, () => {
-    if (!wallet.canAfford(item.price)) {
-      onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - wallet.balance} $.`);
-      return;
-    }
-    if (!wallet.removeMoney(item.price)) {
-      onNotice('Zakup nieudany — brak środków.');
-      return;
-    }
-    setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, owned: entry.owned + 1 } : entry));
-    onNotice(`Kupiono: ${item.name.toLowerCase()}.`);
-  });
-
-  return <section className="market-view market-reference-view" data-testid="market-view">
-    <header className="market-hero">
-      <div className="market-hero-copy">
-        <h1>CZARNY RYNEK</h1>
-        <p>TUTAJ ZNAJDZIESZ RZECZY, KTÓRYCH NIE KUPISZ W SKLEPIE.</p>
-      </div>
-      <div className="market-hero-mark">DOBRE<br />RZECZY<br />MAJĄ<br /><em>SWOJĄ CENĘ</em></div>
-    </header>
-    <div className="market-refresh-strip">
-      <button className="market-refresh-offer" onClick={() => onNotice('Asortyment został odświeżony.')}><RefreshCw size={26} /><span><strong>ODŚWIEŻ ASORTYMENT</strong><small>Nowe przedmioty za: <b>3 pkt</b></small></span><em><Crown size={16} /> 3</em></button>
-      <div className="market-offer-time"><Timer size={19} /><span>DO KOŃCA OFERTY:</span><b>00:42:17</b></div>
-      <div className="market-offer-note">Asortyment zmienia się automatycznie.<br />Niektóre przedmioty są unikalne.</div>
-    </div>
-    <div className="market-item-grid">
-      {filteredItems.map((item) => { const ItemIcon = item.icon; const StatIcon = item.statIcon; return <article key={item.id} className={`market-item-card ${item.iconClass}`} data-testid={`market-item-${item.id}`}>
-        <div className="market-item-art"><ItemIcon size={68} strokeWidth={1.05} /></div>
-        <div className="market-item-copy"><div className="market-item-title"><h2>{item.name}</h2><em className={`market-rarity market-rarity-${item.rarity.toLowerCase()}`}>{item.rarity}</em></div><p>{item.description}</p><span className="market-item-stat"><StatIcon size={15} /> {item.stat}</span></div>
-        <div className="market-item-footer"><strong>$ {item.price}</strong><button onClick={() => buyItem(item)} data-testid={`market-buy-${item.id}`}>KUP</button></div>
-      </article>; })}
-    </div>
-    <footer className="market-footnote"><span><Info size={16} /> Ceny na czarnym rynku mogą się zmieniać. Nie wszystko jest legalne. Korzystasz na własne ryzyko.</span>
-      <em>„Nie wszystko da się kupić...”</em>
-    </footer>
-  </section>;
-}
-
-// The legal counterpart to the black market: clothing/gear that goes straight
-// into the character's equipment inventory when bought. Reuses the same
-// characterInventoryItemsData catalog (weapon-slot items excluded — those stay
-// a black-market matter) instead of a separate item list, so a purchase here
-// and a sale in TWOJA POSTAĆ both operate on the one shared ownedItemIds set.
-const shopItems = characterInventoryItemsData.filter((item) => item.slot !== 'weapon');
-
-function ShopView({ wallet, ownedItemIds, setOwnedItemIds, onNotice }: { wallet: Wallet; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onNotice: (message: string) => void }) {
-  const runLocked = useActionLock();
-  const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
-
-  const buyItem = (item: (typeof shopItems)[number]) => runLocked(`shop-buy-${item.id}`, () => {
-    if (ownedItemIds.has(item.id)) {
+  const buyItem = (item: LegalGood) => runLocked(`shop-buy-${item.id}`, () => {
+    const isEquip = legalEquipIds.has(item.id);
+    if (isEquip && ownedItemIds.has(item.id)) {
       onNotice(`${item.name}: już posiadasz ten przedmiot.`);
       return;
     }
@@ -1243,50 +1280,113 @@ function ShopView({ wallet, ownedItemIds, setOwnedItemIds, onNotice }: { wallet:
       onNotice('Zakup nieudany — brak środków.');
       return;
     }
-    setOwnedItemIds((current) => new Set(current).add(item.id));
-    onNotice(`Kupiono: ${item.name.toLowerCase()}. Znajdziesz go w ekwipunku.`);
+    if (isEquip) setOwnedItemIds((current) => new Set(current).add(item.id));
+    onNotice(`Kupiono: ${item.name.toLowerCase()}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
   });
 
-  return <section className="market-view market-reference-view shop-view" data-testid="shop-view">
-    <header className="market-hero">
-      <div className="market-hero-copy">
+  return <section className="storefront-view storefront-shop" data-testid="shop-view">
+    <header className="storefront-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(6,10,9,.95), rgba(6,10,9,.55) 45%, rgba(6,10,9,.15) 75%), url(${bullAsset})` }}>
+      <div className="storefront-hero-copy">
         <h1>SKLEP</h1>
-        <p>LEGALNY TOWAR. UBRANIA I WYPOSAŻENIE BEZ RYZYKA.</p>
+        <p>LEGALNE RZECZY. NA CO DZIEŃ.</p>
       </div>
-      <div className="market-hero-mark">UCZCIWY<br />TOWAR<br />BEZ<br /><em>KANTÓW</em></div>
+      <span className="storefront-hero-tagline">LEPSZY<br />DZIEŃ<br />ZACZYNA SIĘ<br />OD DOBRYCH<br />WYBORÓW.</span>
+      <div className="storefront-wallet-badge"><Wallet size={20} /><span><small>TWOJA GOTÓWKA</small><b>{wallet.balance.toLocaleString('pl-PL')} $</b></span></div>
     </header>
-    <div className="market-refresh-strip">
-      <button className="market-refresh-offer" onClick={() => onNotice('Sklep ma stałą, legalną ofertę — bez losowości.')}><Package size={26} /><span><strong>STAŁA OFERTA SKLEPU</strong><small>Zero ryzyka, stałe ceny</small></span></button>
-      <div className="market-offer-time"><Timer size={19} /><span>OTWARTE:</span><b>24/7</b></div>
-      <div className="market-offer-note">Zakupione przedmioty trafiają<br />prosto do Twojego ekwipunku.</div>
+    <section className="storefront-offer-panel">
+      <div className="storefront-offer-header">
+        <h2>AKTUALNA OFERTA <small>{offers.length} / {offers.length} PRZEDMIOTÓW</small></h2>
+        <div className="storefront-offer-actions">
+          <button className="storefront-refresh-btn" onClick={onRefresh} disabled={pointsBalance < refreshCost} data-testid="shop-refresh"><RefreshCw size={15} /> ODŚWIEŻ OFERTĘ</button>
+          <span className="storefront-refresh-cost"><Star size={13} /> {refreshCost}</span>
+        </div>
+      </div>
+      <div className="storefront-grid">
+        {offers.map((item) => { const isEquip = legalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
+          <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
+          <div className="storefront-card-footer">
+            {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{item.price} $</b>}
+            <button onClick={() => buyItem(item)} disabled={owned} aria-label={`Kup: ${item.name}`} data-testid={`shop-buy-${item.id}`}><ShoppingCart size={14} /></button>
+          </div>
+        </article>; })}
+      </div>
+    </section>
+    <footer className="storefront-footnote">
+      <span className="storefront-flavor">PROSTE RZECZY.<br />WIĘKSZE MOŻLIWOŚCI.</span>
+      <Crown size={16} />
+    </footer>
+  </section>;
+}
+
+function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onNotice }: {
+  wallet: Wallet;
+  offers: IllegalGood[];
+  refreshCost: number;
+  pointsBalance: number;
+  onRefresh: () => void;
+  onNotice: (message: string) => void;
+}) {
+  const runLocked = useActionLock();
+
+  const buyItem = (item: IllegalGood) => runLocked(`market-buy-${item.id}`, () => {
+    const total = Math.round(item.price * (1 + blackMarketTaxCut / 100));
+    if (!wallet.canAfford(total)) {
+      onNotice(`Brak środków. Potrzebujesz jeszcze ${total - wallet.balance} $.`);
+      return;
+    }
+    if (!wallet.removeMoney(total)) {
+      onNotice('Zakup nieudany — brak środków.');
+      return;
+    }
+    onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.`);
+  });
+
+  return <section className="storefront-view storefront-market" data-testid="market-view">
+    <header className="storefront-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(6,10,9,.95), rgba(6,10,9,.55) 45%, rgba(6,10,9,.15) 75%), url(${characterScenePhoto})` }}>
+      <div className="storefront-hero-copy">
+        <span className="storefront-hero-crown"><Crown size={20} /></span>
+        <h1>CZARNY <em>RYNEK</em></h1>
+        <p>NIE WSZYSTKO JEST DLA WSZYSTKICH.</p>
+      </div>
+      <span className="storefront-hero-tagline">TU LICZĄ SIĘ<br />KONTAKTY.<br />I LOJALNOŚĆ.</span>
+      <div className="storefront-wallet-badge"><Wallet size={20} /><span><small>TWOJA GOTÓWKA</small><b>{wallet.balance.toLocaleString('pl-PL')} $</b></span></div>
+    </header>
+    <div className="storefront-body">
+      <section className="storefront-offer-panel">
+        <div className="storefront-offer-header">
+          <h2>AKTUALNA OFERTA <small>{offers.length} / {offers.length} PRZEDMIOTÓW</small></h2>
+          <div className="storefront-offer-actions">
+            <button className="storefront-refresh-btn" onClick={onRefresh} disabled={pointsBalance < refreshCost} data-testid="market-refresh"><RefreshCw size={15} /> ODŚWIEŻ OFERTĘ</button>
+            <span className="storefront-refresh-cost"><Star size={13} /> {refreshCost}</span>
+          </div>
+        </div>
+        <div className="storefront-grid storefront-grid-named">
+          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
+            <div className="storefront-card-art"><item.icon size={52} strokeWidth={1.15} /></div>
+            <strong className="storefront-card-name">{item.name}</strong>
+            <div className="storefront-card-footer">
+              <b>{total} $</b>
+              <button onClick={() => buyItem(item)} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
+            </div>
+          </article>; })}
+        </div>
+      </section>
+      <aside className="storefront-control-panel">
+        <div className="storefront-control-heading"><h3>KONTROLA RYNKU</h3><Info size={14} /></div>
+        <p className="storefront-control-note">Obecnie Czarny Rynek jest pod kontrolą:</p>
+        {blackMarketGangControl.filter((entry) => entry.controlling).map((entry) => <div className="storefront-control-leader" key={entry.id}>
+          <entry.icon size={22} />
+          <div><strong>{entry.name}</strong><span>Otrzymują {entry.cut}% z każdego zakupu dokonanego przez gracza</span></div>
+        </div>)}
+        <div className="storefront-control-bar"><i style={{ width: `${blackMarketTaxCut}%` }} /></div>
+        <p className="storefront-control-subheading">POZOSTAŁE GANGI:</p>
+        <div className="storefront-control-list">{blackMarketGangControl.filter((entry) => !entry.controlling).map((entry) => <div key={entry.id}><entry.icon size={15} /><span>{entry.name}</span><b>{entry.cut}%</b></div>)}</div>
+        <p className="storefront-control-footnote">Gangi walczą o wpływy. Kontrola nad rynkiem zmienia się z czasem.</p>
+      </aside>
     </div>
-    <div className="shop-tile-grid" data-testid="shop-tile-grid">
-      {shopItems.map((item) => { const owned = ownedItemIds.has(item.id); return <button
-        key={item.id}
-        className={`character-inventory-item shop-tile ${owned ? 'owned' : ''}`}
-        onClick={() => buyItem(item)}
-        onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id: item.id, x: rect.left + rect.width / 2, y: rect.top }); }}
-        onMouseLeave={() => setHoveredItem((current) => current?.id === item.id ? null : current)}
-        data-testid={`shop-tile-${item.id}`}
-      >
-        <span className={`character-inventory-rarity tone-${item.rarity}`} />
-        <img src={item.asset} alt={item.name} />
-        <span className="shop-tile-badge">{owned ? <Check size={11} /> : `${item.price} $`}</span>
-      </button>; })}
-    </div>
-    {hoveredItem && (() => {
-      const item = shopItems.find((entry) => entry.id === hoveredItem.id);
-      if (!item) return null;
-      const owned = ownedItemIds.has(item.id);
-      return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
-        <strong>{item.name}</strong>
-        <span>+{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
-        <br />
-        <span>{owned ? 'W ekwipunku' : `Cena: ${item.price} $`}</span>
-      </div>;
-    })()}
-    <footer className="market-footnote"><span><Info size={16} /> Wszystkie przedmioty w sklepie są w pełni legalne. Możesz je nosić bez żadnego ryzyka.</span>
-      <em>„Uczciwie zarobione, uczciwie wydane.”</em>
+    <footer className="storefront-footnote storefront-footnote-market">
+      <span className="storefront-flavor-note"><Info size={14} /> Przedmioty na Czarnym Rynku są nielegalne. Zakup wiąże się z ryzykiem.</span>
+      <span className="storefront-flavor">TEN, KTO KONTROLUJE RYNEK<br />KONTROLUJE WIĘCEJ.</span>
     </footer>
   </section>;
 }
