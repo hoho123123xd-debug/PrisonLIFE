@@ -620,6 +620,26 @@ function useActionLock() {
   return run;
 }
 
+// Player progress (gold, stat levels, equipped/owned items, market stock) is
+// persisted to localStorage so it survives switching sections/tabs and page
+// reloads, instead of resetting whenever a view remounts.
+const PROGRESS_STORAGE_KEY = 'prison-life-progress';
+type PersistedProgress = {
+  balance: number;
+  stats: Record<string, number>;
+  equipped: Record<string, string | null>;
+  ownedItemIds: string[];
+  marketOwned: Record<string, number>;
+};
+function loadPersistedProgress(): Partial<PersistedProgress> {
+  try {
+    const raw = window.localStorage.getItem(PROGRESS_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Partial<PersistedProgress>) : {};
+  } catch {
+    return {};
+  }
+}
+
 type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
   const [activeSection, setActiveSection] = useState<GameSection>(() => {
@@ -633,7 +653,22 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [chatLines, setChatLines] = useState([{ time: '18:24', name: 'Kosa', text: 'Ktoś idzie na stołówkę?' }, { time: '18:25', name: 'Rychu', text: 'Ja o 19' }, { time: '18:25', name: 'Beton', text: 'Dawaj, łatwiej w ekipie.' }, { time: '18:26', name: 'Młody', text: 'Gdzie dokładnie?' }, { time: '18:27', name: 'Rychu', text: 'Plac, sektor B' }]);
   const [visited, setVisited] = useState<Set<HotspotId>>(new Set());
   const [newMessageOpen, setNewMessageOpen] = useState(false);
-  const wallet = useWallet(250);
+  const [savedProgress] = useState(loadPersistedProgress);
+  const wallet = useWallet(savedProgress.balance ?? 250);
+  const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
+  const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
+  const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterInventoryItemsData.map((item) => item.id)));
+  const [marketItemsState, setMarketItemsState] = useState<MarketItem[]>(() => marketItems.map((item) => ({ ...item, owned: savedProgress.marketOwned?.[item.id] ?? item.owned })));
+  useEffect(() => {
+    const data: PersistedProgress = {
+      balance: wallet.balance,
+      stats: Object.fromEntries(characterStats.map((stat) => [stat.key, stat.value])),
+      equipped,
+      ownedItemIds: Array.from(ownedItemIds),
+      marketOwned: Object.fromEntries(marketItemsState.map((item) => [item.id, item.owned])),
+    };
+    window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
+  }, [wallet.balance, characterStats, equipped, ownedItemIds, marketItemsState]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
@@ -700,7 +735,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} items={marketItemsState} setItems={setMarketItemsState} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -825,16 +860,24 @@ const characterStatsList: Array<{ key: string; label: string; description: strin
   { key: 'reflex', label: 'REFLEKS', description: 'Szybsze reakcje. Przewaga w walce.', value: 14, max: 100, icon: Zap, tone: 'yellow' },
 ];
 
-function CharacterView({ creator, gameData, wallet, onNotice }: { creator: CreatorState; gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string }; wallet: Wallet; onNotice: (message: string) => void }) {
-  const [stats, setStats] = useState(characterStatsList);
+function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, setEquipped, ownedItemIds, setOwnedItemIds, onNotice }: {
+  creator: CreatorState;
+  gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string };
+  wallet: Wallet;
+  stats: typeof characterStatsList;
+  setStats: Dispatch<SetStateAction<typeof characterStatsList>>;
+  equipped: Record<string, string | null>;
+  setEquipped: Dispatch<SetStateAction<Record<string, string | null>>>;
+  ownedItemIds: Set<string>;
+  setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
+  onNotice: (message: string) => void;
+}) {
   const [inventoryTab, setInventoryTab] = useState<typeof characterInventoryTabs[number]>('WSZYSTKIE');
   const [inventoryPage, setInventoryPage] = useState(1);
-  const [equipped, setEquipped] = useState<Record<string, string | null>>(characterDefaultEquipped);
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
   const [dragOverInventory, setDragOverInventory] = useState(false);
   const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
-  const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(characterInventoryItemsData.map((item) => item.id)));
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const runLocked = useActionLock();
   const inventoryPageCount = 3;
@@ -1129,8 +1172,7 @@ const marketItems: MarketItem[] = [
   { id: 'lockpick', name: 'WYTRYCHY', category: 'GEAR', price: 450, owned: 0, description: 'Ułatwiają otwieranie zamkniętych drzwi.', stat: '+10 Technika', rarity: 'RZADKI', statIcon: LockKeyhole, icon: Wrench, iconClass: 'market-art-lockpick' },
 ];
 
-function MarketView({ wallet, onNotice }: { wallet: Wallet; onNotice: (message: string) => void }) {
-  const [items, setItems] = useState(marketItems);
+function MarketView({ wallet, items, setItems, onNotice }: { wallet: Wallet; items: MarketItem[]; setItems: Dispatch<SetStateAction<MarketItem[]>>; onNotice: (message: string) => void }) {
   const runLocked = useActionLock();
   const filteredItems = items;
 
