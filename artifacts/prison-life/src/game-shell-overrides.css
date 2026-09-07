@@ -3706,8 +3706,8 @@
   overflow: hidden;
 }
 .character-inventory-item img {
-  width: 78%;
-  height: 78%;
+  width: 90%;
+  height: 90%;
   object-fit: contain;
 }
 .character-inventory-item:hover {
@@ -3716,6 +3716,12 @@
 }
 .character-inventory-item.equipped {
   border-color: rgba(225, 122, 46, .5);
+}
+.character-inventory-item.empty {
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, .08);
+  background: rgba(0, 0, 0, .12);
+  cursor: default;
 }
 .character-inventory-equipped-badge {
   position: absolute;
