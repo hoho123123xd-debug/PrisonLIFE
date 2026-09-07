@@ -1,4 +1,4 @@
-import { type CSSProperties, type Dispatch, type DragEvent, type FormEvent, type ReactNode, type SetStateAction, useEffect, useState } from 'react';
+import { type CSSProperties, type Dispatch, type DragEvent, type FormEvent, type ReactNode, type SetStateAction, useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -573,6 +573,53 @@ function AuthScreen({ mode, onNavigate }: { mode: 'login' | 'register'; onNaviga
   return <main className="auth-page" style={{ '--artwork-url': `url("${prisonArtwork}")` } as CSSProperties}><div className="auth-backdrop" /><header className="auth-header"><Brand onNavigate={onNavigate} /><button onClick={() => onNavigate('home')} className="auth-return"><ArrowLeft size={15} /> WRÓĆ NA STRONĘ GŁÓWNĄ</button></header><section className="auth-card"><div className="eyebrow">{register ? 'Nowy więzień' : 'Powrót za kraty'}</div><h1>{register ? 'ZAREJESTRUJ SIĘ' : 'ZALOGUJ SIĘ'}</h1><p>{register ? 'Stwórz swoją kartotekę i wybierz, jaką reputację zbudujesz za kratami.' : 'Wróć do swojej celi. Twoja reputacja nie poczeka.'}</p><form onSubmit={submit}><label><span><Mail size={15} /> ADRES E-MAIL</span><input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="więzień@prisonlife.pl" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="wpisz hasło" required minLength={6} /></label><button className="btn btn-primary" type="submit">{register ? 'OTWÓRZ KARTOTEKĘ' : 'WEJDŹ DO GRY'} <ArrowRight size={16} /></button></form>{notice && <div className="auth-notice">{notice}</div>}<button className="auth-switch" onClick={() => onNavigate(register ? 'login' : 'register')}>{register ? 'MASZ JUŻ KONTO? ' : 'NIE MASZ JESZCZE KONTA? '}<strong>{register ? 'ZALOGUJ SIĘ' : 'ZAREJESTRUJ SIĘ'}</strong></button></section><div className="auth-quote">„ZA KRATAMI NIE MA PRZYPADKÓW.<br /><span>SĄ TYLKO DECYZJE.</span>”</div></main>;
 }
 
+// Central cash wallet — the single source of truth for the player's money.
+// Every screen that earns, spends, or checks money (work payout, market
+// purchases, item selling, stat upgrades) goes through this, instead of
+// keeping its own local balance. removeMoney/addMoney mutate balance via a
+// functional setState updater so the afford-check and the deduction happen
+// atomically against the latest state, even if two calls land in the same
+// tick (e.g. a fast double-click).
+type Wallet = { balance: number; addMoney: (amount: number) => void; removeMoney: (amount: number) => boolean; canAfford: (amount: number) => boolean };
+function useWallet(initialBalance: number): Wallet {
+  // balanceRef is the single source of truth for synchronous reads/writes —
+  // addMoney/removeMoney mutate it directly and return immediately, so callers
+  // get a reliable result without depending on when React chooses to invoke a
+  // setState updater (that timing is an internal React detail, not something
+  // safe to build atomicity on). `render` only forces the component to
+  // re-render so the displayed balance catches up.
+  const balanceRef = useRef(initialBalance);
+  const [, render] = useState(0);
+  const addMoney = (amount: number) => {
+    if (amount <= 0) return;
+    balanceRef.current += amount;
+    render((tick) => tick + 1);
+  };
+  const removeMoney = (amount: number) => {
+    if (amount <= 0) return true;
+    if (balanceRef.current < amount) return false;
+    balanceRef.current -= amount;
+    render((tick) => tick + 1);
+    return true;
+  };
+  const canAfford = (amount: number) => balanceRef.current >= amount;
+  return { balance: balanceRef.current, addMoney, removeMoney, canAfford };
+}
+
+// Guards a repeatable action (buy/sell/upgrade) against being fired more
+// than once from a fast double-click/double-drop before React can disable
+// the control that triggered it.
+function useActionLock() {
+  const lockedRef = useRef<Set<string>>(new Set());
+  const run = (key: string, action: () => void) => {
+    if (lockedRef.current.has(key)) return;
+    lockedRef.current.add(key);
+    window.setTimeout(() => lockedRef.current.delete(key), 300);
+    action();
+  };
+  return run;
+}
+
 type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
   const [activeSection, setActiveSection] = useState<GameSection>(() => {
@@ -586,13 +633,14 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [chatLines, setChatLines] = useState([{ time: '18:24', name: 'Kosa', text: 'Ktoś idzie na stołówkę?' }, { time: '18:25', name: 'Rychu', text: 'Ja o 19' }, { time: '18:25', name: 'Beton', text: 'Dawaj, łatwiej w ekipie.' }, { time: '18:26', name: 'Młody', text: 'Gdzie dokładnie?' }, { time: '18:27', name: 'Rychu', text: 'Plac, sektor B' }]);
   const [visited, setVisited] = useState<Set<HotspotId>>(new Set());
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const wallet = useWallet(250);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
     level: 1,
     xp: 120,
     xpMax: 500,
-    gold: 250,
+    gold: wallet.balance,
     points: 3,
     energy: 100,
     hp: 100,
@@ -652,7 +700,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -754,6 +802,10 @@ const characterInventoryItemsData: Array<{ id: string; name: string; asset: stri
   { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, rarity: 'violet', slot: 'weapon', bonusStat: 'strength', bonusAmount: 5, value: 70 },
 ];
 const characterStatLabelByKey: Record<string, string> = { health: 'zdrowia', luck: 'szczęścia', strength: 'siły', endurance: 'kondycji', intelligence: 'inteligencji', reflex: 'refleksu' };
+// Cost in cash to raise a stat by one point, given its current (pre-upgrade) value — rises with level.
+function statUpgradeCost(currentValue: number): number {
+  return 20 + currentValue * 4;
+}
 const characterDefaultEquipped: Record<string, string | null> = {
   head: 'cap',
   neck: null,
@@ -764,18 +816,17 @@ const characterDefaultEquipped: Record<string, string | null> = {
   feet: 'black-boots',
   weapon: 'knife',
 };
-const characterStatsList: Array<{ key: string; label: string; value: number; max: number; icon: typeof Shield; tone: string }> = [
-  { key: 'health', label: 'ZDROWIE', value: 100, max: 100, icon: Heart, tone: 'red' },
-  { key: 'luck', label: 'SZCZĘŚCIE', value: 12, max: 100, icon: Clover, tone: 'green' },
-  { key: 'strength', label: 'SIŁA', value: 11, max: 100, icon: Dumbbell, tone: 'orange' },
-  { key: 'endurance', label: 'KONDYCJA', value: 17, max: 100, icon: Activity, tone: 'blue' },
-  { key: 'intelligence', label: 'INTELIGENCJA', value: 11, max: 100, icon: Brain, tone: 'violet' },
-  { key: 'reflex', label: 'REFLEKS', value: 14, max: 100, icon: Zap, tone: 'yellow' },
+const characterStatsList: Array<{ key: string; label: string; description: string; value: number; max: number; icon: typeof Shield; tone: string }> = [
+  { key: 'health', label: 'ZDROWIE', description: 'Więcej wytrzymałości. Dłużej na nogach.', value: 100, max: 100, icon: Heart, tone: 'red' },
+  { key: 'luck', label: 'SZCZĘŚCIE', description: 'Lepsze wydarzenia. Większe szanse.', value: 12, max: 100, icon: Clover, tone: 'green' },
+  { key: 'strength', label: 'SIŁA', description: 'Silniejsze ciosy. Większa dominacja.', value: 11, max: 100, icon: Dumbbell, tone: 'orange' },
+  { key: 'endurance', label: 'KONDYCJA', description: 'Więcej energii. Szybsza regeneracja.', value: 17, max: 100, icon: Activity, tone: 'blue' },
+  { key: 'intelligence', label: 'INTELIGENCJA', description: 'Lepsze decyzje. Więcej możliwości.', value: 11, max: 100, icon: Brain, tone: 'violet' },
+  { key: 'reflex', label: 'REFLEKS', description: 'Szybsze reakcje. Przewaga w walce.', value: 14, max: 100, icon: Zap, tone: 'yellow' },
 ];
 
-function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState; gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string }; onNotice: (message: string) => void }) {
+function CharacterView({ creator, gameData, wallet, onNotice }: { creator: CreatorState; gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string }; wallet: Wallet; onNotice: (message: string) => void }) {
   const [stats, setStats] = useState(characterStatsList);
-  const [availablePoints, setAvailablePoints] = useState(3);
   const [inventoryTab, setInventoryTab] = useState<typeof characterInventoryTabs[number]>('WSZYSTKIE');
   const [inventoryPage, setInventoryPage] = useState(1);
   const [equipped, setEquipped] = useState<Record<string, string | null>>(characterDefaultEquipped);
@@ -785,23 +836,52 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
   const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(characterInventoryItemsData.map((item) => item.id)));
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
+  const runLocked = useActionLock();
   const inventoryPageCount = 3;
-  const sellItem = (itemId: string) => {
+  // Sale is atomic: money is only credited if the item was actually present
+  // (and removed) in the ownership set at the moment of the check.
+  // Ownership check reads directly from render-time state (accurate — reads
+  // aren't the fragile part) and runLocked already prevents this same item
+  // from being sold twice before a re-render can catch up, so the check
+  // stays a plain guard instead of routing a flag through a setState updater.
+  const sellItem = (itemId: string) => runLocked(`sell-${itemId}`, () => {
     const item = characterInventoryItemsData.find((entry) => entry.id === itemId);
     if (!item) return;
-    setOwnedItemIds((current) => { const next = new Set(current); next.delete(itemId); return next; });
-    setContextMenu(null);
-    onNotice(`Sprzedano: ${item.name.toLowerCase()} za ${item.value} $.`);
-  };
-  const increaseStat = (key: string) => {
-    if (!availablePoints) {
-      onNotice('Brak dostępnych punktów rozwoju.');
+    if (!ownedItemIds.has(itemId)) {
+      onNotice('Nie można sprzedać — przedmiot nie jest już w ekwipunku.');
       return;
     }
-    setStats((current) => current.map((stat) => stat.key === key ? { ...stat, value: Math.min(stat.max, stat.value + 1) } : stat));
-    setAvailablePoints((current) => current - 1);
-    onNotice(`Rozwinięto statystykę: ${stats.find((s) => s.key === key)?.label.toLowerCase()}.`);
-  };
+    setOwnedItemIds((current) => { const next = new Set(current); next.delete(itemId); return next; });
+    setContextMenu(null);
+    wallet.addMoney(item.value);
+    onNotice(`Sprzedano: ${item.name.toLowerCase()} za ${item.value} $.`);
+  });
+  const increaseStat = (key: string) => runLocked(`stat-${key}`, () => {
+    const stat = stats.find((entry) => entry.key === key);
+    if (!stat) return;
+    if (stat.value >= stat.max) {
+      onNotice(`${stat.label}: osiągnięto maksymalny poziom.`);
+      return;
+    }
+    const cost = statUpgradeCost(stat.value);
+    if (!wallet.canAfford(cost)) {
+      onNotice(`Brak środków na rozwój (${stat.label.toLowerCase()}). Potrzebujesz ${cost} $.`);
+      return;
+    }
+    if (!wallet.removeMoney(cost)) {
+      onNotice('Nie udało się rozwinąć statystyki — brak środków.');
+      return;
+    }
+    setStats((current) => current.map((entry) => entry.key === key ? { ...entry, value: Math.min(entry.max, entry.value + 1) } : entry));
+    onNotice(`Rozwinięto statystykę: ${stat.label.toLowerCase()} (-${cost} $).`);
+  });
+  const equipmentStatBonuses: Record<string, number> = {};
+  for (const equippedId of Object.values(equipped)) {
+    if (!equippedId) continue;
+    const equippedItem = characterInventoryItemsData.find((entry) => entry.id === equippedId);
+    if (!equippedItem) continue;
+    equipmentStatBonuses[equippedItem.bonusStat] = (equipmentStatBonuses[equippedItem.bonusStat] ?? 0) + equippedItem.bonusAmount;
+  }
   const equippedItemIds = new Set(Object.values(equipped).filter((value): value is string => Boolean(value)));
   const visibleInventoryItems = characterInventoryItemsData.filter(({ id }) => ownedItemIds.has(id) && !equippedItemIds.has(id));
   const draggingItem = draggingItemId ? characterInventoryItemsData.find((entry) => entry.id === draggingItemId) : undefined;
@@ -908,20 +988,40 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
           <span>{inventoryPage}/{inventoryPageCount}</span>
           <button onClick={() => setInventoryPage((page) => Math.min(inventoryPageCount, page + 1))} aria-label="Następna strona"><ChevronRight size={15} /></button>
         </div>
-
-        <section className="character-panel character-stats">
-          <div className="character-panel-heading"><h2>STATYSTYKI</h2></div>
-          {stats.map(({ key, label, value, max, icon: Icon, tone }) => <div className="character-stat-row" key={key}>
-            <span className={`character-icon-badge tone-${tone}`}><Icon size={15} /></span>
-            <strong>{label}</strong>
-            <div className="character-stat-bar"><i className={`tone-${tone}`} style={{ width: `${Math.min(100, (value / max) * 100)}%` }} /></div>
-            <b>{value}</b>
-            <button className="character-stat-plus" onClick={() => increaseStat(key)} aria-label={`Zwiększ ${label}`}><Plus size={15} /></button>
-          </div>)}
-        </section>
       </aside>
       <div className="character-flavor-badge"><Crown size={14} /><span>CHARAKTER<br />ROBI RÓŻNICĘ</span><em>HH</em></div>
     </div>
+    <section className="character-stats-panel" data-testid="character-stats-panel">
+      <div className="character-stats-panel-header">
+        <div className="character-stats-panel-title-group">
+          <h2>STATYSTYKI</h2>
+          <p>ROZWÓJ TO WIĘKSZE MOŻLIWOŚCI.</p>
+        </div>
+        <div className="character-stats-panel-tally"><span>DISCIPLINE<br />BUILDS<br />FREEDOM.</span><i /></div>
+        <span className="character-stats-panel-note">SILNIEJSZY DZIŚ.<br />LEPSZY JUTRO..</span>
+      </div>
+      <div className="character-stats-panel-rows">
+        {stats.map(({ key, label, description, value, max, icon: Icon, tone }) => {
+          const bonus = equipmentStatBonuses[key] ?? 0;
+          const displayValue = value + bonus;
+          const atMax = value >= max;
+          const cost = statUpgradeCost(value);
+          return <div className={`character-stat-row-full tone-${tone}`} key={key}>
+            <span className="character-stat-row-full-badge"><Icon size={22} /></span>
+            <div className="character-stat-row-full-copy"><strong>{label}</strong><p>{description}</p></div>
+            <b className="character-stat-row-full-value">{displayValue}{bonus > 0 ? <span className="character-stat-bonus"> (+{bonus})</span> : null}</b>
+            <button className="character-stat-row-full-cta" onClick={() => increaseStat(key)} disabled={atMax} aria-label={`Zwiększ ${label} za ${cost} $`}>
+              <span className="character-stat-row-full-cta-copy"><small>{atMax ? 'MAKSYMALNY POZIOM' : 'NASTĘPNY PUNKT'}</small>{!atMax && <em>{cost} $</em>}</span>
+              <i><Plus size={16} /></i>
+            </button>
+          </div>;
+        })}
+      </div>
+      <div className="character-stats-panel-footer">
+        <span className="character-stats-panel-info"><Info size={13} /> Każdy punkt zwiększa skuteczność Twojej postaci. Skup się na tym, co pasuje do Twojego stylu gry.</span>
+        <span className="character-stats-panel-crown"><Crown size={14} /> LEPSZY TY.<br />WIĘKSZY SZACUNEK.</span>
+      </div>
+    </section>
     {hoveredItem && (() => {
       const item = characterInventoryItemsData.find((entry) => entry.id === hoveredItem.id);
       if (!item) return null;
@@ -1029,20 +1129,23 @@ const marketItems: MarketItem[] = [
   { id: 'lockpick', name: 'WYTRYCHY', category: 'GEAR', price: 450, owned: 0, description: 'Ułatwiają otwieranie zamkniętych drzwi.', stat: '+10 Technika', rarity: 'RZADKI', statIcon: LockKeyhole, icon: Wrench, iconClass: 'market-art-lockpick' },
 ];
 
-function MarketView({ onNotice }: { onNotice: (message: string) => void }) {
-  const [cash, setCash] = useState(1250);
+function MarketView({ wallet, onNotice }: { wallet: Wallet; onNotice: (message: string) => void }) {
   const [items, setItems] = useState(marketItems);
+  const runLocked = useActionLock();
   const filteredItems = items;
 
-  const buyItem = (item: MarketItem) => {
-    if (cash < item.price) {
-      onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - cash} $.`);
+  const buyItem = (item: MarketItem) => runLocked(`buy-${item.id}`, () => {
+    if (!wallet.canAfford(item.price)) {
+      onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - wallet.balance} $.`);
       return;
     }
-    setCash((current) => current - item.price);
+    if (!wallet.removeMoney(item.price)) {
+      onNotice('Zakup nieudany — brak środków.');
+      return;
+    }
     setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, owned: entry.owned + 1 } : entry));
     onNotice(`Kupiono: ${item.name.toLowerCase()}.`);
-  };
+  });
 
   return <section className="market-view market-reference-view" data-testid="market-view">
     <header className="market-hero">
@@ -1604,12 +1707,13 @@ function formatWorkRemaining(ms: number) {
 
 type WorkStatus = 'idle' | 'in-progress' | 'done';
 
-function WorkView({ creator, onNotice }: { creator: CreatorState; onNotice: (message: string) => void }) {
+function WorkView({ creator, wallet, onNotice }: { creator: CreatorState; wallet: Wallet; onNotice: (message: string) => void }) {
   const [hours, setHours] = useState(8);
   const [status, setStatus] = useState<WorkStatus>('idle');
   const [totalMs, setTotalMs] = useState(0);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remainingMs, setRemainingMs] = useState(0);
+  const paidOutRef = useRef(false);
 
   const reward = hours * workHourlyRate;
 
@@ -1620,7 +1724,13 @@ function WorkView({ creator, onNotice }: { creator: CreatorState; onNotice: (mes
       if (remaining <= 0) {
         setRemainingMs(0);
         setStatus('done');
-        onNotice(`Praca zakończona. Otrzymano: ${reward} $.`);
+        // Guard against crediting the payout twice (e.g. a stray extra
+        // tick before the interval is cleared on the next effect run).
+        if (!paidOutRef.current) {
+          paidOutRef.current = true;
+          wallet.addMoney(reward);
+          onNotice(`Praca zakończona. Otrzymano: ${reward} $.`);
+        }
       } else {
         setRemainingMs(remaining);
       }
@@ -1628,7 +1738,7 @@ function WorkView({ creator, onNotice }: { creator: CreatorState; onNotice: (mes
     tick();
     const id = window.setInterval(tick, 1000);
     return () => window.clearInterval(id);
-  }, [status, endsAt, reward, onNotice]);
+  }, [status, endsAt, reward, onNotice, wallet]);
 
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const playerAsset = getPrisonerAsset(type, creator.gender);
@@ -1637,6 +1747,7 @@ function WorkView({ creator, onNotice }: { creator: CreatorState; onNotice: (mes
 
   const handleStart = () => {
     const total = hours * 60 * 60 * 1000;
+    paidOutRef.current = false;
     setTotalMs(total);
     setRemainingMs(total);
     setEndsAt(Date.now() + total);
