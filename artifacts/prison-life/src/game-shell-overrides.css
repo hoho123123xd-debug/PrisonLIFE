@@ -3839,6 +3839,7 @@
   display: flex;
   flex-direction: column;
   gap: clamp(3px, .6vh, 7px);
+  overflow: hidden;
 }
 .character-stat-row-full {
   --tone: var(--stat-orange);
@@ -4016,10 +4017,21 @@
   .character-slot-thumb { width: 30px; height: 30px; }
   .character-inventory-panel { padding: 8px; gap: 6px; }
   .character-inventory-tabs button { padding: 4px; }
+  .character-stats-panel { padding: 6px 12px; gap: 4px; }
   .character-stats-panel-tally { display: none; }
   .character-stat-row-full-copy p { display: none; }
   .character-stats-panel-header { padding-bottom: 4px; }
   .character-stats-panel-title-group h2 { font-size: 18px; }
+  .character-stats-panel-title-group p { display: none; }
+  .character-stats-panel-rows { gap: 3px; overflow: hidden; }
+  .character-stat-row-full { min-height: 20px; }
+  .character-stat-row-full-value { font-size: 15px; }
+  .character-stat-row-full-cta { height: min(70%, 26px); }
+  .character-stat-row-full-cta-copy small { display: none; }
+  .character-stat-row-full-cta-copy em { font-size: 11px; }
+  .character-stat-row-full-cta > i { width: 18px; height: 18px; }
+  .character-stats-panel-footer { padding-top: 3px; font-size: 8.5px; }
+  .character-stats-panel-info { display: none; }
 }
 @media (max-width: 1100px) {
   .character-view { height: auto; min-height: 100%; overflow: visible; }
