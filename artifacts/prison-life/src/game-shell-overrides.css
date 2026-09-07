@@ -7610,12 +7610,15 @@
   min-height: 108px;
   display: flex;
   align-items: center;
-  gap: clamp(6px, .9vw, 14px);
+  gap: clamp(3px, .25vw, 6px);
   padding: 0 clamp(10px, 1.4vw, 22px);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
 }
+.game-shell-page .game-header.hud-topbar .game-header-brand { margin-right: clamp(6px, 1.2vw, 20px); }
+.game-shell-page .game-header.hud-topbar .hud-chip-health { margin-right: clamp(6px, 1.2vw, 20px); }
+.game-shell-page .game-header.hud-topbar .game-header-actions { margin-left: auto; }
 .game-shell-page .hud-avatar-frame {
   position: relative;
   flex: 0 0 auto;
