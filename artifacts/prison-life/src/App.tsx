@@ -640,7 +640,7 @@ function loadPersistedProgress(): Partial<PersistedProgress> {
   }
 }
 
-type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
+type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
   const [activeSection, setActiveSection] = useState<GameSection>(() => {
     const route = window.location.hash.replace('#', '');
@@ -657,7 +657,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const wallet = useWallet(savedProgress.balance ?? 250);
   const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
   const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
-  const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterInventoryItemsData.map((item) => item.id)));
+  const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterDefaultOwnedItemIds));
   const [marketItemsState, setMarketItemsState] = useState<MarketItem[]>(() => marketItems.map((item) => ({ ...item, owned: savedProgress.marketOwned?.[item.id] ?? item.owned })));
   useEffect(() => {
     const data: PersistedProgress = {
@@ -700,7 +700,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work' && section !== 'market' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work' && section !== 'market' && section !== 'shop' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -734,8 +734,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} items={marketItemsState} setItems={setMarketItemsState} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+       <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} items={marketItemsState} setItems={setMarketItemsState} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -799,6 +799,7 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     training: 'Wybierz trening, aby rozwijać siłę, kondycję i pozostałe statystyki.',
     work: 'Znajdź pracę i zacznij zarabiać. Lista stanowisk jest w przygotowaniu.',
     market: 'Czarny rynek jest zamknięty. Wróć później po świeżą dostawę.',
+    shop: 'Sklep jest zamknięty. Wróć później po legalny towar.',
     quests: 'Twoje misje czekają na podjęcie. Wybierz zlecenie i zbuduj swoją pozycję na bloku.',
     'trash-block': 'Blok śmieci otworzy dostęp do zadań i informacji z najniższego poziomu więzienia.',
     gang: 'Dołącz do gangu i zbuduj swoją pozycję w oddziale.',
@@ -825,16 +826,16 @@ const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof S
 ];
 const characterInventoryTabs = ['WSZYSTKIE', 'UBRANIA', 'DODATKI', 'BROŃ', 'INNE'] as const;
 const characterInventoryPageSize = 20;
-const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; rarity: string; slot: string; bonusStat: string; bonusAmount: number; value: number }> = [
-  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, rarity: 'orange', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 25 },
-  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, rarity: 'violet', slot: 'neck', bonusStat: 'luck', bonusAmount: 3, value: 40 },
-  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, rarity: 'orange', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 20 },
-  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, rarity: 'blue', slot: 'torso', bonusStat: 'endurance', bonusAmount: 4, value: 55 },
-  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, rarity: 'blue', slot: 'back', bonusStat: 'strength', bonusAmount: 3, value: 60 },
-  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, rarity: 'gray', slot: 'hands', bonusStat: 'strength', bonusAmount: 5, value: 45 },
-  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, rarity: 'orange', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 20 },
-  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, rarity: 'blue', slot: 'feet', bonusStat: 'reflex', bonusAmount: 3, value: 50 },
-  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, rarity: 'violet', slot: 'weapon', bonusStat: 'strength', bonusAmount: 5, value: 70 },
+const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; rarity: string; slot: string; bonusStat: string; bonusAmount: number; value: number; price: number }> = [
+  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, rarity: 'orange', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 25, price: 55 },
+  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, rarity: 'violet', slot: 'neck', bonusStat: 'luck', bonusAmount: 3, value: 40, price: 85 },
+  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, rarity: 'orange', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 20, price: 45 },
+  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, rarity: 'blue', slot: 'torso', bonusStat: 'endurance', bonusAmount: 4, value: 55, price: 120 },
+  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, rarity: 'blue', slot: 'back', bonusStat: 'strength', bonusAmount: 3, value: 60, price: 130 },
+  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, rarity: 'gray', slot: 'hands', bonusStat: 'strength', bonusAmount: 5, value: 45, price: 95 },
+  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, rarity: 'orange', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 20, price: 45 },
+  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, rarity: 'blue', slot: 'feet', bonusStat: 'reflex', bonusAmount: 3, value: 50, price: 110 },
+  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, rarity: 'violet', slot: 'weapon', bonusStat: 'strength', bonusAmount: 5, value: 70, price: 150 },
 ];
 const characterStatLabelByKey: Record<string, string> = { health: 'zdrowia', luck: 'szczęścia', strength: 'siły', endurance: 'kondycji', intelligence: 'inteligencji', reflex: 'refleksu' };
 // Cost in cash to raise a stat by one point, given its current (pre-upgrade) value — rises with level.
@@ -851,6 +852,9 @@ const characterDefaultEquipped: Record<string, string | null> = {
   feet: 'black-boots',
   weapon: 'knife',
 };
+// A fresh prisoner starts owning only their issued/equipped loadout — anything
+// not in that set (e.g. the bandana, the hoodie) is bought from the Sklep.
+const characterDefaultOwnedItemIds: string[] = Object.values(characterDefaultEquipped).filter((id): id is string => Boolean(id));
 const characterStatsList: Array<{ key: string; label: string; description: string; value: number; max: number; icon: typeof Shield; tone: string }> = [
   { key: 'health', label: 'ZDROWIE', description: 'Więcej wytrzymałości. Dłużej na nogach.', value: 100, max: 100, icon: Heart, tone: 'red' },
   { key: 'luck', label: 'SZCZĘŚCIE', description: 'Lepsze wydarzenia. Większe szanse.', value: 12, max: 100, icon: Clover, tone: 'green' },
@@ -1211,6 +1215,78 @@ function MarketView({ wallet, items, setItems, onNotice }: { wallet: Wallet; ite
     </div>
     <footer className="market-footnote"><span><Info size={16} /> Ceny na czarnym rynku mogą się zmieniać. Nie wszystko jest legalne. Korzystasz na własne ryzyko.</span>
       <em>„Nie wszystko da się kupić...”</em>
+    </footer>
+  </section>;
+}
+
+// The legal counterpart to the black market: clothing/gear that goes straight
+// into the character's equipment inventory when bought. Reuses the same
+// characterInventoryItemsData catalog (weapon-slot items excluded — those stay
+// a black-market matter) instead of a separate item list, so a purchase here
+// and a sale in TWOJA POSTAĆ both operate on the one shared ownedItemIds set.
+const shopItems = characterInventoryItemsData.filter((item) => item.slot !== 'weapon');
+
+function ShopView({ wallet, ownedItemIds, setOwnedItemIds, onNotice }: { wallet: Wallet; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onNotice: (message: string) => void }) {
+  const runLocked = useActionLock();
+  const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
+
+  const buyItem = (item: (typeof shopItems)[number]) => runLocked(`shop-buy-${item.id}`, () => {
+    if (ownedItemIds.has(item.id)) {
+      onNotice(`${item.name}: już posiadasz ten przedmiot.`);
+      return;
+    }
+    if (!wallet.canAfford(item.price)) {
+      onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - wallet.balance} $.`);
+      return;
+    }
+    if (!wallet.removeMoney(item.price)) {
+      onNotice('Zakup nieudany — brak środków.');
+      return;
+    }
+    setOwnedItemIds((current) => new Set(current).add(item.id));
+    onNotice(`Kupiono: ${item.name.toLowerCase()}. Znajdziesz go w ekwipunku.`);
+  });
+
+  return <section className="market-view market-reference-view shop-view" data-testid="shop-view">
+    <header className="market-hero">
+      <div className="market-hero-copy">
+        <h1>SKLEP</h1>
+        <p>LEGALNY TOWAR. UBRANIA I WYPOSAŻENIE BEZ RYZYKA.</p>
+      </div>
+      <div className="market-hero-mark">UCZCIWY<br />TOWAR<br />BEZ<br /><em>KANTÓW</em></div>
+    </header>
+    <div className="market-refresh-strip">
+      <button className="market-refresh-offer" onClick={() => onNotice('Sklep ma stałą, legalną ofertę — bez losowości.')}><Package size={26} /><span><strong>STAŁA OFERTA SKLEPU</strong><small>Zero ryzyka, stałe ceny</small></span></button>
+      <div className="market-offer-time"><Timer size={19} /><span>OTWARTE:</span><b>24/7</b></div>
+      <div className="market-offer-note">Zakupione przedmioty trafiają<br />prosto do Twojego ekwipunku.</div>
+    </div>
+    <div className="shop-tile-grid" data-testid="shop-tile-grid">
+      {shopItems.map((item) => { const owned = ownedItemIds.has(item.id); return <button
+        key={item.id}
+        className={`character-inventory-item shop-tile ${owned ? 'owned' : ''}`}
+        onClick={() => buyItem(item)}
+        onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id: item.id, x: rect.left + rect.width / 2, y: rect.top }); }}
+        onMouseLeave={() => setHoveredItem((current) => current?.id === item.id ? null : current)}
+        data-testid={`shop-tile-${item.id}`}
+      >
+        <span className={`character-inventory-rarity tone-${item.rarity}`} />
+        <img src={item.asset} alt={item.name} />
+        <span className="shop-tile-badge">{owned ? <Check size={11} /> : `${item.price} $`}</span>
+      </button>; })}
+    </div>
+    {hoveredItem && (() => {
+      const item = shopItems.find((entry) => entry.id === hoveredItem.id);
+      if (!item) return null;
+      const owned = ownedItemIds.has(item.id);
+      return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
+        <strong>{item.name}</strong>
+        <span>+{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
+        <br />
+        <span>{owned ? 'W ekwipunku' : `Cena: ${item.price} $`}</span>
+      </div>;
+    })()}
+    <footer className="market-footnote"><span><Info size={16} /> Wszystkie przedmioty w sklepie są w pełni legalne. Możesz je nosić bez żadnego ryzyka.</span>
+      <em>„Uczciwie zarobione, uczciwie wydane.”</em>
     </footer>
   </section>;
 }
@@ -1874,6 +1950,7 @@ const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shiel
   { id: 'fight', label: 'WALKA', icon: Swords },
   { id: 'training', label: 'TRENING', icon: Dumbbell },
   { id: 'work', label: 'PRACA', icon: BriefcaseBusiness },
+  { id: 'shop', label: 'SKLEP', icon: Package },
   { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
   { id: 'quests', label: 'MISJE', icon: ScrollText },
   { id: 'trash-block', label: 'BLOK ŚMIECI', icon: Archive },

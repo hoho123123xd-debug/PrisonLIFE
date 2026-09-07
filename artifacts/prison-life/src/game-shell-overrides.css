@@ -6041,6 +6041,55 @@
   transition: .18s;
 }
 .market-item-footer button:hover { background: #ffae53; }
+.market-item-footer button:disabled {
+  opacity: .45;
+  cursor: default;
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .2);
+  color: #aab3aa;
+}
+.market-item-footer button:disabled:hover { background: rgba(255, 255, 255, .08); }
+.market-item-footer .shop-item-owned {
+  color: #58bc6f;
+  font-weight: 700;
+}
+.market-item-art img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 6px rgba(0, 0, 0, .5));
+}
+.shop-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 84px);
+  gap: 8px;
+  padding: 2px 0 4px;
+}
+.character-inventory-item.shop-tile {
+  width: 84px;
+  cursor: pointer;
+}
+.character-inventory-item.shop-tile.owned {
+  cursor: default;
+  opacity: .6;
+}
+.shop-tile-badge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 2px 0;
+  background: rgba(0, 0, 0, .68);
+  color: #58bc6f;
+  font: 700 10px 'Barlow Condensed';
+}
+.character-inventory-item.shop-tile.owned .shop-tile-badge {
+  color: #8b978f;
+}
 .market-footnote {
   min-height: 46px;
   display: flex;
