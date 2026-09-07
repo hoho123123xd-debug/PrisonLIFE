@@ -559,16 +559,30 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
 }
 
+// TODO: swap in the real "Twoja Postać" scene photo once it's added to attached_assets.
+const characterSceneAsset = '';
+
+const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof Shield; badge?: string }> = [
+  { id: 'head', label: 'GŁOWA', icon: Shield },
+  { id: 'face', label: 'TWARZ', icon: UserRound },
+  { id: 'top', label: 'GÓRA', icon: ShirtIcon, badge: '+2' },
+  { id: 'extras', label: 'DODATKI', icon: Gem },
+  { id: 'bottom', label: 'DÓŁ', icon: Archive },
+  { id: 'hands', label: 'RĘCE', icon: Wrench },
+  { id: 'feet', label: 'BUTY', icon: FootprintsIcon },
+  { id: 'backpack', label: 'PLECAK', icon: Backpack },
+];
+
 function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState; gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string }; onNotice: (message: string) => void }) {
   const [stats, setStats] = useState([
     { label: 'SIŁA', value: 5, cost: 250, icon: Dumbbell, tone: 'orange' },
-    { label: 'KONDYCJA', value: 5, cost: 250, icon: FootprintsIcon, tone: 'orange' },
-    { label: 'ZRĘCZNOŚĆ', value: 4, cost: 200, icon: Wind, tone: 'orange' },
-    { label: 'TECHNIKA', value: 3, cost: 150, icon: Crosshair, tone: 'orange' },
-    { label: 'CHARAKTER', value: 3, cost: 150, icon: Users, tone: 'orange' },
+    { label: 'KONDYCJA', value: 5, cost: 250, icon: FootprintsIcon, tone: 'green' },
+    { label: 'ZWINNOŚĆ', value: 4, cost: 200, icon: Wind, tone: 'blue' },
+    { label: 'TECHNIKA', value: 3, cost: 150, icon: Crosshair, tone: 'red' },
+    { label: 'CHARAKTER', value: 3, cost: 150, icon: Brain, tone: 'violet' },
   ]);
   const [availablePoints, setAvailablePoints] = useState(3);
-  const displayName = gameData.nickname.toUpperCase();
+  const [equipmentTab, setEquipmentTab] = useState<'UBRANIA' | 'SPRZĘT' | 'PRZEDMIOTY'>('UBRANIA');
   const increaseStat = (label: string) => {
     if (!availablePoints) {
       onNotice('Brak dostępnych punktów rozwoju.');
@@ -582,41 +596,41 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
     setStats((current) => current.map((stat) => stat.label === label && stat.value > 1 ? { ...stat, value: stat.value - 1 } : stat));
   };
   const bonuses = [
-    ['Premia gangowa', '+10% do zarobków za pracę', '2 dni', Crown],
-    ['Dobra kondycja', '+5% do regeneracji energii', '1 dzień', Heart],
-    ['Lepszy refleks', '+5% szansy na unik w walce', '6 godzin', Wind],
-    ['Szacunek na dzielni', '+5% do reputacji', '3 dni', Users],
+    { name: 'Premia gangowa', copy: '+10% do zarobków za pracę', time: '2 dni', icon: Crown, tone: 'gold' },
+    { name: 'Dobra kondycja', copy: '+5% do regeneracji energii', time: '1 dzień', icon: Heart, tone: 'green' },
+    { name: 'Lepszy refleks', copy: '+5% szansy na unik w walce', time: '6 godzin', icon: Wind, tone: 'blue' },
+    { name: 'Szacunek na dzielni', copy: '+5% do reputacji', time: '3 dni', icon: Users, tone: 'violet' },
   ] as const;
   const perks = [
-    ['TWARDZIEL', '+5% do obrażeń w walce', 'ODBLOKOWANO', Dumbbell],
-    ['ODBLOKUJ', 'Odblokuj na poziomie 10', '', LockKeyhole],
-    ['ODBLOKUJ', 'Odblokuj na poziomie 15', '', LockKeyhole],
-    ['ODBLOKUJ', 'Odblokuj na poziomie 20', '', LockKeyhole],
-  ] as const;
-  const progress = [
-    ['Osiągnij poziom 10', '8 / 10', 80, BarChart3],
-    ['Podnieś siłę do 7', '5 / 7', 71, Dumbbell],
-    ['Dołącz do gangu', '1 / 1', 100, Users],
-    ['Wygraj 10 walk', '3 / 10', 30, Trophy],
+    { name: 'Twardziel', copy: '+5% do obrażeń w walce', status: 'POZIOM 1', icon: Dumbbell, unlocked: true },
+    { name: 'Szybka regeneracja', copy: 'Odblokuj na poziomie 10', status: '', icon: LockKeyhole, unlocked: false },
+    { name: 'Zimna krew', copy: 'Odblokuj na poziomie 15', status: '', icon: LockKeyhole, unlocked: false },
+    { name: 'Szósty zmysł', copy: 'Odblokuj na poziomie 20', status: '', icon: LockKeyhole, unlocked: false },
   ] as const;
   return <section className="character-view" data-testid="character-view">
     <header className="character-heading">
-      <div><span className="eyebrow">TWOJA POSTAĆ</span><h1>TWOJA POSTAĆ</h1><p>ROZWIJAJ SIĘ. STAWAJ SIĘ SILNIEJSZY. ZDOBYWAJ PRZEWAGĘ.</p></div>
-      <blockquote>„To nie liczby się liczą.<br />Liczy się kim się stajesz.”</blockquote>
+      <div><span className="eyebrow">TWOJA POSTAĆ</span><h1>TWOJA POSTAĆ</h1><p>WYGLĄD TO NIE WSZYSTKO, ALE MÓWI O TOBIE WIĘCEJ NIŻ MYŚLISZ.</p></div>
       <strong>LEPSZY<br />WIĘZIEŃ<br />SILNIEJSZA<br />WERSJA<br /><em>CIEBIE</em></strong>
     </header>
-    <div className="character-dashboard">
-      <div className="character-left">
-        <section className="character-panel character-profile"><h2>POSTAĆ</h2><div className="character-profile-content"><div className="character-large-portrait"><img src={prisonerAsset} alt={`Portret więźnia ${displayName}`} /><span>„Siła to wybór, nie okoliczność.”</span></div><div className="character-identity"><h3>{displayName}<button onClick={() => onNotice('Edycja profilu będzie dostępna wkrótce.')} aria-label="Edytuj profil"><UserRoundPen size={16} /></button></h3><strong>POZIOM {gameData.level}</strong><div className="character-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div><dl><div><dt><Crown size={13} /> GANG</dt><dd>Wilcza Paczka <small>Założyciel</small></dd></div><div><dt><Award size={13} /> REPUTACJA</dt><dd className="positive">Pozytywna</dd></div><div><dt><CircleDollarSign size={13} /> GOTÓWKA</dt><dd>{gameData.gold} $</dd></div><div><dt><Gem size={13} /> PUNKTY PRESTIŻU</dt><dd>{gameData.points}</dd></div></dl></div></div></section>
-        <section className="character-panel character-status"><h2>STATUS</h2>{([['ZDROWIE', gameData.hp, Heart, 'health'], ['ENERGIA', gameData.energy, Zap, 'energy'], ['PSYCHIKA', 85, Brain, 'mind']] as const).map(([label, value, Icon, tone]) => <div className="character-status-row" key={String(label)}><Icon size={18} className={`status-${tone}`} /><span>{String(label)}</span><div><i className={`status-fill-${tone}`} style={{ width: `${Number(value)}%` }} /></div><b>{value} / 100</b></div>)}</section>
+    <div className="character-outfit-layout">
+      <aside className="character-panel character-equipment-panel">
+        <div className="character-panel-heading"><h2>EKWIPUNEK / UBIÓR</h2></div>
+        <div className="character-equipment-tabs">{(['UBRANIA', 'SPRZĘT', 'PRZEDMIOTY'] as const).map((tab) => <button className={equipmentTab === tab ? 'active' : ''} onClick={() => setEquipmentTab(tab)} key={tab}>{tab}</button>)}</div>
+        <div className="character-equipment-grid">{characterEquipmentSlots.map(({ id, label, icon: Icon, badge }) => <button className="character-equipment-slot" key={id} onClick={() => onNotice(`${label}: slot ekwipunku będzie dostępny wkrótce.`)}>{badge && <span className="character-equipment-badge">{badge}</span>}<Icon size={22} /><span>{label}</span><ChevronRight size={14} /></button>)}</div>
+        <button className="character-outfit-button" onClick={() => onNotice('Edycja wyglądu postaci będzie dostępna wkrótce.')}><ShirtIcon size={16} /> WYGLĄD POSTACI</button>
+        <p className="character-equipment-caption">Nie chodzi o to, żeby dobrze wyglądać.<br />Chodzi o to, żeby pokazać, kim jesteś.</p>
+      </aside>
+
+      <div className="character-scene" data-testid="character-scene">
+        {characterSceneAsset && <span className="character-scene-photo" style={{ backgroundImage: `url("${characterSceneAsset}")` }} />}
       </div>
-      <section className="character-panel character-stats"><div className="character-panel-heading"><h2>STATYSTYKI</h2><span>DOSTĘPNE PUNKTY: <b>{availablePoints}</b></span></div>{stats.map(({ label, value, cost, icon: Icon, tone }) => <div className="character-stat-row" key={label}><Icon size={19} className={`stat-${tone}`} /><strong>{label}</strong><button onClick={() => decreaseStat(label)} aria-label={`Zmniejsz ${label}`}><span>−</span></button><b>{value}</b><button className="character-stat-plus" onClick={() => increaseStat(label)} aria-label={`Zwiększ ${label}`}><Plus size={17} /></button><small>Koszt:<br /><b>{cost} $</b></small></div>)}<p className="character-stats-note"><Info size={14} /> Zwiększaj statystyki, aby być skuteczniejszym w walce, pracy, misjach i na czarnym rynku.</p></section>
-      <div className="character-right">
-        <section className="character-panel character-bonuses"><div className="character-panel-heading"><h2>AKTYWNE BONUSY <Info size={13} /></h2></div>{bonuses.map(([name, copy, time, Icon]) => <div className="character-bonus" key={name}><Icon size={19} /><span><strong>{name}</strong><small>{copy}</small></span><time>{time}</time></div>)}</section>
-        <section className="character-panel character-perks"><div className="character-panel-heading"><h2>ATUTY / UMIEJĘTNOŚCI</h2><button onClick={() => onNotice('Lista wszystkich atutów będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div><div className="character-perk-grid">{perks.map(([name, copy, status, Icon], index) => <button className={`character-perk ${index === 0 ? 'unlocked' : ''}`} key={`${name}-${index}`} onClick={() => onNotice(index === 0 ? 'Atut Twardziel jest aktywny.' : copy)}><Icon size={21} /><strong>{index === 0 ? name : <LockKeyhole size={14} />}</strong><small>{index === 0 ? copy : copy}</small>{status && <em>{status}</em>}</button>)}</div></section>
-      </div>
+
+      <aside className="character-side">
+        <section className="character-panel character-stats"><div className="character-panel-heading"><h2>STATYSTYKI</h2><span>DOSTĘPNE PUNKTY: <b>{availablePoints}</b></span></div>{stats.map(({ label, value, cost, icon: Icon, tone }) => <div className="character-stat-row" key={label}><span className={`character-icon-badge tone-${tone}`}><Icon size={16} /></span><strong>{label}</strong><button onClick={() => decreaseStat(label)} aria-label={`Zmniejsz ${label}`}><span>−</span></button><b>{value}</b><button className="character-stat-plus" onClick={() => increaseStat(label)} aria-label={`Zwiększ ${label}`}><Plus size={17} /></button><small>Koszt:<br /><b>{cost} $</b></small></div>)}<p className="character-stats-note"><Info size={14} /> Zwiększaj statystyki, aby być skuteczniejszym w walce, pracy, misjach i na czarnym rynku.</p></section>
+        <section className="character-panel character-bonuses"><div className="character-panel-heading"><h2>AKTYWNE BONUSY <Info size={13} /></h2><button onClick={() => onNotice('Pełna lista bonusów będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div>{bonuses.map(({ name, copy, time, icon: Icon, tone }) => <div className="character-bonus" key={name}><span className={`character-icon-badge tone-${tone}`}><Icon size={16} /></span><span><strong>{name}</strong><small>{copy}</small></span><time>{time}</time></div>)}</section>
+        <section className="character-panel character-perks"><div className="character-panel-heading"><h2>ATUTY / UMIEJĘTNOŚCI</h2><button onClick={() => onNotice('Lista wszystkich atutów będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div><div className="character-perk-grid">{perks.map(({ name, copy, status, icon: Icon, unlocked }) => <button className={`character-perk ${unlocked ? 'unlocked' : ''}`} key={name} onClick={() => onNotice(unlocked ? `Atut ${name.toLowerCase()} jest aktywny.` : copy)}><Icon size={20} /><strong>{name}</strong><small>{copy}</small>{status && <em>{status}</em>}</button>)}</div></section>
+      </aside>
     </div>
-    <section className="character-panel character-progress"><div className="character-panel-heading"><h2>POSTĘP ROZWOJU</h2></div><div className="character-progress-grid">{progress.map(([label, value, percent, Icon]) => <div className="character-progress-card" key={label}><Icon size={21} /><span><strong>{label}</strong><div><i style={{ width: `${percent}%` }} /></div></span><small>{value}</small></div>)}</div></section>
   </section>;
 }
 
