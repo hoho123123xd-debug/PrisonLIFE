@@ -742,17 +742,18 @@ const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof S
 ];
 const characterInventoryTabs = ['WSZYSTKIE', 'UBRANIA', 'DODATKI', 'BROŃ', 'INNE'] as const;
 const characterInventoryPageSize = 20;
-const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; rarity: string; slot: string }> = [
-  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, rarity: 'orange', slot: 'head' },
-  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, rarity: 'violet', slot: 'neck' },
-  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, rarity: 'orange', slot: 'torso' },
-  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, rarity: 'blue', slot: 'torso' },
-  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, rarity: 'blue', slot: 'back' },
-  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, rarity: 'gray', slot: 'hands' },
-  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, rarity: 'orange', slot: 'legs' },
-  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, rarity: 'blue', slot: 'feet' },
-  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, rarity: 'violet', slot: 'weapon' },
+const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; rarity: string; slot: string; bonusStat: string; bonusAmount: number; value: number }> = [
+  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, rarity: 'orange', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 25 },
+  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, rarity: 'violet', slot: 'neck', bonusStat: 'luck', bonusAmount: 3, value: 40 },
+  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, rarity: 'orange', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 20 },
+  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, rarity: 'blue', slot: 'torso', bonusStat: 'endurance', bonusAmount: 4, value: 55 },
+  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, rarity: 'blue', slot: 'back', bonusStat: 'strength', bonusAmount: 3, value: 60 },
+  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, rarity: 'gray', slot: 'hands', bonusStat: 'strength', bonusAmount: 5, value: 45 },
+  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, rarity: 'orange', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 20 },
+  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, rarity: 'blue', slot: 'feet', bonusStat: 'reflex', bonusAmount: 3, value: 50 },
+  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, rarity: 'violet', slot: 'weapon', bonusStat: 'strength', bonusAmount: 5, value: 70 },
 ];
+const characterStatLabelByKey: Record<string, string> = { health: 'zdrowia', luck: 'szczęścia', strength: 'siły', endurance: 'kondycji', intelligence: 'inteligencji', reflex: 'refleksu' };
 const characterDefaultEquipped: Record<string, string | null> = {
   head: 'cap',
   neck: null,
@@ -780,7 +781,18 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
   const [equipped, setEquipped] = useState<Record<string, string | null>>(characterDefaultEquipped);
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
   const [dragOverInventory, setDragOverInventory] = useState(false);
+  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
+  const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
+  const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(characterInventoryItemsData.map((item) => item.id)));
+  const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const inventoryPageCount = 3;
+  const sellItem = (itemId: string) => {
+    const item = characterInventoryItemsData.find((entry) => entry.id === itemId);
+    if (!item) return;
+    setOwnedItemIds((current) => { const next = new Set(current); next.delete(itemId); return next; });
+    setContextMenu(null);
+    onNotice(`Sprzedano: ${item.name.toLowerCase()} za ${item.value} $.`);
+  };
   const increaseStat = (key: string) => {
     if (!availablePoints) {
       onNotice('Brak dostępnych punktów rozwoju.');
@@ -791,9 +803,16 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
     onNotice(`Rozwinięto statystykę: ${stats.find((s) => s.key === key)?.label.toLowerCase()}.`);
   };
   const equippedItemIds = new Set(Object.values(equipped).filter((value): value is string => Boolean(value)));
+  const visibleInventoryItems = characterInventoryItemsData.filter(({ id }) => ownedItemIds.has(id) && !equippedItemIds.has(id));
+  const draggingItem = draggingItemId ? characterInventoryItemsData.find((entry) => entry.id === draggingItemId) : undefined;
   const handleItemDragStart = (event: DragEvent<HTMLButtonElement>, itemId: string) => {
     event.dataTransfer.setData('application/json', JSON.stringify({ source: 'inventory', itemId }));
     event.dataTransfer.effectAllowed = 'move';
+    setDraggingItemId(itemId);
+  };
+  const handleItemDragEnd = () => {
+    setDraggingItemId(null);
+    setDragOverSlot(null);
   };
   const handleSlotDragStart = (event: DragEvent<HTMLButtonElement>, slotId: string) => {
     if (!equipped[slotId]) return;
@@ -837,7 +856,7 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
         {characterEquipmentSlots.map(({ id, label, icon: Icon }) => {
           const equippedItem = equipped[id] ? characterInventoryItemsData.find((entry) => entry.id === equipped[id]) : undefined;
           return <button
-            className={`character-slot-card ${equippedItem ? 'filled' : ''} ${dragOverSlot === id ? 'drag-over' : ''}`}
+            className={`character-slot-card ${equippedItem ? 'filled' : ''} ${dragOverSlot === id ? 'drag-over' : ''} ${draggingItem && draggingItem.slot === id ? 'target' : ''}`}
             key={id}
             title={equippedItem ? equippedItem.name : label}
             aria-label={equippedItem ? `${label}: ${equippedItem.name}` : label}
@@ -869,18 +888,21 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
           onDragOver={(event) => { event.preventDefault(); setDragOverInventory(true); }}
           onDragLeave={() => setDragOverInventory(false)}
           onDrop={handleInventoryDrop}
-        >{characterInventoryItemsData.filter(({ id }) => !equippedItemIds.has(id)).map(({ id, name, asset, rarity }) => <button
+        >{visibleInventoryItems.map(({ id, name, asset, rarity }) => <button
           className="character-inventory-item"
           key={id}
-          title={name}
           draggable
           onDragStart={(event) => handleItemDragStart(event, id)}
+          onDragEnd={handleItemDragEnd}
+          onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id, x: rect.left + rect.width / 2, y: rect.top }); }}
+          onMouseLeave={() => setHoveredItem((current) => current?.id === id ? null : current)}
+          onContextMenu={(event) => { event.preventDefault(); setHoveredItem(null); setContextMenu({ id, x: event.clientX, y: event.clientY }); }}
           onClick={() => onNotice(`Podgląd przedmiotu: ${name.toLowerCase()}.`)}
         >
           <span className={`character-inventory-rarity tone-${rarity}`} />
           <img src={asset} alt={name} />
         </button>)}
-        {Array.from({ length: Math.max(0, characterInventoryPageSize - (characterInventoryItemsData.length - equippedItemIds.size)) }).map((_, index) => <span className="character-inventory-item empty" key={`empty-${index}`} aria-hidden="true" />)}</div>
+        {Array.from({ length: Math.max(0, characterInventoryPageSize - visibleInventoryItems.length) }).map((_, index) => <span className="character-inventory-item empty" key={`empty-${index}`} aria-hidden="true" />)}</div>
         <div className="character-inventory-pagination">
           <button onClick={() => setInventoryPage((page) => Math.max(1, page - 1))} aria-label="Poprzednia strona"><ChevronLeft size={15} /></button>
           <span>{inventoryPage}/{inventoryPageCount}</span>
@@ -900,6 +922,24 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
       </aside>
       <div className="character-flavor-badge"><Crown size={14} /><span>CHARAKTER<br />ROBI RÓŻNICĘ</span><em>HH</em></div>
     </div>
+    {hoveredItem && (() => {
+      const item = characterInventoryItemsData.find((entry) => entry.id === hoveredItem.id);
+      if (!item) return null;
+      return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
+        <strong>{item.name}</strong>
+        <span>+{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
+      </div>;
+    })()}
+    {contextMenu && (() => {
+      const item = characterInventoryItemsData.find((entry) => entry.id === contextMenu.id);
+      if (!item) return null;
+      return <>
+        <div className="character-context-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(event) => { event.preventDefault(); setContextMenu(null); }} />
+        <div className="character-context-menu" style={{ left: contextMenu.x, top: contextMenu.y }}>
+          <button onClick={() => sellItem(item.id)}><CircleDollarSign size={14} /> SPRZEDAJ <small>{item.value} $</small></button>
+        </div>
+      </>;
+    })()}
   </section>;
 }
 
