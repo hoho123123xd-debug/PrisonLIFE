@@ -838,6 +838,8 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
           return <button
             className={`character-slot-card ${equippedItem ? 'filled' : ''} ${dragOverSlot === id ? 'drag-over' : ''}`}
             key={id}
+            title={equippedItem ? equippedItem.name : label}
+            aria-label={equippedItem ? `${label}: ${equippedItem.name}` : label}
             draggable={Boolean(equippedItem)}
             onDragStart={(event) => handleSlotDragStart(event, id)}
             onDragOver={(event) => { event.preventDefault(); setDragOverSlot(id); }}
@@ -845,8 +847,7 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
             onDrop={(event) => handleSlotDrop(event, id)}
             onClick={() => equippedItem ? onNotice(`${equippedItem.name}: przeciągnij do ekwipunku, żeby zdjąć.`) : onNotice(`${label}: przeciągnij tu pasujący przedmiot z ekwipunku.`)}
           >
-            <span className="character-slot-thumb">{equippedItem ? <img src={equippedItem.asset} alt="" /> : <Icon size={22} />}</span>
-            <span className="character-slot-label">{label}</span>
+            <span className="character-slot-thumb">{equippedItem ? <img src={equippedItem.asset} alt="" /> : <Icon size={30} />}</span>
           </button>;
         })}
       </aside>
