@@ -34,10 +34,12 @@ import {
   Droplets,
   Dumbbell,
   BedDouble,
+  Egg,
   Fish,
   Gem,
   Ghost,
   GlassWater,
+  HeartPulse,
   Eye,
   Facebook,
   Footprints as FootprintsIcon,
@@ -63,6 +65,7 @@ import {
   PawPrint,
   Plus,
   RefreshCw,
+  Salad,
   Sandwich,
   Scale,
   ScanFace,
@@ -643,6 +646,7 @@ function useActionLock() {
 // whenever a view remounts.
 const PROGRESS_STORAGE_KEY = 'prison-life-progress';
 type OfferState = { ids: string[]; refreshedAt: number };
+type FoodBuff = { id: string; statKey: string; amount: number; expiresAt: number };
 type PersistedProgress = {
   balance: number;
   points: number;
@@ -651,6 +655,7 @@ type PersistedProgress = {
   ownedItemIds: string[];
   shopOffer: OfferState;
   marketOffer: OfferState;
+  foodBuffs: FoodBuff[];
 };
 function loadPersistedProgress(): Partial<PersistedProgress> {
   try {
@@ -680,7 +685,7 @@ function rollOfferIfStale(saved: OfferState | undefined, pool: { id: string }[])
   return { ids: pickRandomOfferIds(pool, OFFER_SIZE), refreshedAt: Date.now() };
 }
 
-type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
+type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'canteen' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
   const [activeSection, setActiveSection] = useState<GameSection>(() => {
     const route = window.location.hash.replace('#', '');
@@ -714,6 +719,16 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setMarketOffer({ ids: pickRandomOfferIds(illegalGoodsPool, OFFER_SIZE), refreshedAt: Date.now() });
     showNotice('Asortyment czarnego rynku został odświeżony.');
   });
+  const [foodBuffs, setFoodBuffs] = useState<FoodBuff[]>(() => (savedProgress.foodBuffs ?? []).filter((buff) => buff.expiresAt > Date.now()));
+  useEffect(() => {
+    const id = window.setInterval(() => setFoodBuffs((current) => current.filter((buff) => buff.expiresAt > Date.now())), 15000);
+    return () => window.clearInterval(id);
+  }, []);
+  const eatMeal = (meal: Meal) => {
+    setFoodBuffs((current) => [...current, { id: `${meal.id}-${Date.now()}`, statKey: mealEffectStatKey[meal.effect], amount: meal.amount, expiresAt: Date.now() + MEAL_BUFF_DURATION_MS }]);
+  };
+  const foodStatBonuses: Record<string, number> = {};
+  for (const buff of foodBuffs) foodStatBonuses[buff.statKey] = (foodStatBonuses[buff.statKey] ?? 0) + buff.amount;
   useEffect(() => {
     const data: PersistedProgress = {
       balance: wallet.balance,
@@ -723,9 +738,10 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       ownedItemIds: Array.from(ownedItemIds),
       shopOffer,
       marketOffer,
+      foodBuffs,
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-  }, [wallet.balance, pointsWallet.balance, characterStats, equipped, ownedItemIds, shopOffer, marketOffer]);
+  }, [wallet.balance, pointsWallet.balance, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
@@ -757,7 +773,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work' && section !== 'market' && section !== 'shop' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work' && section !== 'market' && section !== 'shop' && section !== 'canteen' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -791,8 +807,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+       <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -857,6 +873,7 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     work: 'Znajdź pracę i zacznij zarabiać. Lista stanowisk jest w przygotowaniu.',
     market: 'Czarny rynek jest zamknięty. Wróć później po świeżą dostawę.',
     shop: 'Sklep jest zamknięty. Wróć później po legalny towar.',
+    canteen: 'Stołówka jest zamknięta. Wróć później na posiłek.',
     quests: 'Twoje misje czekają na podjęcie. Wybierz zlecenie i zbuduj swoją pozycję na bloku.',
     'trash-block': 'Blok śmieci otworzy dostęp do zadań i informacji z najniższego poziomu więzienia.',
     gang: 'Dołącz do gangu i zbuduj swoją pozycję w oddziale.',
@@ -921,7 +938,7 @@ const characterStatsList: Array<{ key: string; label: string; description: strin
   { key: 'reflex', label: 'REFLEKS', description: 'Szybsze reakcje. Przewaga w walce.', value: 14, max: 100, icon: Zap, tone: 'yellow' },
 ];
 
-function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, setEquipped, ownedItemIds, setOwnedItemIds, onNotice }: {
+function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, setEquipped, ownedItemIds, setOwnedItemIds, foodStatBonuses, onNotice }: {
   creator: CreatorState;
   gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string };
   wallet: Wallet;
@@ -931,6 +948,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
   setEquipped: Dispatch<SetStateAction<Record<string, string | null>>>;
   ownedItemIds: Set<string>;
   setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
+  foodStatBonuses: Record<string, number>;
   onNotice: (message: string) => void;
 }) {
   const [inventoryTab, setInventoryTab] = useState<typeof characterInventoryTabs[number]>('WSZYSTKIE');
@@ -1106,7 +1124,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
       </div>
       <div className="character-stats-panel-rows">
         {stats.map(({ key, label, description, value, max, icon: Icon, tone }) => {
-          const bonus = equipmentStatBonuses[key] ?? 0;
+          const bonus = (equipmentStatBonuses[key] ?? 0) + (foodStatBonuses[key] ?? 0);
           const displayValue = value + bonus;
           const atMax = value >= max;
           const cost = statUpgradeCost(value);
@@ -1387,6 +1405,93 @@ function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onN
     <footer className="storefront-footnote storefront-footnote-market">
       <span className="storefront-flavor-note"><Info size={14} /> Przedmioty na Czarnym Rynku są nielegalne. Zakup wiąże się z ryzykiem.</span>
       <span className="storefront-flavor">TEN, KTO KONTROLUJE RYNEK<br />KONTROLUJE WIĘCEJ.</span>
+    </footer>
+  </section>;
+}
+
+// Stołówka is not part of the shop: no offer rotation, everything is always
+// available, and eating grants a temporary stat boost (not a permanent
+// STATYSTYKI upgrade) that expires after MEAL_BUFF_DURATION_MS. Each meal's
+// effect category maps onto one of the four legend categories, which in
+// turn maps onto a real character stat so the boost actually shows up next
+// to that stat's value, the same way an equipped item's bonus does.
+const MEAL_BUFF_DURATION_MS = 10 * 60 * 1000;
+type MealEffectCategory = 'energia' | 'kondycja' | 'morale' | 'zdrowie';
+const mealEffectStatKey: Record<MealEffectCategory, string> = { energia: 'strength', kondycja: 'endurance', morale: 'luck', zdrowie: 'health' };
+const mealEffectLegend: Array<{ id: MealEffectCategory; label: string; description: string; icon: typeof Shield }> = [
+  { id: 'energia', label: 'Energia', description: 'Regeneruje siły.', icon: Heart },
+  { id: 'kondycja', label: 'Kondycja', description: 'Wspiera trening.', icon: Dumbbell },
+  { id: 'morale', label: 'Morale', description: 'Poprawia nastrój.', icon: Brain },
+  { id: 'zdrowie', label: 'Zdrowie', description: 'Pomaga w regeneracji.', icon: HeartPulse },
+];
+type Meal = { id: string; name: string; description: string; price: number; effect: MealEffectCategory; amount: number; icon: typeof Shield };
+const canteenMeals: Meal[] = [
+  { id: 'oatmeal', name: 'Owsianka', description: 'Lekka, ale syca.', price: 30, effect: 'zdrowie', amount: 4, icon: Soup },
+  { id: 'vegetable-soup', name: 'Zupa warzywna', description: 'Klasyka więziennej stołówki.', price: 25, effect: 'zdrowie', amount: 5, icon: Soup },
+  { id: 'meat-cutlet', name: 'Kotlet mielony', description: 'Prosto i konkretnie.', price: 50, effect: 'energia', amount: 8, icon: Utensils },
+  { id: 'pasta', name: 'Makaron z sosem', description: 'Daje energię na dłużej.', price: 45, effect: 'kondycja', amount: 7, icon: Soup },
+  { id: 'sandwich', name: 'Kanapka', description: 'Szybki posiłek.', price: 20, effect: 'zdrowie', amount: 3, icon: Sandwich },
+  { id: 'salad', name: 'Sałatka', description: 'Coś lżejszego.', price: 35, effect: 'morale', amount: 5, icon: Salad },
+  { id: 'boiled-eggs', name: 'Jajka na twardo', description: 'Źródło białka.', price: 25, effect: 'energia', amount: 5, icon: Egg },
+  { id: 'canteen-protein-bar', name: 'Baton proteinowy', description: 'Dla tych, co trenują.', price: 40, effect: 'kondycja', amount: 6, icon: Sandwich },
+  { id: 'canteen-coffee', name: 'Kawa', description: 'Mała przyjemność.', price: 15, effect: 'morale', amount: 4, icon: Coffee },
+];
+
+function CanteenView({ wallet, onEat, onNotice }: { wallet: Wallet; onEat: (meal: Meal) => void; onNotice: (message: string) => void }) {
+  const runLocked = useActionLock();
+
+  const buyMeal = (meal: Meal) => runLocked(`canteen-buy-${meal.id}`, () => {
+    if (!wallet.canAfford(meal.price)) {
+      onNotice(`Brak środków. Potrzebujesz jeszcze ${meal.price - wallet.balance} $.`);
+      return;
+    }
+    if (!wallet.removeMoney(meal.price)) {
+      onNotice('Zakup nieudany — brak środków.');
+      return;
+    }
+    onEat(meal);
+    onNotice(`Zjedzono: ${meal.name.toLowerCase()}. Tymczasowy efekt aktywny przez 10 minut.`);
+  });
+
+  return <section className="storefront-view storefront-canteen" data-testid="canteen-view">
+    <header className="storefront-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(6,10,9,.95), rgba(6,10,9,.55) 45%, rgba(6,10,9,.15) 75%), url(${prisonArtwork})` }}>
+      <div className="storefront-hero-copy">
+        <h1><Utensils size={26} /> STOŁÓWKA</h1>
+        <p>DOBRE JEDZENIE. WIĘKSZA SIŁA.</p>
+      </div>
+      <span className="storefront-hero-tagline">ŻOŁĄDEK<br />PEŁNY<br />— GŁOWA<br />SPOKOJNA.</span>
+      <div className="storefront-wallet-badge"><Wallet size={20} /><span><small>TWOJA GOTÓWKA</small><b>{wallet.balance.toLocaleString('pl-PL')} $</b></span></div>
+    </header>
+    <div className="storefront-body">
+      <section className="storefront-offer-panel">
+        <div className="storefront-offer-header">
+          <h2>DOSTĘPNE POSIŁKI <small>{canteenMeals.length} / {canteenMeals.length} POZYCJI</small></h2>
+        </div>
+        <div className="storefront-grid storefront-grid-named">
+          {canteenMeals.map((meal) => <article key={meal.id} className="storefront-card storefront-card-named" data-testid={`canteen-card-${meal.id}`}>
+            <div className="storefront-card-art"><meal.icon size={44} strokeWidth={1.15} /></div>
+            <strong className="storefront-card-name">{meal.name}</strong>
+            <p className="storefront-card-description">{meal.description}</p>
+            <div className="storefront-card-footer">
+              <b>{meal.price} $</b>
+              <button onClick={() => buyMeal(meal)} aria-label={`Zjedz: ${meal.name}`} data-testid={`canteen-buy-${meal.id}`}><ShoppingCart size={14} /></button>
+            </div>
+          </article>)}
+        </div>
+      </section>
+      <aside className="storefront-control-panel">
+        <div className="storefront-control-heading"><h3>EFEKTY POSIŁKÓW</h3></div>
+        <div className="storefront-effect-legend">{mealEffectLegend.map((entry) => <div key={entry.id}>
+          <entry.icon size={18} />
+          <div><strong>{entry.label}</strong><span>{entry.description}</span></div>
+        </div>)}</div>
+        <p className="storefront-control-footnote">Efekty posiłków są tymczasowe i wygasają po 10 minutach.</p>
+        <em className="storefront-detail-quote">„Dobre jedzenie to też przewaga.”</em>
+      </aside>
+    </div>
+    <footer className="storefront-footnote storefront-footnote-market">
+      <span className="storefront-flavor-note"><Info size={14} /> Posiłki zapewniają tymczasowe efekty. Wybieraj mądrze — to, co jesz, ma znaczenie.</span>
+      <Crown size={16} />
     </footer>
   </section>;
 }
@@ -2052,6 +2157,7 @@ const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shiel
   { id: 'work', label: 'PRACA', icon: BriefcaseBusiness },
   { id: 'shop', label: 'SKLEP', icon: Package },
   { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
+  { id: 'canteen', label: 'STOŁÓWKA', icon: Utensils },
   { id: 'quests', label: 'MISJE', icon: ScrollText },
   { id: 'trash-block', label: 'BLOK ŚMIECI', icon: Archive },
   { id: 'gang', label: 'GANG', icon: Users },
