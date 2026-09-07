@@ -741,7 +741,7 @@ const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof S
   { id: 'weapon', label: 'BROŃ', icon: Swords, asset: inventoryWeaponKnifeAsset },
 ];
 const characterInventoryTabs = ['WSZYSTKIE', 'UBRANIA', 'DODATKI', 'BROŃ', 'INNE'] as const;
-const characterInventoryPageSize = 12;
+const characterInventoryPageSize = 20;
 const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; rarity: string; slot: string }> = [
   { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, rarity: 'orange', slot: 'head' },
   { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, rarity: 'violet', slot: 'neck' },

@@ -3719,8 +3719,8 @@
 }
 .character-inventory-item.empty {
   border-style: dashed;
-  border-color: rgba(255, 255, 255, .08);
-  background: rgba(0, 0, 0, .12);
+  border-color: rgba(255, 255, 255, .18);
+  background: rgba(255, 255, 255, .02);
   cursor: default;
 }
 .character-inventory-rarity {
