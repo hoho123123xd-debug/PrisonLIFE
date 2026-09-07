@@ -1506,7 +1506,9 @@ function FightView({ creator, gameData, onNotice, onReturn }: { creator: Creator
     </header>
 
     <div className="fight-select-body">
-      <div className="fight-main-column">
+      <div className="fight-main-column" style={{ '--fight-bg-url': `url("${characterScenePhoto}")` } as CSSProperties}>
+        <em className="fight-stamp fight-stamp-top">TU KOŃCZY SIĘ<br />GADANIE</em>
+        <em className="fight-stamp fight-stamp-bottom">SIŁA TO NIE WSZYSTKO.<br />LICZY SIĘ GŁOWA.</em>
         <div className="fight-main-top">
           <aside className="fight-opponent-list">{fightOpponents.map((item) => <button className={`fight-opponent-row-card ${item.id === selectedId ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)} data-testid={`fight-opponent-${item.id}`}>
             <span className="fight-opponent-thumb" style={{ backgroundImage: `url("${item.asset}")` }} />

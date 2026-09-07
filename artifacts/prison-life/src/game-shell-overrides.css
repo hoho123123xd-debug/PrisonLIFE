@@ -1043,11 +1043,19 @@
   gap: 8px;
 }
 .fight-main-column {
+  position: relative;
   min-width: 0;
   min-height: 0;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 8px;
+  padding: 10px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(4, 8, 9, .82) 0%, rgba(4, 8, 9, .55) 40%, rgba(4, 8, 9, .88) 100%),
+    linear-gradient(90deg, rgba(4, 8, 9, .55), transparent 25%, transparent 75%, rgba(4, 8, 9, .55)),
+    var(--fight-bg-url) center 22% / cover no-repeat,
+    #0b1114;
 }
 .fight-main-top {
   min-width: 0;
@@ -1056,6 +1064,19 @@
   grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
   gap: 8px;
 }
+.fight-stamp {
+  position: absolute;
+  z-index: 1;
+  right: 12px;
+  color: rgba(220, 226, 216, .16);
+  font: italic 700 13px/1.25 'Oswald';
+  text-align: right;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+  pointer-events: none;
+}
+.fight-stamp-top { top: 10px; }
+.fight-stamp-bottom { bottom: 10px; }
 
 .fight-opponent-list {
   min-height: 0;
@@ -1069,10 +1090,11 @@
   min-height: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   padding: 6px;
-  border: 1px solid var(--prison-line);
-  background: rgba(7, 15, 17, .9);
+  border: 1px solid rgba(220, 226, 216, .12);
+  background: rgba(5, 10, 12, .55);
+  backdrop-filter: blur(1px);
   color: #cfd6cd;
   cursor: pointer;
   text-align: left;
@@ -1080,15 +1102,15 @@
 .fight-opponent-row-card:hover,
 .fight-opponent-row-card.active {
   border-color: var(--prison-orange);
-  background: rgba(225, 122, 46, .08);
+  background: rgba(225, 122, 46, .14);
 }
 .fight-opponent-thumb {
-  width: 40px;
-  height: 40px;
+  width: 64px;
+  height: 64px;
   flex: 0 0 auto;
   background-size: cover;
-  background-position: center top;
-  border: 1px solid rgba(255, 255, 255, .1);
+  background-position: center 15%;
+  border: 1px solid rgba(255, 255, 255, .12);
 }
 .fight-opponent-row-info {
   min-width: 0;
@@ -1098,14 +1120,14 @@
 }
 .fight-opponent-row-info strong {
   color: #eee8de;
-  font: 13px 'Oswald';
+  font: 15px 'Oswald';
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .fight-opponent-row-info small {
   color: #8b948e;
-  font: 9.5px 'Barlow Condensed';
+  font: 10px 'Barlow Condensed';
   letter-spacing: .06em;
 }
 
@@ -1113,53 +1135,57 @@
   min-width: 0;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 8px;
+  grid-template-rows: minmax(0, 1.3fr) auto;
+  gap: 6px;
 }
 .fight-vs-row {
+  min-height: 0;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid var(--prison-line);
-  background: rgba(7, 15, 17, .9);
+  gap: 14px;
+  padding: 6px 10px;
 }
 .fight-vs-side {
   min-width: 0;
+  min-height: 0;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   text-align: center;
 }
 .fight-vs-portrait {
   width: 100%;
-  max-width: 160px;
-  aspect-ratio: 1 / 1.05;
+  max-width: 230px;
+  flex: 1 1 0;
+  min-height: 0;
   background-size: cover;
-  background-position: center top;
-  border: 1px solid rgba(255, 255, 255, .12);
+  background-position: center 12%;
+  filter: drop-shadow(0 12px 16px rgba(0, 0, 0, .55));
 }
 .fight-vs-side strong {
   color: #eee8de;
-  font: 700 16px 'Oswald';
+  font: 700 20px 'Oswald';
+  letter-spacing: .02em;
 }
 .fight-vs-side small {
-  color: #8b948e;
-  font: 10px 'Barlow Condensed';
-  letter-spacing: .06em;
+  color: #9aa39c;
+  font: 10.5px 'Barlow Condensed';
+  letter-spacing: .08em;
 }
 .fight-vs-mark {
-  color: var(--prison-orange);
-  font: italic 700 28px 'Oswald';
+  color: var(--prison-orange-light);
+  font: italic 700 34px 'Oswald';
+  text-shadow: 0 3px 10px rgba(0, 0, 0, .6);
 }
 
 .fight-compare-panel {
   min-height: 0;
   padding: 10px 16px;
-  border: 1px solid var(--prison-line);
-  background: rgba(7, 15, 17, .9);
+  background: rgba(5, 10, 12, .55);
+  backdrop-filter: blur(1px);
   overflow-y: auto;
 }
 .fight-compare-panel h2 {
@@ -1219,8 +1245,9 @@
   gap: 10px;
   align-items: flex-start;
   padding: 10px 14px;
-  border: 1px solid var(--prison-line);
-  background: rgba(7, 15, 17, .9);
+  border: 1px solid rgba(220, 226, 216, .12);
+  background: rgba(5, 10, 12, .55);
+  backdrop-filter: blur(1px);
   color: #8b948e;
 }
 .fight-tip-box svg {
