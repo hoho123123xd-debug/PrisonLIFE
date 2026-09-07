@@ -22,6 +22,7 @@ import {
   Coins,
   Crosshair,
   Crown,
+  Dices,
   Droplets,
   Dumbbell,
   BedDouble,
@@ -48,6 +49,8 @@ import {
   Plus,
   RefreshCw,
   Scale,
+  ScanFace,
+  Scissors,
   ScrollText,
   Send,
   Shield,
@@ -55,6 +58,7 @@ import {
   Shirt as ShirtIcon,
   ShoppingCart,
   Smartphone,
+  Sparkles,
   Swords,
   Timer,
   Table,
@@ -114,8 +118,57 @@ const barItems = [
 ];
 
 type Screen = 'home' | 'register' | 'login' | 'game';
-type AppearanceKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'outfit' | 'skin';
+type AppearanceKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'scar' | 'eyes' | 'outfit' | 'skin';
+type AppearanceTabKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'scar' | 'eyes';
 type Appearance = Record<AppearanceKey, number>;
+type AppearanceOption = { id: number; label: string; color?: string };
+const skinToneColors = ['#c99a76', '#a9764f', '#8a6142', '#5c3d29'];
+const eyeColorSwatches = ['#4a2f1c', '#3d6b8a', '#3f6b45', '#767f82'];
+const appearanceTabs: Array<{ key: AppearanceTabKey; label: string; icon: typeof Shield; options: AppearanceOption[] }> = [
+  { key: 'face', label: 'TWARZ', icon: ScanFace, options: [
+    { id: 0, label: 'OWALNA' },
+    { id: 1, label: 'KANCIASTA' },
+    { id: 2, label: 'OKRĄGŁA' },
+    { id: 3, label: 'WYDATNA SZCZĘKA' },
+  ] },
+  { key: 'hair', label: 'WŁOSY', icon: Scissors, options: [
+    { id: 0, label: 'ŁYSY' },
+    { id: 1, label: 'KRÓTKIE' },
+    { id: 2, label: 'IROKEZ' },
+    { id: 3, label: 'DREDY' },
+  ] },
+  { key: 'beard', label: 'ZAROST', icon: Sparkles, options: [
+    { id: 0, label: 'GŁADKO OGOLONY' },
+    { id: 1, label: 'LEKKI ZAROST' },
+    { id: 2, label: 'PEŁNA BRODA' },
+    { id: 3, label: 'WĄSY' },
+  ] },
+  { key: 'tattoo', label: 'TATUAŻE', icon: Droplets, options: [
+    { id: 0, label: 'BRAK' },
+    { id: 1, label: 'SZPONY' },
+    { id: 2, label: 'OKO' },
+    { id: 3, label: 'KRATY' },
+  ] },
+  { key: 'scar', label: 'BLIZNY', icon: Zap, options: [
+    { id: 0, label: 'BRAK' },
+    { id: 1, label: 'NAD OKIEM' },
+    { id: 2, label: 'NA POLICZKU' },
+    { id: 3, label: 'PRZEZ BREW' },
+  ] },
+  { key: 'eyes', label: 'OCZY', icon: Eye, options: [
+    { id: 0, label: 'BRĄZOWE', color: eyeColorSwatches[0] },
+    { id: 1, label: 'NIEBIESKIE', color: eyeColorSwatches[1] },
+    { id: 2, label: 'ZIELONE', color: eyeColorSwatches[2] },
+    { id: 3, label: 'SZARE', color: eyeColorSwatches[3] },
+  ] },
+];
+const skinToneOptions: AppearanceOption[] = [
+  { id: 0, label: 'JASNA', color: skinToneColors[0] },
+  { id: 1, label: 'ŚNIADA', color: skinToneColors[1] },
+  { id: 2, label: 'OLIWKOWA', color: skinToneColors[2] },
+  { id: 3, label: 'CIEMNA', color: skinToneColors[3] },
+];
+const randomNicknames = ['KOSA', 'CIEŃ', 'ŻMIJA', 'BYK', 'RAZOR', 'WIDMO', 'GRUBY', 'HAK', 'ĆWIEK', 'SĘP'];
 type AccountData = { email: string; password: string; confirmPassword: string };
 type Gender = 'male' | 'female';
 type World = 'central';
@@ -151,7 +204,7 @@ function getPrisonerAsset(type: typeof prisonerTypes[number], gender: Gender) {
   return type.id === 'bull' ? bullAsset : type.id === 'rat' ? ratAsset : type.id === 'fox' ? foxAsset : wolfAsset;
 }
 
-const stepLabels = ['POSTAĆ', 'DANE', 'GOTOWE'];
+const stepLabels = ['POSTAĆ', 'WYGLĄD', 'DANE', 'GOTOWE'];
 
 function Brand({ onNavigate, compact = false }: { onNavigate: (screen: Screen) => void; compact?: boolean }) {
   return (
@@ -304,7 +357,7 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
           <img className="character-photo" src={prisonerAsset} alt={`Podgląd więźnia ${displayName}`} />
           {appearance.hair > 0 && <span className={`figure-hair figure-hair-${appearance.hair}`} aria-hidden="true" />}
           {appearance.beard > 0 && <span className={`figure-beard figure-beard-${appearance.beard}`} aria-hidden="true" />}
-          {appearance.face === 1 && <span className="figure-scar" aria-hidden="true" />}
+          {appearance.scar > 0 && <span className={`figure-scar figure-scar-${appearance.scar}`} aria-hidden="true" />}
           {appearance.tattoo > 0 && <span className={`figure-tattoo figure-tattoo-${appearance.tattoo}`} aria-hidden="true" />}
           {appearance.outfit > 0 && <span className="figure-outfit-wash" aria-hidden="true" />}
           <svg className="character-svg" viewBox="0 0 360 620" role="img" aria-label={`Podgląd więźnia ${displayName}`}>
@@ -322,15 +375,17 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
             {appearance.outfit === 3 && <path d="M124 353 L146 429 214 429 236 353 253 377 225 460 135 460 107 377Z" fill="#1c2a2e" opacity=".86" />}
             <path d="M155 383 L180 400 205 383" fill="none" stroke="#d6aa7b" strokeWidth="2" opacity=".55" />
             <rect x="192" y="387" width="36" height="21" rx="1" fill="#d6c5a5" /><text x="198" y="402" fontSize="10" fontFamily="Barlow Condensed" fill="#252729" fontWeight="700">A-7421</text>
-            <ellipse cx="180" cy="235" rx={appearance.face === 1 ? 52 : 56} ry="75" fill="url(#skinGradient)" />
+            <ellipse cx="180" cy="235" rx={[56, 52, 58, 54][appearance.face]} ry="75" fill="url(#skinGradient)" />
             {appearance.face === 0 && <path d="M136 218 Q148 185 180 183 Q213 185 224 218 L213 198 Q180 210 147 198Z" fill="#30221f" opacity=".4" />}
             {appearance.face === 1 && <path d="M150 188 Q180 177 211 190 L223 221 211 239 Q180 252 149 239 L137 220Z" fill="#49302a" opacity=".38" />}
             {appearance.face === 2 && <path d="M132 226 L146 185 180 177 214 185 228 226 214 270 180 288 146 270Z" fill="#4a2b25" opacity=".32" />}
             {appearance.face === 3 && <path d="M142 200 Q180 180 218 200 L225 252 Q180 276 135 252Z" fill="#211c1b" opacity=".2" />}
             <path d="M149 226 Q160 219 169 225" stroke="#231b19" strokeWidth="5" fill="none" /><path d="M191 225 Q200 219 211 226" stroke="#231b19" strokeWidth="5" fill="none" />
-            <ellipse cx="160" cy="234" rx="4" ry="5" fill="#111" /><ellipse cx="200" cy="234" rx="4" ry="5" fill="#111" />
+            <ellipse cx="160" cy="234" rx="4" ry="5" fill={eyeColorSwatches[appearance.eyes]} /><ellipse cx="200" cy="234" rx="4" ry="5" fill={eyeColorSwatches[appearance.eyes]} />
             <path d="M180 234 L174 258 184 260" fill="none" stroke="#633b30" strokeWidth="3" /><path d="M157 274 Q180 284 203 274" fill="none" stroke="#321d1b" strokeWidth="4" />
-            {appearance.face === 1 && <path d="M207 197 L215 236" stroke="#c48f72" strokeWidth="3" opacity=".8" />}
+            {appearance.scar === 1 && <path d="M207 197 L215 236" stroke="#c48f72" strokeWidth="3" opacity=".8" />}
+            {appearance.scar === 2 && <path d="M195 245 L213 268" stroke="#c48f72" strokeWidth="3" opacity=".8" />}
+            {appearance.scar === 3 && <path d="M144 219 L168 214" stroke="#c48f72" strokeWidth="3" opacity=".8" />}
             {appearance.hair === 0 && <path d="M126 224 Q124 168 180 157 Q236 168 234 224 L219 214 211 184 Q180 174 149 184 L141 214Z" fill="#171718" />}
             {appearance.hair === 1 && <path d="M129 210 Q126 169 180 156 Q234 169 231 210 L215 198 207 175 Q180 166 153 175 L145 198Z" fill="#242326" />}
             {appearance.hair === 2 && <><path d="M123 226 Q114 169 180 144 Q247 169 237 226 L220 204 212 174 Q180 157 148 174 L140 207Z" fill="#121314" /><path d="M148 169 Q180 131 212 169" fill="none" stroke="#303032" strokeWidth="13" /></>}
@@ -363,7 +418,7 @@ function RegistrationShell({ step, children, onNavigate, onStepChange, onNext, o
   return <main className="registration-page" style={{ '--artwork-url': `url("${prisonArtwork}")`, '--registration-artwork-url': `url("${registrationEnvironment}")` } as CSSProperties}>
     <header className={`registration-header registration-header-step-${step}`}><div className="prison-shell registration-header-inner"><Brand onNavigate={onNavigate} /><RegistrationProgress step={step} onStepChange={onStepChange} /><div className="registration-login"><span>MASZ JUŻ KONTO?</span><button onClick={() => onNavigate('login')} data-testid="button-registration-login">ZALOGUJ SIĘ</button></div></div></header>
     <div className="prison-shell registration-body">{step === 1 && <button className="back-home" onClick={() => onNavigate('home')}><ArrowLeft size={14} /> POWRÓT NA STRONĘ GŁÓWNĄ</button>}{children}</div>
-    <div className="registration-action-bar"><div className="prison-shell registration-actions">{step > 1 ? <button className="btn btn-outline" onClick={() => onStepChange(step - 1)}><ArrowLeft size={16} /> WSTECZ</button> : <div className="registration-account-link">MASZ JUŻ KONTO? <button onClick={() => onNavigate('login')}>ZALOGUJ SIĘ</button></div>}{step === 3 ? <button className="btn btn-primary" onClick={onCreate} data-testid="button-create-prisoner">UTWÓRZ WIĘŹNIA <ArrowRight size={17} /></button> : <button className="btn btn-primary" onClick={onNext} data-testid="button-registration-next">DALEJ <ArrowRight size={17} /></button>}</div></div>
+    <div className="registration-action-bar"><div className="prison-shell registration-actions">{step > 1 ? <button className="btn btn-outline" onClick={() => onStepChange(step - 1)}><ArrowLeft size={16} /> WSTECZ</button> : <div className="registration-account-link">MASZ JUŻ KONTO? <button onClick={() => onNavigate('login')}>ZALOGUJ SIĘ</button></div>}{step === 4 ? <button className="btn btn-primary" onClick={onCreate} data-testid="button-create-prisoner">UTWÓRZ WIĘŹNIA <ArrowRight size={17} /></button> : <button className="btn btn-primary" onClick={onNext} data-testid="button-registration-next">DALEJ <ArrowRight size={17} /></button>}</div></div>
     <footer className="registration-footer"><div className="prison-shell registration-footer-inner"><Brand onNavigate={onNavigate} compact /><span>REGULAMIN</span><span>POLITYKA PRYWATNOŚCI</span><span>FAQ</span><span>KONTAKT</span><div className="registration-social"><Gamepad2 size={15} /><Facebook size={15} /><Youtube size={15} /><Instagram size={15} /></div><em>PRAWDZIWE HISTORIE<br />ZACZYNAJĄ SIĘ W WIĘZIENIU...</em></div></footer>
   </main>;
 }
@@ -372,14 +427,17 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
   const selectedType = prisonerTypes.find((type) => type.id === creator.prisonerType)!;
   const goNext = () => {
     if (creator.step === 1 && !creator.nickname.trim()) { setCreator((current) => ({ ...current, nicknameError: 'Wpisz ksywę, zanim przejdziesz dalej.' })); return; }
-    if (creator.step === 2) {
+    if (creator.step === 3) {
       if (!creator.account.email || !creator.account.password || !creator.account.confirmPassword) { setCreator((current) => ({ ...current, accountError: 'Uzupełnij wszystkie pola, aby przejść dalej.' })); return; }
       if (creator.account.password.length < 6) { setCreator((current) => ({ ...current, accountError: 'Hasło musi mieć co najmniej 6 znaków.' })); return; }
       if (creator.account.password !== creator.account.confirmPassword) { setCreator((current) => ({ ...current, accountError: 'Hasła muszą być identyczne.' })); return; }
     }
-    setCreator((current) => ({ ...current, step: Math.min(3, current.step + 1), nicknameError: '', accountError: '' }));
+    setCreator((current) => ({ ...current, step: Math.min(4, current.step + 1), nicknameError: '', accountError: '' }));
   };
-  const changeStep = (next: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(3, next)), nicknameError: '', accountError: '' }));
+  const changeStep = (next: number) => setCreator((current) => ({ ...current, step: Math.max(1, Math.min(4, next)), nicknameError: '', accountError: '' }));
+  if (creator.step === 2) {
+    return <AppearanceCreatorStep creator={creator} setCreator={setCreator} onNext={goNext} onBack={() => changeStep(1)} />;
+  }
   return <RegistrationShell step={creator.step} onNavigate={onNavigate} onStepChange={changeStep} onNext={goNext} onCreate={() => onNavigate('game')}>
     {creator.step === 1 && <section className={`type-selection-stage gender-${creator.gender}`}>
       <div className="type-selection-controls">
@@ -395,13 +453,73 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
         </button>)}
       </div>
     </section>}
-    {creator.step === 2 && <section className="step-screen account-step"><div className="step-heading"><div className="eyebrow">Krok 02 / Kartoteka</div><h1>DANE <span>WIĘŹNIA</span></h1><p>Twoja kartoteka jest prawie gotowa. Podaj dane, których użyjesz, aby wrócić do swojej historii.</p></div><form className="account-form" onSubmit={(event) => { event.preventDefault(); goNext(); }}><label><span><Mail size={15} /> E-MAIL</span><input type="email" autoComplete="email" value={creator.account.email} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, email: event.target.value }, accountError: '' }))} placeholder="więzień@prisonlife.pl" data-testid="input-auth-email" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="new-password" minLength={6} value={creator.account.password} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, password: event.target.value }, accountError: '' }))} placeholder="minimum 6 znaków" data-testid="input-auth-password" required /></label><label><span><KeyRound size={15} /> POWTÓRZ HASŁO</span><input type="password" autoComplete="new-password" value={creator.account.confirmPassword} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, confirmPassword: event.target.value }, accountError: '' }))} placeholder="powtórz hasło" data-testid="input-auth-confirm" required /></label>{creator.accountError && <div className="form-error">{creator.accountError}</div>}<button type="submit" className="account-form-submit">SPRAWDŹ DANE <ArrowRight size={16} /></button></form><div className="account-side-note"><span>IDENTYFIKATOR</span><strong>{creator.nickname.toUpperCase() || 'NOWY WIĘZIEŃ'}</strong><small>#A-47291 / INTAKE</small><p>Dane konta są używane wyłącznie do logowania do Prison Life.</p></div></section>}
-    {creator.step === 3 && <section className="step-screen summary-step"><div className="step-heading"><div className="eyebrow">Krok 03 / Kontrola</div><h1>WSZYSTKO <span>GOTOWE</span></h1><p>Sprawdź swoją kartotekę. Możesz cofnąć się i zmienić dowolny wybór.</p></div><div className="summary-grid"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div className="summary-details"><div className="summary-block"><span className="summary-label">KSYWA</span><strong>{creator.nickname.toUpperCase()}</strong><button onClick={() => changeStep(1)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-block"><span className="summary-label">TYP WIĘŹNIA</span><strong>{getPrisonerDisplayName(selectedType, creator.gender)}</strong><em>{selectedType.specialty}</em><button onClick={() => changeStep(1)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-stats"><span>{selectedType.abilityIcon} {selectedType.abilityTitle}</span><span>{selectedType.abilityDescription}</span></div><div className="summary-block account-summary"><span className="summary-label">DANE KONTA</span><strong>{creator.account.email}</strong><small>Hasło zabezpieczone</small><button onClick={() => changeStep(2)}>EDYTUJ <ChevronRight size={14} /></button></div></div></div></section>}
+    {creator.step === 3 && <section className="step-screen account-step"><div className="step-heading"><div className="eyebrow">Krok 03 / Kartoteka</div><h1>DANE <span>WIĘŹNIA</span></h1><p>Twoja kartoteka jest prawie gotowa. Podaj dane, których użyjesz, aby wrócić do swojej historii.</p></div><form className="account-form" onSubmit={(event) => { event.preventDefault(); goNext(); }}><label><span><Mail size={15} /> E-MAIL</span><input type="email" autoComplete="email" value={creator.account.email} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, email: event.target.value }, accountError: '' }))} placeholder="więzień@prisonlife.pl" data-testid="input-auth-email" required /></label><label><span><KeyRound size={15} /> HASŁO</span><input type="password" autoComplete="new-password" minLength={6} value={creator.account.password} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, password: event.target.value }, accountError: '' }))} placeholder="minimum 6 znaków" data-testid="input-auth-password" required /></label><label><span><KeyRound size={15} /> POWTÓRZ HASŁO</span><input type="password" autoComplete="new-password" value={creator.account.confirmPassword} onChange={(event) => setCreator((current) => ({ ...current, account: { ...current.account, confirmPassword: event.target.value }, accountError: '' }))} placeholder="powtórz hasło" data-testid="input-auth-confirm" required /></label>{creator.accountError && <div className="form-error">{creator.accountError}</div>}<button type="submit" className="account-form-submit">SPRAWDŹ DANE <ArrowRight size={16} /></button></form><div className="account-side-note"><span>IDENTYFIKATOR</span><strong>{creator.nickname.toUpperCase() || 'NOWY WIĘZIEŃ'}</strong><small>#A-47291 / INTAKE</small><p>Dane konta są używane wyłącznie do logowania do Prison Life.</p></div></section>}
+    {creator.step === 4 && <section className="step-screen summary-step"><div className="step-heading"><div className="eyebrow">Krok 04 / Kontrola</div><h1>WSZYSTKO <span>GOTOWE</span></h1><p>Sprawdź swoją kartotekę. Możesz cofnąć się i zmienić dowolny wybór.</p></div><div className="summary-grid"><CharacterPreview appearance={creator.appearance} nickname={creator.nickname} type={creator.prisonerType} /><div className="summary-details"><div className="summary-block"><span className="summary-label">KSYWA</span><strong>{creator.nickname.toUpperCase()}</strong><button onClick={() => changeStep(1)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-block"><span className="summary-label">TYP WIĘŹNIA</span><strong>{getPrisonerDisplayName(selectedType, creator.gender)}</strong><em>{selectedType.specialty}</em><button onClick={() => changeStep(1)}>EDYTUJ <ChevronRight size={14} /></button></div><div className="summary-stats"><span>{selectedType.abilityIcon} {selectedType.abilityTitle}</span><span>{selectedType.abilityDescription}</span></div><div className="summary-block account-summary"><span className="summary-label">DANE KONTA</span><strong>{creator.account.email}</strong><small>Hasło zabezpieczone</small><button onClick={() => changeStep(3)}>EDYTUJ <ChevronRight size={14} /></button></div></div></div></section>}
   </RegistrationShell>;
 }
 
+function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
+  creator: CreatorState; setCreator: Dispatch<SetStateAction<CreatorState>>; onNext: () => void; onBack: () => void;
+}) {
+  const [tab, setTab] = useState<AppearanceTabKey>('face');
+  const activeTab = appearanceTabs.find((item) => item.key === tab)!;
+  const setAppearance = (key: AppearanceKey, value: number) => setCreator((current) => ({ ...current, appearance: { ...current.appearance, [key]: value } }));
+  const randomizeNickname = () => setCreator((current) => ({ ...current, nickname: randomNicknames[Math.floor(Math.random() * randomNicknames.length)], nicknameError: '' }));
+  return (
+    <main className="appearance-creator" data-testid="appearance-creator">
+      <header className="appearance-creator-topbar">
+        <div className="appearance-creator-brand"><span className="brand-name">PRISON<span className="crown">◆</span>LIFE</span><span className="brand-tagline">TU ZACZYNA SIĘ PRAWDZIWA GRA</span></div>
+        <span className="appearance-creator-motto">DISCIPLINE BUILDS FREEDOM</span>
+        <button type="button" className="appearance-creator-close" onClick={onBack} aria-label="Wróć do wyboru typu więźnia" data-testid="button-appearance-back"><X size={18} /></button>
+      </header>
+      <div className="appearance-creator-body">
+        <aside className="appearance-creator-nav">
+          <div className="appearance-creator-nav-heading"><h1>WYBIERZ WYGLĄD</h1><p>DOSTOSUJ SWOJĄ POSTAĆ. WYGLĄD NIE DAJE PRZEWAGI W GRZE.</p></div>
+          <div className="appearance-creator-tabs">
+            {appearanceTabs.map((item) => <button type="button" key={item.key} className={`appearance-creator-tab ${tab === item.key ? 'active' : ''}`} onClick={() => setTab(item.key)} aria-pressed={tab === item.key} data-testid={`button-appearance-tab-${item.key}`}><item.icon size={18} /><span>{item.label}</span></button>)}
+          </div>
+          <em className="appearance-creator-nav-footer">TAKA<br />JEST GRA</em>
+        </aside>
+        <div className="appearance-creator-stage">
+          <div className={`appearance-creator-photo figure-skin-${creator.appearance.skin}`}>
+            <img className="appearance-creator-photo-img" src={prisonerAsset} alt="Podgląd Twojej postaci" />
+            <span className="appearance-creator-eye-tint appearance-creator-eye-left" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
+            <span className="appearance-creator-eye-tint appearance-creator-eye-right" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
+          </div>
+          <div className="appearance-creator-name-bar">
+            <label><UserRound size={15} /><input value={creator.nickname} onChange={(event) => setCreator((current) => ({ ...current, nickname: event.target.value, nicknameError: '' }))} placeholder="WPISZ SWOJĄ NAZWĘ" maxLength={18} data-testid="input-appearance-nickname" /></label>
+            <button type="button" className="appearance-creator-dice" onClick={randomizeNickname} aria-label="Wylosuj ksywę" data-testid="button-appearance-randomize"><Dices size={18} /></button>
+          </div>
+        </div>
+        <aside className="appearance-creator-panel">
+          <h2>{activeTab.label}</h2>
+          <div className="appearance-option-grid">
+            {activeTab.options.map((option) => <button type="button" key={option.id} className={`appearance-option-tile ${creator.appearance[activeTab.key] === option.id ? 'selected' : ''}`} onClick={() => setAppearance(activeTab.key, option.id)} aria-pressed={creator.appearance[activeTab.key] === option.id} data-testid={`button-appearance-option-${activeTab.key}-${option.id}`}>
+              {option.color ? <span className="appearance-option-swatch" style={{ background: option.color }} /> : <span className="appearance-option-icon"><activeTab.icon size={20} /></span>}
+              <span className="appearance-option-label">{option.label}</span>
+            </button>)}
+          </div>
+          {tab === 'face' && <>
+            <h2>KOLOR SKÓRY</h2>
+            <div className="appearance-option-grid appearance-option-grid-swatches">
+              {skinToneOptions.map((option) => <button type="button" key={option.id} className={`appearance-option-tile appearance-option-tile-swatch ${creator.appearance.skin === option.id ? 'selected' : ''}`} onClick={() => setAppearance('skin', option.id)} aria-pressed={creator.appearance.skin === option.id} data-testid={`button-appearance-option-skin-${option.id}`}>
+                <span className="appearance-option-swatch" style={{ background: option.color }} />
+                <span className="appearance-option-label">{option.label}</span>
+              </button>)}
+            </div>
+          </>}
+        </aside>
+      </div>
+      <div className="appearance-creator-actions">
+        <button type="button" className="btn btn-outline" onClick={onBack} data-testid="button-appearance-back-bottom"><ArrowLeft size={16} /> WSTECZ</button>
+        <button type="button" className="btn btn-primary" onClick={onNext} data-testid="button-appearance-next">DALEJ <ArrowRight size={17} /></button>
+      </div>
+    </main>
+  );
+}
+
 type CreatorState = { step: number; nickname: string; nicknameError: string; gender: Gender; world: World; prisonerType: PrisonerType; appearance: Appearance; account: AccountData; accountError: string };
-const initialCreator: CreatorState = { step: 1, nickname: '', nicknameError: '', gender: 'male', world: 'central', prisonerType: 'bull', appearance: { face: 0, hair: 0, beard: 1, tattoo: 1, outfit: 0, skin: 1 }, account: { email: '', password: '', confirmPassword: '' }, accountError: '' };
+const initialCreator: CreatorState = { step: 1, nickname: '', nicknameError: '', gender: 'male', world: 'central', prisonerType: 'bull', appearance: { face: 0, hair: 0, beard: 1, tattoo: 1, scar: 0, eyes: 0, outfit: 0, skin: 1 }, account: { email: '', password: '', confirmPassword: '' }, accountError: '' };
 
 function AuthScreen({ mode, onNavigate }: { mode: 'login' | 'register'; onNavigate: (screen: Screen) => void }) {
   const [email, setEmail] = useState('');
