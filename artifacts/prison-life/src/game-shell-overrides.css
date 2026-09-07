@@ -6041,6 +6041,24 @@
   transition: .18s;
 }
 .market-item-footer button:hover { background: #ffae53; }
+.market-item-footer button:disabled {
+  opacity: .45;
+  cursor: default;
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .2);
+  color: #aab3aa;
+}
+.market-item-footer button:disabled:hover { background: rgba(255, 255, 255, .08); }
+.market-item-footer .shop-item-owned {
+  color: #58bc6f;
+  font-weight: 700;
+}
+.market-item-art img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 6px rgba(0, 0, 0, .5));
+}
 .market-footnote {
   min-height: 46px;
   display: flex;
