@@ -12,6 +12,7 @@ import {
   Backpack,
   BarChart3,
   Bell,
+  Brain,
   BriefcaseBusiness,
   Building2,
   Check,
@@ -27,6 +28,7 @@ import {
   Gem,
   Eye,
   Facebook,
+  Footprints as FootprintsIcon,
   Flag,
   Gamepad2,
   Heart,
@@ -38,14 +40,21 @@ import {
   Mail,
   Menu,
   MessageSquare,
+  Grid2X2,
+  Info,
+  MoreHorizontal,
+  Package,
   PanelRight,
   Plus,
+  RefreshCw,
   Scale,
   ScrollText,
   Send,
   Shield,
   Settings,
+  Shirt as ShirtIcon,
   ShoppingCart,
+  Smartphone,
   Swords,
   Timer,
   Table,
@@ -55,6 +64,7 @@ import {
   UserRoundPen,
   Users,
   Wind,
+  Wrench,
   X,
   Youtube,
   Zap,
@@ -85,7 +95,7 @@ const featureItems = [
   { title: 'Zdobądź szczyt', copy: 'Wspinaj się w rankingach i zapisz się w historii Prison Life.', icon: Crown },
 ];
 const panelItems = [
-  { label: 'Cela', icon: Shield },
+  { label: 'Twoja Postać', icon: Shield },
   { label: 'Trening', icon: Dumbbell },
   { label: 'Walka', icon: Crosshair },
   { label: 'Praca', icon: BriefcaseBusiness },
@@ -445,7 +455,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work' && section !== 'market' && section !== 'equipment' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -479,20 +489,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
-       <div className={`game-content ${activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : ''}`}>
-        {activeSection === 'cell' ? <div className="game-board">
-           <section className="game-cell-column"><div className="game-section-heading"><div><span className="eyebrow">DZIEŃ 01 / BLOK A</span><h1>TWOJA <span>CELA</span></h1></div><span className="cell-status"><i /> ZAMKNIĘTA / 06:00</span></div><CellScene visited={visited} onHotspot={activateHotspot} /></section>
-          <aside className="game-right-column">
-            <section className="game-panel prisoner-panel"><div className="panel-title"><span>MÓJ WIĘZIEŃ</span><button onClick={() => showNotice('Edycja więźnia będzie dostępna wkrótce.')}><UserRoundPen size={12} /> EDYTUJ</button></div><div className="prisoner-profile"><div><h2>{gameData.nickname.toUpperCase()}</h2><span>#A-7421</span><strong>POZIOM {gameData.level}</strong><div className="profile-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div><GamePortrait creator={creator} small /></div><div className="prisoner-stats">{gameStats.map(({ label, value, icon: Icon, color }) => <div className="prisoner-stat" key={label}><Icon size={16} className={`stat-${color}`} /><span>{label}</span><div><i style={{ width: `${value * 10}%` }} /></div><b>{value}</b></div>)}</div><div className="reputation-row"><div><span>REPUTACJA</span><strong>{gameData.reputation}</strong></div><div><span>RANGA</span><strong>{gameData.rank}</strong></div></div><blockquote>„ZA KRATAMI WSZYSCY<br />JESTEŚMY RÓWNI...<br /><em>ALE NIE NA DŁUGO.”</em></blockquote></section>
-            <section className="game-panel quests-panel"><div className="panel-title"><span>AKTUALNE ZADANIA</span><button onClick={() => navigateSection('quests')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="quest-list"><div className="quest-item"><CheckCircle2 size={19} /><div><strong>PIERWSZE KROKI</strong><small>Zdobądź 100 $ z pracy lub walk.</small><div className="quest-progress"><i style={{ width: '65%' }} /></div></div><b>65 / 100</b></div><div className="quest-item"><Dumbbell size={19} /><div><strong>TRENING CZYNI MISTRZA</strong><small>Wykonaj 3 treningi siły.</small><div className="quest-progress"><i style={{ width: '34%' }} /></div></div><b>1 / 3</b></div><div className="quest-item"><PanelRight size={19} /><div><strong>POZNAJ CELE</strong><small>Kliknij wszystkie interaktywne elementy w celi.</small><div className="quest-progress"><i style={{ width: `${(visited.size / 8) * 100}%` }} /></div></div><b>{visited.size} / 8</b></div></div></section>
-              <div className="game-promo"><span>PRZETRWAJ<br /><b>ROZWIJAJ SIĘ<br />DOMINUJ</b></span><button onClick={() => showNotice('Wkrótce poznasz pełną mapę bloku.')}><ChevronRight size={20} /></button></div>
-          </aside>
-         </div> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
-         {activeSection === 'cell' && <section className="game-bottom-grid">
-          <section className="game-panel messages-panel"><div className="panel-title"><span>WIADOMOŚCI <b>(3)</b></span><button onClick={() => setNewMessageOpen((open) => !open)}>+ NOWA WIADOMOŚĆ</button></div>{newMessageOpen && <div className="new-message-row"><input autoFocus placeholder="Napisz do..." /><button onClick={() => { setNewMessageOpen(false); showNotice('Nowa wiadomość została przygotowana.'); }}><Send size={14} /></button></div>}<div className="message-list">{gameMessages.map((message) => <button className="message-item" key={message.name} onClick={() => showNotice(`Otwierasz wiadomość od ${message.name}.`)}><span className="message-avatar">{message.name[0]}</span><span><strong>{message.name}</strong><small>{message.text}</small></span><time>{message.time}<b>1</b></time></button>)}</div></section>
-          <section className="game-panel chat-panel"><div className="panel-title"><span>CZAT: {chatTab}</span></div><div className="chat-tabs">{(['ODDZIAŁ A', 'GLOBALNY', 'GANG'] as const).map((tab) => <button className={chatTab === tab ? 'active' : ''} onClick={() => setChatTab(tab)} key={tab}>{tab}</button>)}</div><div className="chat-lines">{chatLines.slice(-5).map((line, index) => <div className="chat-line" key={`${line.time}-${index}`}><time>{line.time}</time><strong>{line.name}:</strong><span>{line.text}</span></div>)}</div><form className="chat-compose" onSubmit={sendChat}><input value={chatMessage} onChange={(event) => setChatMessage(event.target.value)} placeholder="Napisz wiadomość..." /><button aria-label="Wyślij wiadomość"><Send size={14} /></button></form></section>
-          <section className="game-panel events-panel"><div className="panel-title"><span>OSTATNIE WYDARZENIA</span><button onClick={() => showNotice('Wyświetlasz pełną historię wydarzeń.')}>ZOBACZ WSZYSTKIE</button></div><div className="event-list">{gameEvents.map((event) => <div className="event-item" key={`${event.time}-${event.text}`}><time>{event.time}</time><span>{event.text}</span><b className={event.tone}>{event.result}</b></div>)}</div></section>
-         </section>}
+       <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'equipment' ? 'game-content-equipment' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} onNotice={showNotice} /> : activeSection === 'equipment' ? <InventoryView creator={creator} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -550,7 +548,7 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     work: 'Znajdź pracę i zacznij zarabiać. Lista stanowisk jest w przygotowaniu.',
     equipment: 'Tutaj znajdzie się Twój ekwipunek i przedmioty zebrane za kratami.',
     market: 'Czarny rynek jest zamknięty. Wróć później po świeżą dostawę.',
-    quests: 'Twoje zadania są widoczne w panelu po prawej stronie.',
+    quests: 'Twoje misje czekają na podjęcie. Wybierz zlecenie i zbuduj swoją pozycję na bloku.',
     gang: 'Dołącz do gangu i zbuduj swoją pozycję w oddziale.',
     ranking: 'Ranking bloku zostanie otwarty, gdy rozpoczniesz pierwszy dzień.',
     'cell-development': 'Rozbuduj swoją celę, odblokuj nowe wyposażenie i stwórz własną przewagę za kratami.',
@@ -559,6 +557,533 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+}
+
+function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState; gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string }; onNotice: (message: string) => void }) {
+  const [stats, setStats] = useState([
+    { label: 'SIŁA', value: 5, cost: 250, icon: Dumbbell, tone: 'orange' },
+    { label: 'KONDYCJA', value: 5, cost: 250, icon: FootprintsIcon, tone: 'orange' },
+    { label: 'ZRĘCZNOŚĆ', value: 4, cost: 200, icon: Wind, tone: 'orange' },
+    { label: 'TECHNIKA', value: 3, cost: 150, icon: Crosshair, tone: 'orange' },
+    { label: 'CHARAKTER', value: 3, cost: 150, icon: Users, tone: 'orange' },
+  ]);
+  const [availablePoints, setAvailablePoints] = useState(3);
+  const displayName = gameData.nickname.toUpperCase();
+  const increaseStat = (label: string) => {
+    if (!availablePoints) {
+      onNotice('Brak dostępnych punktów rozwoju.');
+      return;
+    }
+    setStats((current) => current.map((stat) => stat.label === label ? { ...stat, value: stat.value + 1 } : stat));
+    setAvailablePoints((current) => current - 1);
+    onNotice(`Rozwinięto statystykę: ${label.toLowerCase()}.`);
+  };
+  const decreaseStat = (label: string) => {
+    setStats((current) => current.map((stat) => stat.label === label && stat.value > 1 ? { ...stat, value: stat.value - 1 } : stat));
+  };
+  const bonuses = [
+    ['Premia gangowa', '+10% do zarobków za pracę', '2 dni', Crown],
+    ['Dobra kondycja', '+5% do regeneracji energii', '1 dzień', Heart],
+    ['Lepszy refleks', '+5% szansy na unik w walce', '6 godzin', Wind],
+    ['Szacunek na dzielni', '+5% do reputacji', '3 dni', Users],
+  ] as const;
+  const perks = [
+    ['TWARDZIEL', '+5% do obrażeń w walce', 'ODBLOKOWANO', Dumbbell],
+    ['ODBLOKUJ', 'Odblokuj na poziomie 10', '', LockKeyhole],
+    ['ODBLOKUJ', 'Odblokuj na poziomie 15', '', LockKeyhole],
+    ['ODBLOKUJ', 'Odblokuj na poziomie 20', '', LockKeyhole],
+  ] as const;
+  const progress = [
+    ['Osiągnij poziom 10', '8 / 10', 80, BarChart3],
+    ['Podnieś siłę do 7', '5 / 7', 71, Dumbbell],
+    ['Dołącz do gangu', '1 / 1', 100, Users],
+    ['Wygraj 10 walk', '3 / 10', 30, Trophy],
+  ] as const;
+  return <section className="character-view" data-testid="character-view">
+    <header className="character-heading">
+      <div><span className="eyebrow">TWOJA POSTAĆ</span><h1>TWOJA POSTAĆ</h1><p>ROZWIJAJ SIĘ. STAWAJ SIĘ SILNIEJSZY. ZDOBYWAJ PRZEWAGĘ.</p></div>
+      <blockquote>„To nie liczby się liczą.<br />Liczy się kim się stajesz.”</blockquote>
+      <strong>LEPSZY<br />WIĘZIEŃ<br />SILNIEJSZA<br />WERSJA<br /><em>CIEBIE</em></strong>
+    </header>
+    <div className="character-dashboard">
+      <div className="character-left">
+        <section className="character-panel character-profile"><h2>POSTAĆ</h2><div className="character-profile-content"><div className="character-large-portrait"><img src={prisonerAsset} alt={`Portret więźnia ${displayName}`} /><span>„Siła to wybór, nie okoliczność.”</span></div><div className="character-identity"><h3>{displayName}<button onClick={() => onNotice('Edycja profilu będzie dostępna wkrótce.')} aria-label="Edytuj profil"><UserRoundPen size={16} /></button></h3><strong>POZIOM {gameData.level}</strong><div className="character-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div><dl><div><dt><Crown size={13} /> GANG</dt><dd>Wilcza Paczka <small>Założyciel</small></dd></div><div><dt><Award size={13} /> REPUTACJA</dt><dd className="positive">Pozytywna</dd></div><div><dt><CircleDollarSign size={13} /> GOTÓWKA</dt><dd>{gameData.gold} $</dd></div><div><dt><Gem size={13} /> PUNKTY PRESTIŻU</dt><dd>{gameData.points}</dd></div></dl></div></div></section>
+        <section className="character-panel character-status"><h2>STATUS</h2>{([['ZDROWIE', gameData.hp, Heart, 'health'], ['ENERGIA', gameData.energy, Zap, 'energy'], ['PSYCHIKA', 85, Brain, 'mind']] as const).map(([label, value, Icon, tone]) => <div className="character-status-row" key={String(label)}><Icon size={18} className={`status-${tone}`} /><span>{String(label)}</span><div><i className={`status-fill-${tone}`} style={{ width: `${Number(value)}%` }} /></div><b>{value} / 100</b></div>)}</section>
+      </div>
+      <section className="character-panel character-stats"><div className="character-panel-heading"><h2>STATYSTYKI</h2><span>DOSTĘPNE PUNKTY: <b>{availablePoints}</b></span></div>{stats.map(({ label, value, cost, icon: Icon, tone }) => <div className="character-stat-row" key={label}><Icon size={19} className={`stat-${tone}`} /><strong>{label}</strong><button onClick={() => decreaseStat(label)} aria-label={`Zmniejsz ${label}`}><span>−</span></button><b>{value}</b><button className="character-stat-plus" onClick={() => increaseStat(label)} aria-label={`Zwiększ ${label}`}><Plus size={17} /></button><small>Koszt:<br /><b>{cost} $</b></small></div>)}<p className="character-stats-note"><Info size={14} /> Zwiększaj statystyki, aby być skuteczniejszym w walce, pracy, misjach i na czarnym rynku.</p></section>
+      <div className="character-right">
+        <section className="character-panel character-bonuses"><div className="character-panel-heading"><h2>AKTYWNE BONUSY <Info size={13} /></h2></div>{bonuses.map(([name, copy, time, Icon]) => <div className="character-bonus" key={name}><Icon size={19} /><span><strong>{name}</strong><small>{copy}</small></span><time>{time}</time></div>)}</section>
+        <section className="character-panel character-perks"><div className="character-panel-heading"><h2>ATUTY / UMIEJĘTNOŚCI</h2><button onClick={() => onNotice('Lista wszystkich atutów będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div><div className="character-perk-grid">{perks.map(([name, copy, status, Icon], index) => <button className={`character-perk ${index === 0 ? 'unlocked' : ''}`} key={`${name}-${index}`} onClick={() => onNotice(index === 0 ? 'Atut Twardziel jest aktywny.' : copy)}><Icon size={21} /><strong>{index === 0 ? name : <LockKeyhole size={14} />}</strong><small>{index === 0 ? copy : copy}</small>{status && <em>{status}</em>}</button>)}</div></section>
+      </div>
+    </div>
+    <section className="character-panel character-progress"><div className="character-panel-heading"><h2>POSTĘP ROZWOJU</h2></div><div className="character-progress-grid">{progress.map(([label, value, percent, Icon]) => <div className="character-progress-card" key={label}><Icon size={21} /><span><strong>{label}</strong><div><i style={{ width: `${percent}%` }} /></div></span><small>{value}</small></div>)}</div></section>
+  </section>;
+}
+
+function GangView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [tab, setTab] = useState('PRZEGLĄD');
+  const [treasury, setTreasury] = useState(12450);
+  const tabs = [
+    { label: 'PRZEGLĄD', icon: Shield },
+    { label: 'CZŁONKOWIE', icon: Users },
+    { label: 'ROZWÓJ', icon: BarChart3 },
+    { label: 'WOJNY', icon: Swords },
+    { label: 'SKARBIEC', icon: Archive },
+    { label: 'MISJE GANGU', icon: Trophy },
+    { label: 'USTAWIENIA', icon: Settings },
+  ];
+  const members = [
+    ['F1QU', 'Założyciel', '8', 'Online', '—'],
+    ['Kamil', 'Oficer', '12', 'Online', '•••'],
+    ['StaryDozor', 'Oficer', '10', 'Online', '•••'],
+    ['Beton', 'Członek', '9', '2h temu', '•••'],
+    ['Malina', 'Członek', '7', '5h temu', '•••'],
+    ['Cichy', 'Rekrut', '5', '1 dzień temu', '•••'],
+    ['Rzeźnik', 'Rekrut', '4', '3 dni temu', '•••'],
+  ];
+  const events = [
+    ['12.05', 'F1QU awansował gracza Kamil do rangi Oficer.'],
+    ['11.05', 'Gang wygrał wojnę z Czerwone Węże.'],
+    ['10.05', 'Nowy członek: StaryDozor.'],
+    ['08.05', 'Ukończono misję gangową: Przemyt.'],
+    ['07.05', 'Wpłacono 5 000 $ do skarbca.'],
+  ];
+  const notify = (message: string) => onNotice(message);
+  return <section className="gang-view" data-testid="gang-view">
+    <header className="gang-heading">
+      <div><span className="eyebrow">GANG</span><h1>GANG</h1><p>TWÓJ GANG. TWOJE ZASADY. RAZEM TWORZYMY SIŁĘ.</p></div>
+      <aside className="gang-founder"><Crown size={18} /><div><b>ZAŁOŻYCIEL</b><strong>F1QU</strong><small>OD 12.04.2025</small></div><button onClick={() => notify('Edycja emblematu będzie dostępna wkrótce.')}>EDYTUJ EMBLEMAT</button></aside>
+      <div className="gang-quote">LOJALNOŚĆ<br />SIŁA<br />SZACUNEK<br />WOLNOŚĆ<br /><em>NAWET TUTAJ</em></div>
+    </header>
+    <section className="gang-identity">
+      <div className="gang-emblem"><Crown size={75} /><Swords size={50} /></div>
+      <div className="gang-identity-copy"><h2>WILCZA PACZKA <button onClick={() => notify('Nazwa gangu będzie można zmienić później.')}><UserRoundPen size={14} /></button></h2><p>„Zawsze razem. Zawsze do końca.”</p><div className="gang-badges"><span>★ POZIOM 3</span><span><Users size={13} /> 12 CZŁONKÓW</span><span>♟ REPUTACJA: <b>POZYTYWNA</b></span></div><div className="gang-xp"><i style={{ width: '45%' }} /><small>450 / 1 000 XP</small></div></div>
+      <button className="gang-develop-button" onClick={() => setTab('ROZWÓJ')}>ROZWÓJ GANGU <ChevronRight size={13} /></button>
+    </section>
+    <nav className="gang-tabs" role="tablist">{tabs.map(({ label, icon: TabIcon }) => <button key={label} className={tab === label ? 'active' : ''} onClick={() => { setTab(label); notify(`${label}: panel zostanie otwarty wkrótce.`); }} role="tab" aria-selected={tab === label}><TabIcon size={14} />{label}</button>)}</nav>
+    <div className="gang-dashboard">
+      <div className="gang-main-column">
+        <section className="gang-panel gang-stats"><h3>STATYSTYKI GANGU</h3><div className="gang-stat-grid"><div><Users size={19} /><b>12</b><span>CZŁONKÓW</span></div><div><Award size={19} /><b>3</b><span>POZIOM</span></div><div><Trophy size={19} /><b>145</b><span>PUNKTY PRESTIŻU</span></div><div><Swords size={19} /><b>8</b><span>WYGRANE WOJNY</span></div></div></section>
+        <section className="gang-panel gang-members"><div className="gang-panel-title"><h3>CZŁONKOWIE GANGU</h3><button onClick={() => notify('Zarządzanie członkami będzie dostępne wkrótce.')}>ZARZĄDZAJ CZŁONKAMI <ChevronRight size={12} /></button></div><div className="gang-member-head"><span>#</span><span>NICK</span><span>RANGA</span><span>POZIOM</span><span>AKTYWNOŚĆ</span><span> </span></div>{members.map(([nick, rank, level, status, more], index) => <div className="gang-member-row" key={nick}><span>{index + 1}</span><b>{nick}</b><span className={rank === 'Założyciel' ? 'founder-text' : ''}>{rank}</span><span>{level}</span><span className={status === 'Online' ? 'online' : 'away'}><i />{status}</span><span>{more}</span></div>)}<small className="gang-member-count">Pokazano 7 z 12 członków <button onClick={() => notify('Wyświetlasz wszystkich członków gangu.')}>ZOBACZ WSZYSTKICH <ChevronRight size={11} /></button></small></section>
+      </div>
+      <div className="gang-middle-column">
+        <section className="gang-panel gang-benefits"><h3>KORZYŚCI GANGU</h3>{[['+3% do zarobków za pracę', BriefcaseBusiness], ['+5% do skuteczności w walkach', Swords], ['Dostęp do specjalnych misji gangowych', Crown], ['Niższe ceny na czarnym rynku', Coins], ['Wspólny skarbiec', Archive]].map(([text, Icon]) => <div key={String(text)}><Icon size={15} /><span>{String(text)}</span></div>)}</section>
+        <section className="gang-panel gang-treasury"><div className="gang-panel-title"><h3>SKARBIEC GANGU</h3><button onClick={() => notify('Historia skarbca będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><div className="gang-treasury-balance"><Coins size={26} /><span><small>SALDO</small><strong>{treasury.toLocaleString('pl-PL')} $</strong></span><button onClick={() => { setTreasury((value) => value + 500); notify('Wpłacono 500 $ do skarbca.'); }}>WPŁAĆ</button><button onClick={() => notify('Wypłata wymaga rangi oficera.')}>WYPŁAĆ</button></div><h4>OSTATNIE TRANSAKCJE</h4><div className="gang-transactions"><span>12.05 <b>F1QU wpłacił 5 000 $</b></span><span>10.05 <b>Kamil wypłacił 2 500 $</b></span><span>08.05 <b>Wpłata na wojnę: -1 000 $</b></span><span>06.05 <b>Malina wpłaciła 3 000 $</b></span></div></section>
+      </div>
+      <div className="gang-side-column">
+        <section className="gang-panel gang-events"><div className="gang-panel-title"><h3>AKTUALNE WYDARZENIA</h3><button onClick={() => notify('Wyświetlasz wszystkie wydarzenia.')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div>{events.map(([date, text]) => <div key={date + text}><time>{date}</time><span>{text}</span></div>)}</section>
+        <section className="gang-panel gang-mission"><div className="gang-panel-title"><h3>MISJA GANGOWA</h3><button onClick={() => notify('Wyświetlasz wszystkie misje gangowe.')}>ZOBACZ WSZYSTKIE <ChevronRight size={12} /></button></div><h4>KONTROLA KORYTARZA <em>AKTYWNA</em></h4><p>Przejmijcie kontrolę nad sektorem C. Wymaga minimum 3 członków.</p><div><Timer size={14} /> 05:12:37 <button onClick={() => notify('Drużyna została zebrana.')}>ZBIERZ DRUŻYNĘ</button></div><small>NAGRODA: <b>★ +500 EXP</b> &nbsp; + wpływy na dzielnicę</small></section>
+        <section className="gang-panel gang-promo"><BarChart3 size={23} /><div><h4>ROZBUDUJ SWÓJ GANG</h4><p>Zwiększ poziom gangu, aby odblokować nowe możliwości, wyższy limit członków i lepsze bonusy.</p><button onClick={() => setTab('ROZWÓJ')}>ZOBACZ ROZWÓJ <ChevronRight size={11} /></button></div></section>
+      </div>
+    </div>
+  </section>;
+}
+
+type MarketCategory = 'ALL' | 'USABLE' | 'GEAR' | 'OTHER';
+type MarketItem = {
+  id: string;
+  name: string;
+  category: Exclude<MarketCategory, 'ALL'>;
+  price: number;
+  owned: number;
+  description: string;
+  stat: string;
+  rarity: 'POSPOLITY' | 'NIEPOSPOLITY' | 'RZADKI';
+  statIcon: typeof Shield;
+  icon: typeof Shield;
+  iconClass: string;
+};
+
+const marketItems: MarketItem[] = [
+  { id: 'rose', name: 'RÓŻA', category: 'OTHER', price: 250, owned: 0, description: 'Daje siłę, kiedy jest naprawdę ciężko.', stat: '+3 Siła', rarity: 'POSPOLITY', statIcon: Dumbbell, icon: Heart, iconClass: 'market-art-rose' },
+  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', price: 80, owned: 3, description: 'Zmniejszają stres i poprawiają nastrój.', stat: '-10 Stres', rarity: 'POSPOLITY', statIcon: Heart, icon: Wind, iconClass: 'market-art-cigarettes' },
+  { id: 'knife', name: 'NÓŻ', category: 'GEAR', price: 400, owned: 0, description: 'Niebezpieczne narzędzie. Przydaje się w trudnych sytuacjach.', stat: '+5 Zręczność', rarity: 'NIEPOSPOLITY', statIcon: Crosshair, icon: Swords, iconClass: 'market-art-knife' },
+  { id: 'supplement', name: 'ODŻYWKA', category: 'USABLE', price: 300, owned: 0, description: 'Wspomaga regenerację i rozwój mięśni.', stat: '+10 Kondycja', rarity: 'NIEPOSPOLITY', statIcon: Heart, icon: Dumbbell, iconClass: 'market-art-supplement' },
+  { id: 'phone', name: 'TELEFON', category: 'OTHER', price: 500, owned: 0, description: 'Pozwala na kontakt z innymi więźniami.', stat: '+4 Technika', rarity: 'RZADKI', statIcon: Wrench, icon: Smartphone, iconClass: 'market-art-phone' },
+  { id: 'tattoo', name: 'ZESTAW DO TATUAŻU', category: 'GEAR', price: 350, owned: 0, description: 'Trwała pamiątka. Zwiększa respekt.', stat: '+5 Charakter', rarity: 'NIEPOSPOLITY', statIcon: Crown, icon: Award, iconClass: 'market-art-tattoo' },
+  { id: 'tablets', name: 'TABLETKI', category: 'USABLE', price: 200, owned: 0, description: 'Pomagają się skupić i działają pobudzająco.', stat: '+10 Energia', rarity: 'POSPOLITY', statIcon: Zap, icon: Plus, iconClass: 'market-art-tablets' },
+  { id: 'beer', name: 'BIMBER', category: 'USABLE', price: 180, owned: 0, description: 'Mocny alkohol z więziennej produkcji. Poprawia nastrój, ale ma skutki uboczne.', stat: '-15 Stres   -10 Kondycja', rarity: 'POSPOLITY', statIcon: Heart, icon: Droplets, iconClass: 'market-art-beer' },
+  { id: 'lockpick', name: 'WYTRYCHY', category: 'GEAR', price: 450, owned: 0, description: 'Ułatwiają otwieranie zamkniętych drzwi.', stat: '+10 Technika', rarity: 'RZADKI', statIcon: LockKeyhole, icon: Wrench, iconClass: 'market-art-lockpick' },
+];
+
+function MarketView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [cash, setCash] = useState(1250);
+  const [items, setItems] = useState(marketItems);
+  const filteredItems = items;
+
+  const buyItem = (item: MarketItem) => {
+    if (cash < item.price) {
+      onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - cash} $.`);
+      return;
+    }
+    setCash((current) => current - item.price);
+    setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, owned: entry.owned + 1 } : entry));
+    onNotice(`Kupiono: ${item.name.toLowerCase()}.`);
+  };
+
+  return <section className="market-view market-reference-view" data-testid="market-view">
+    <header className="market-hero">
+      <div className="market-hero-copy">
+        <h1>CZARNY RYNEK</h1>
+        <p>TUTAJ ZNAJDZIESZ RZECZY, KTÓRYCH NIE KUPISZ W SKLEPIE.</p>
+      </div>
+      <div className="market-hero-mark">DOBRE<br />RZECZY<br />MAJĄ<br /><em>SWOJĄ CENĘ</em></div>
+    </header>
+    <div className="market-refresh-strip">
+      <button className="market-refresh-offer" onClick={() => onNotice('Asortyment został odświeżony.')}><RefreshCw size={26} /><span><strong>ODŚWIEŻ ASORTYMENT</strong><small>Nowe przedmioty za: <b>3 pkt</b></small></span><em><Crown size={16} /> 3</em></button>
+      <div className="market-offer-time"><Timer size={19} /><span>DO KOŃCA OFERTY:</span><b>00:42:17</b></div>
+      <div className="market-offer-note">Asortyment zmienia się automatycznie.<br />Niektóre przedmioty są unikalne.</div>
+    </div>
+    <div className="market-item-grid">
+      {filteredItems.map((item) => { const ItemIcon = item.icon; const StatIcon = item.statIcon; return <article key={item.id} className={`market-item-card ${item.iconClass}`} data-testid={`market-item-${item.id}`}>
+        <div className="market-item-art"><ItemIcon size={68} strokeWidth={1.05} /></div>
+        <div className="market-item-copy"><div className="market-item-title"><h2>{item.name}</h2><em className={`market-rarity market-rarity-${item.rarity.toLowerCase()}`}>{item.rarity}</em></div><p>{item.description}</p><span className="market-item-stat"><StatIcon size={15} /> {item.stat}</span></div>
+        <div className="market-item-footer"><strong>$ {item.price}</strong><button onClick={() => buyItem(item)} data-testid={`market-buy-${item.id}`}>KUP</button></div>
+      </article>; })}
+    </div>
+    <footer className="market-footnote"><span><Info size={16} /> Ceny na czarnym rynku mogą się zmieniać. Nie wszystko jest legalne. Korzystasz na własne ryzyko.</span>
+      <em>„Nie wszystko da się kupić...”</em>
+    </footer>
+  </section>;
+}
+
+type MissionTab = 'available' | 'active' | 'completed';
+type MissionRiskTone = 'low' | 'medium' | 'high';
+
+type Mission = {
+  id: string;
+  title: string;
+  summary: string;
+  detail: string;
+  risk: string;
+  riskTone: MissionRiskTone;
+  reward: string;
+  duration: string;
+  chance: number;
+  icon: typeof Archive;
+  image: string;
+  status: MissionTab;
+};
+
+const missions: Mission[] = [
+  { id: 'smuggling', title: 'PRZEMYT', summary: 'Dostarcz paczkę do wskazanej celi na bloku C.', detail: 'Jeden z chłopaków z bloku C potrzebuje paczki. Twoim zadaniem jest dostarczyć ją do celi 214. Unikaj strażników i nie daj się złapać.', risk: 'ŚREDNIE RYZYKO', riskTone: 'medium', reward: '+180 EXP', duration: '30 minut', chance: 72, icon: Archive, image: cellBackground, status: 'available' },
+  { id: 'favor', title: 'PRZYSŁUGA', summary: 'Porozmawiaj z Rysiem na bloku B. Ma dla ciebie robotę.', detail: 'Ryś ma dla ciebie prostą przysługę. Spotkaj się z nim na bloku B i wysłuchaj, co trzeba załatwić.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+120 EXP', duration: '15 minut', chance: 88, icon: Users, image: cellReference, status: 'available' },
+  { id: 'debt', title: 'DŁUG', summary: 'Odzyskaj dług od wskazanego więźnia.', detail: 'Ktoś zaciągnął dług i liczy, że sprawa sama ucichnie. Odzyskaj należność, zanim stracisz szacunek na całym bloku.', risk: 'WYSOKIE RYZYKO', riskTone: 'high', reward: '+250 EXP', duration: '45 minut', chance: 48, icon: CircleDollarSign, image: registrationEnvironment, status: 'available' },
+  { id: 'wrong-man', title: 'NIE SWÓJ CZŁOWIEK', summary: 'Zajmij się wskazanym więźniem. Nie zadawaj pytań.', detail: 'To zlecenie nie zostawia miejsca na błędy. Zrób swoje i nie pozwól, by ktokolwiek połączył cię ze sprawą.', risk: 'WYSOKIE RYZYKO', riskTone: 'high', reward: '+200 EXP', duration: '40 minut', chance: 41, icon: Crosshair, image: cellReference, status: 'available' },
+  { id: 'observation', title: 'OBSERWACJA', summary: 'Zbierz informacje o ruchach strażników.', detail: 'Obserwuj korytarz, zapamiętaj zmiany i wróć z informacjami, które mogą przydać się całemu blokowi.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+150 EXP', duration: '30 minut', chance: 92, icon: Eye, image: registrationEnvironment, status: 'available' },
+  { id: 'first-steps', title: 'PIERWSZE KROKI', summary: 'Zdobądź 100 $ z pracy lub walk.', detail: 'Zdobądź pieniądze i pokaż, że potrafisz zadbać o siebie za kratami.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+100 EXP', duration: '20 minut', chance: 96, icon: CheckCircle2, image: cellReference, status: 'active' },
+  { id: 'completed-delivery', title: 'DOSTAWA ZAKOŃCZONA', summary: 'Paczka dotarła na właściwe miejsce.', detail: 'Zlecenie zostało wykonane. Blok pamięta, kto potrafi dotrzymać słowa.', risk: 'NISKIE RYZYKO', riskTone: 'low', reward: '+140 EXP', duration: '20 minut', chance: 100, icon: CheckCircle2, image: cellBackground, status: 'completed' },
+];
+
+function MissionsView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [tab, setTab] = useState<MissionTab>('available');
+  const [selectedId, setSelectedId] = useState('smuggling');
+  const [startedMission, setStartedMission] = useState<string | null>(null);
+  const visibleMissions = missions.filter((mission) => mission.status === tab);
+  const selectedMission = visibleMissions.find((mission) => mission.id === selectedId) ?? visibleMissions[0];
+  const tabs: Array<{ id: MissionTab; label: string }> = [
+    { id: 'available', label: 'DOSTĘPNE MISJE' },
+    { id: 'active', label: 'AKTYWNE MISJE' },
+    { id: 'completed', label: 'UKOŃCZONE MISJE' },
+  ];
+
+  const selectTab = (nextTab: MissionTab) => {
+    setTab(nextTab);
+    const firstMission = missions.find((mission) => mission.status === nextTab);
+    if (firstMission) setSelectedId(firstMission.id);
+  };
+
+  return <section className="missions-view" style={{ '--missions-art-url': `url("${prisonArtwork}")` } as CSSProperties} data-testid="missions-view">
+    <header className="missions-heading">
+      <span className="eyebrow">MISJE</span>
+      <h1>SPRAWY, KTÓRE MAJĄ ZNACZENIE</h1>
+      <p>Podejmuj się zadań, zdobywaj doświadczenie i buduj swoją pozycję. Nie każda robota jest legalna, ale każda coś daje.</p>
+    </header>
+    <div className="missions-layout">
+      <section className="missions-list-panel game-panel">
+        <div className="missions-tabs" role="tablist" aria-label="Zakładki misji">
+          {tabs.map((item) => <button key={item.id} className={tab === item.id ? 'active' : ''} onClick={() => selectTab(item.id)} role="tab" aria-selected={tab === item.id}>{item.label}</button>)}
+        </div>
+        <div className="missions-card-list">
+          {visibleMissions.map((mission) => {
+            const Icon = mission.icon;
+            return <button key={mission.id} className={`mission-card ${selectedMission?.id === mission.id ? 'selected' : ''}`} onClick={() => setSelectedId(mission.id)} style={{ '--mission-card-image': `url("${mission.image}")` } as CSSProperties} data-testid={`mission-card-${mission.id}`}>
+              <span className="mission-card-image" />
+              <span className="mission-card-copy">
+                <span className="mission-card-title"><strong>{mission.title}</strong><em className={`mission-risk mission-risk-${mission.riskTone}`}>{mission.risk}</em></span>
+                <small>{mission.summary}</small>
+                <span className="mission-card-meta"><span><Zap size={13} /> {mission.reward}</span><span><Users size={13} /> {mission.riskTone === 'low' ? 'ŁATWA' : mission.riskTone === 'high' ? 'TRUDNA' : 'ŚREDNIA'}</span><span><Timer size={13} /> {mission.duration}</span></span>
+              </span>
+              <Icon className="mission-card-icon" size={18} />
+              <ChevronRight className="mission-card-chevron" size={19} />
+            </button>;
+          })}
+        </div>
+      </section>
+      {selectedMission && <aside className="mission-detail-panel game-panel">
+        <div className="mission-detail-topline"><h2>{selectedMission.title}</h2><em className={`mission-risk mission-risk-${selectedMission.riskTone}`}>{selectedMission.risk}</em></div>
+        <div className="mission-detail-art" style={{ backgroundImage: `url("${selectedMission.image}")` }} role="img" aria-label={`Ilustracja misji ${selectedMission.title.toLowerCase()}`} />
+        <p className="mission-detail-description">{selectedMission.detail}</p>
+        <div className="mission-stats">
+          <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><strong>{selectedMission.chance}%</strong><i><b style={{ width: `${selectedMission.chance}%` }} /></i></div>
+          <div><Timer size={16} /><span>CZAS TRWANIA</span><strong>{selectedMission.duration}</strong></div>
+          <div><Zap size={16} /><span>NAGRODA ZA SUKCES</span><strong>{selectedMission.reward}</strong></div>
+          <div><CircleDollarSign size={16} /><span>MOŻLIWY DODATKOWY ŁUP</span><small>$ &nbsp; PUNKTY &nbsp; PRZEDMIOT</small></div>
+        </div>
+        <div className="mission-consequence"><Flag size={18} /><span><strong>KONSEKWENCJE PORAŻKI</strong>W przypadku niepowodzenia trafisz do izolatki.</span></div>
+        <button className="mission-start-button" onClick={() => { setStartedMission(selectedMission.id); onNotice(`Rozpoczynasz misję: ${selectedMission.title.toLowerCase()}.`); }}><span>{startedMission === selectedMission.id ? 'MISJA W TOKU' : 'ROZPOCZNIJ MISJĘ'}</span><ChevronRight size={20} /></button>
+      </aside>}
+    </div>
+  </section>;
+}
+
+type MissionCategory = 'ALL' | 'STORY' | 'URGENT' | 'GANG' | 'SPECIAL';
+
+type ReferenceMission = {
+  id: string;
+  title: string;
+  description: string;
+  detail: string;
+  category: Exclude<MissionCategory, 'ALL'>;
+  risk: string;
+  riskTone: 'easy' | 'medium' | 'hard' | 'special';
+  energy: number;
+  chance: number;
+  reward: string;
+  consequence: string;
+  requirement: string;
+  icon: typeof Archive;
+};
+
+const referenceMissions: ReferenceMission[] = [
+  { id: 'message', title: 'PRZEKAŻ WIADOMOŚĆ', description: 'Zanieś wiadomość do wskazanej celi. Szybka robota.', detail: 'Jeden z chłopaków z bloku B potrzebuje, żebyś przekazał wiadomość do celi 107. Prosta sprawa, nikt nie powinien zwrócić na to uwagi.', category: 'STORY', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 88, reward: '+100 EXP', consequence: 'Izolatka (1 - 3h)', requirement: 'Brak', icon: Mail },
+  { id: 'package', title: 'DORĘCZ PACZKĘ', description: 'Przenieś małą paczkę przez korytarz.', detail: 'Paczka musi trafić do właściwej celi, zanim zmieni się straż na korytarzu.', category: 'STORY', risk: 'ŁATWA', riskTone: 'easy', energy: 15, chance: 75, reward: '+150 EXP', consequence: 'Izolatka (1 - 3h)', requirement: 'Brak', icon: Archive },
+  { id: 'info', title: 'ZDOBĄDŹ DANE', description: 'Zdobądź informacje z biura strażników.', detail: 'Potrzebujemy informacji o zmianach strażników. Zajrzyj do biura i wróć z tym, co uda ci się usłyszeć.', category: 'URGENT', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 60, reward: '+250 EXP', consequence: 'Izolatka (2 - 4h)', requirement: 'Poziom 2', icon: ScrollText },
+  { id: 'recover-debt', title: 'ODZYSKAJ DŁUG', description: 'Odwiedź dłużnika z bloku C i odzyskaj kasę.', detail: 'Dług sam się nie spłaci. Znajdź wskazanego więźnia i odzyskaj należność dla swojego oddziału.', category: 'URGENT', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 58, reward: '+250 EXP', consequence: 'Izolatka (2 - 5h)', requirement: 'Siła 3', icon: CircleDollarSign },
+  { id: 'smuggle', title: 'PRZEMYĆ PRZEDMIOT', description: 'Przenieś zakazany przedmiot.', detail: 'Towar jest mały, ale kontrola na bloku jest dziś wyjątkowo dokładna. Nie daj się złapać.', category: 'GANG', risk: 'ŚREDNIA', riskTone: 'medium', energy: 25, chance: 55, reward: '+300 EXP', consequence: 'Izolatka (3 - 6h)', requirement: 'Gang', icon: LockKeyhole },
+  { id: 'blackmail', title: 'SZANTAŻUJ', description: 'Zdobądź kompromat na wskazaną osobę.', detail: 'Każdy ma coś do ukrycia. Znajdź słaby punkt wskazanej osoby i wykorzystaj go dla dobra oddziału.', category: 'GANG', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 45, reward: '+400 EXP', consequence: 'Izolatka (4 - 8h)', requirement: 'Reputacja 5', icon: Users },
+  { id: 'guard', title: 'ROZPROSZ STRAŻNIKA', description: 'Odciągnij uwagę strażnika w określonym miejscu.', detail: 'Zrób zamieszanie dokładnie wtedy, gdy reszta ekipy będzie tego potrzebować.', category: 'GANG', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 42, reward: '+400 EXP', consequence: 'Izolatka (4 - 8h)', requirement: 'Gang', icon: Crosshair },
+  { id: 'outside', title: 'DOSTAWA NA ZEWNĄTRZ', description: 'Przekaż paczkę podczas przepustki na dziedziniec.', detail: 'Paczka poczeka na zewnątrz. Twoim zadaniem jest przekazać ją bez wzbudzania podejrzeń.', category: 'SPECIAL', risk: 'TRUDNA', riskTone: 'hard', energy: 35, chance: 38, reward: '+500 EXP', consequence: 'Izolatka (6 - 12h)', requirement: 'Poziom 5', icon: Archive },
+  { id: 'escape', title: 'WYKONAJ WYROK', description: 'Pozbądź się wskazanego więźnia.', detail: 'To zlecenie zmieni układ sił na bloku. Zastanów się, czy jesteś gotowy ponieść konsekwencje.', category: 'SPECIAL', risk: 'BARDZO TRUDNA', riskTone: 'hard', energy: 40, chance: 25, reward: '+750 EXP', consequence: 'Izolatka (12 - 24h)', requirement: 'Reputacja 10', icon: Swords },
+  { id: 'big-job', title: 'WIELKA ROBOTA', description: 'Zrealizuj złożone zadanie dla wpływowej grupy.', detail: 'Największe zlecenia wymagają pełnego zaufania. Nagroda jest wysoka, ale cena porażki również.', category: 'SPECIAL', risk: 'SPECJALNA', riskTone: 'special', energy: 50, chance: 20, reward: '+1 000 EXP', consequence: 'Izolatka (24h)', requirement: 'Gang + poziom 8', icon: Crown },
+];
+
+function MissionsReferenceView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [category, setCategory] = useState<MissionCategory>('ALL');
+  const [selectedId, setSelectedId] = useState('message');
+  const selected = referenceMissions.find((mission) => mission.id === selectedId) ?? referenceMissions[0];
+  const visible = category === 'ALL' ? referenceMissions : referenceMissions.filter((mission) => mission.category === category);
+  const filters: Array<{ id: MissionCategory; label: string; icon: typeof Archive }> = [
+    { id: 'ALL', label: 'WSZYSTKIE', icon: Archive },
+    { id: 'STORY', label: 'FABUŁA', icon: Crown },
+    { id: 'URGENT', label: 'DORAŹNE', icon: Swords },
+    { id: 'GANG', label: 'GANGOWE', icon: Users },
+    { id: 'SPECIAL', label: 'SPECJALNE', icon: Award },
+  ];
+  return <section className="missions-reference-view" style={{ '--missions-reference-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-reference-view">
+    <header className="missions-reference-heading">
+      <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WIĘZIENIE DAJE MOŻLIWOŚCI. NIE WSZYSTKIE SĄ BEZPIECZNE.</p></div>
+      <div className="missions-reference-slogan">TU KAŻDA DECYZJA<br />MA KONSEKWENCJE</div>
+    </header>
+    <div className="missions-reference-toolbar">
+      <div className="missions-reference-filters" role="tablist">
+        {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={category === id ? 'active' : ''} onClick={() => { setCategory(id); const first = id === 'ALL' ? referenceMissions[0] : referenceMissions.find((mission) => mission.category === id); if (first) setSelectedId(first.id); }} role="tab" aria-selected={category === id}><FilterIcon size={14} />{label}</button>)}
+      </div>
+      <div className="missions-reference-refresh"><span>NOWE MISJE ZA: <b>03:17:26</b></span><button onClick={() => onNotice('Lista misji została odświeżona.')}><ArrowRight size={14} /> ODŚWIEŻ</button><strong>50 $</strong></div>
+    </div>
+    <div className="missions-reference-content">
+      <section className="missions-reference-table game-panel">
+        <div className="missions-reference-table-head"><span>NAZWA MISJI</span><span>ENERGIA</span><span>SZANSA</span><span>NAGRODA (EXP)</span></div>
+        <div className="missions-reference-rows">
+          {visible.map((mission) => {
+            const MissionIcon = mission.icon;
+            return <button key={mission.id} className={`missions-reference-row ${selected.id === mission.id ? 'selected' : ''} mission-row-${mission.riskTone}`} onClick={() => setSelectedId(mission.id)} data-testid={`reference-mission-${mission.id}`}>
+              <span className="missions-row-name"><MissionIcon size={19} /><span><strong>{mission.title}</strong><small>{mission.description}</small></span><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></span>
+              <b><Zap size={14} /> {mission.energy}</b><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b><b className="mission-reward">{mission.reward}</b>
+            </button>;
+          })}
+        </div>
+      </section>
+      <aside className="missions-reference-detail game-panel">
+        <div className="missions-detail-heading"><h2>{selected.title}</h2><em className={`mission-reference-risk risk-${selected.riskTone}`}>{selected.risk}</em></div>
+        <p>{selected.detail}</p>
+        <div className="missions-detail-facts">
+          <div><Zap size={17} /><span>KOSZT ENERGII</span><b>{selected.energy}</b></div>
+          <div><Crosshair size={17} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${selected.riskTone}`}>{selected.chance}%</b></div>
+          <div><Award size={17} /><span>NAGRODA (EXP)</span><b className="mission-reward">{selected.reward}</b></div>
+          <div><Archive size={17} /><span>MOŻLIWE DODATKOWO</span><b>$ / punkty (losowo)</b></div>
+          <div><Flag size={17} /><span>KONSEKWENCJA PORAŻKI</span><b>{selected.consequence}</b></div>
+          <div><Users size={17} /><span>WYMAGANIA</span><b>{selected.requirement}</b></div>
+        </div>
+        <button className="missions-reference-start" onClick={() => onNotice(`Rozpoczynasz misję: ${selected.title.toLowerCase()}.`)}><ArrowRight size={17} /> ROZPOCZNIJ MISJĘ</button>
+        <div className="missions-reference-help"><Eye size={15} /> Wynik misji zależy od Twoich statystyk, wyposażenia i aktualnej sytuacji w więzieniu.</div>
+      </aside>
+    </div>
+  </section>;
+}
+
+type MissionCard = {
+  id: string;
+  title: string;
+  description: string;
+  risk: string;
+  riskTone: 'easy' | 'medium' | 'hard' | 'special';
+  energy: number;
+  chance: number;
+  reward: string;
+  extra: string;
+  icon: typeof Archive;
+};
+
+const missionCards: MissionCard[] = [
+  { id: 'handoff', title: 'PRZEKAŻ', description: 'Dostarcz wiadomość do wskazanej osoby z bloku B. Nikt nie może się dowiedzieć.', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 82, reward: '+120 EXP', extra: '$ / punkty / losowo', icon: Mail },
+  { id: 'smuggle-card', title: 'PRZEMYT', description: 'Przenieś małą paczkę z magazynu do celi 214. Uważaj na kontrolę.', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 64, reward: '+250 EXP', extra: '$ / punkty / losowo', icon: Archive },
+  { id: 'settlement', title: 'ROZLICZENIE', description: 'Daj nauczkę wskazanemu więźniowi z bloku C. Ma to wyglądać na przypadek.', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 48, reward: '+400 EXP', extra: '$ / punkty / losowo', icon: Users },
+  { id: 'evidence', title: 'ZDOBĄDŹ DOWODY', description: 'Zdobądź dokumenty ze strzeżonego biura. Wysokie ryzyko, duża nagroda.', risk: 'SPECJALNA', riskTone: 'special', energy: 40, chance: 32, reward: '+750 EXP', extra: '$ / punkty / losowo', icon: ScrollText },
+];
+
+function MissionsCardsView({ onNotice }: { onNotice: (message: string) => void }) {
+  const [startedId, setStartedId] = useState<string | null>(null);
+  return <section className="missions-cards-view" style={{ '--missions-cards-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-cards-view">
+    <header className="missions-cards-heading">
+      <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WYBIERZ MISJĘ I PODEJMIJ RYZYKO. KAŻDA DECYZJA MA KONSEKWENCJE.</p></div>
+      <div className="missions-cards-slogan">TU NIE MA<br />PRZYPADKÓW</div>
+    </header>
+    <div className="missions-cards-grid">
+      {missionCards.map((mission) => {
+        const MissionIcon = mission.icon;
+        return <article className={`mission-card-large mission-card-large-${mission.riskTone}`} key={mission.id}>
+          <div className="mission-card-large-top"><MissionIcon size={36} /><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></div>
+          <h2>{mission.title}</h2>
+          <p>{mission.description}</p>
+          <div className="mission-card-large-facts">
+            <div><Zap size={16} /><span>KOSZT ENERGII</span><b>{mission.energy}</b></div>
+            <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b></div>
+          </div>
+          <div className="mission-card-large-reward"><small>NAGRODA (EXP)</small><strong><Award size={18} /> {mission.reward}</strong></div>
+          <div className="mission-card-large-extra"><small>MOŻLIWE DODATKOWO</small><span><CircleDollarSign size={17} /> <Archive size={17} /> ?</span></div>
+          <button onClick={() => { setStartedId(mission.id); onNotice(`Rozpoczynasz misję: ${mission.title.toLowerCase()}.`); }}><ArrowRight size={17} /> {startedId === mission.id ? 'MISJA W TOKU' : 'ROZPOCZNIJ MISJĘ'}</button>
+        </article>;
+      })}
+    </div>
+    <footer className="missions-cards-footer">
+      <div className="missions-card-timer"><Archive size={26} /><span><small>NOWE MISJE ZA:</small><strong>01:58:27</strong></span></div>
+      <button onClick={() => onNotice('Wylosowano nową pulę misji.')}><ArrowRight size={17} /> LOSOWE MISJE <b>50 $</b></button>
+      <p><Eye size={16} /> Po ukończeniu misji otrzymasz nowe do wyboru. Dostępne misje zmieniają się automatycznie z czasem lub po użyciu opcji losowania.</p>
+    </footer>
+  </section>;
+}
+
+type InventoryFilter = 'ALL' | 'USABLE' | 'WEAPON' | 'OTHER';
+
+type InventoryItem = {
+  id: string;
+  name: string;
+  category: Exclude<InventoryFilter, 'ALL'>;
+  quantity: number;
+  description: string;
+  rarity: string;
+  icon: typeof Shield;
+};
+
+const inventoryItems: InventoryItem[] = [
+  { id: 'razor', name: 'ŻYLETKA', category: 'WEAPON', quantity: 1, description: 'Ostry kawałek metalu. Może być przydatny w wielu sytuacjach.', rarity: 'ZWYKŁY', icon: Swords },
+  { id: 'lighter', name: 'ZAPALNICZKA', category: 'USABLE', quantity: 1, description: 'Mała, wysłużona zapalniczka. Działa, kiedy naprawdę jej potrzebujesz.', rarity: 'ZWYKŁY', icon: Zap },
+  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', quantity: 3, description: 'Kilka papierosów. W bloku zawsze znajdzie się ktoś, kto ich potrzebuje.', rarity: 'ZWYKŁY', icon: Wind },
+  { id: 'bread', name: 'CHLEB', category: 'USABLE', quantity: 2, description: 'Porcja chleba ze stołówki. Prosta rzecz, ale nigdy nie wiadomo, kiedy się przyda.', rarity: 'ZWYKŁY', icon: Archive },
+  { id: 'water', name: 'WODA', category: 'USABLE', quantity: 1, description: 'Butelka wody na długi dzień za kratami.', rarity: 'ZWYKŁY', icon: Droplets },
+  { id: 'towel', name: 'RĘCZNIK', category: 'OTHER', quantity: 1, description: 'Szorstki ręcznik z łaźni. Nie wygląda dobrze, ale spełnia swoje zadanie.', rarity: 'ZWYKŁY', icon: Shield },
+  { id: 'soap', name: 'MYDŁO', category: 'USABLE', quantity: 1, description: 'Zwykłe więzienne mydło. Czystość też buduje reputację.', rarity: 'ZWYKŁY', icon: Droplets },
+  { id: 'bandage', name: 'BANDAŻ', category: 'USABLE', quantity: 2, description: 'Podstawowy opatrunek na drobne urazy po treningu lub walce.', rarity: 'ZWYKŁY', icon: Plus },
+  { id: 'notebook', name: 'NOTATNIK', category: 'OTHER', quantity: 1, description: 'Kilka pustych stron. Dobre pomysły warto zapisać, zanim znikną.', rarity: 'ZWYKŁY', icon: ScrollText },
+  { id: 'knife', name: 'NÓŻ', category: 'WEAPON', quantity: 1, description: 'Krótki, ostry nóż. Lepiej mieć go przy sobie niż szukać go w potrzebie.', rarity: 'ZWYKŁY', icon: Crosshair },
+];
+
+const inventoryEquipment = [
+  { id: 'head', label: 'GŁOWA', slot: 'Czapka', icon: Shield },
+  { id: 'face', label: 'TWARZ', slot: 'Maska', icon: UserRound },
+  { id: 'top', label: 'GÓRA', slot: 'Koszula', icon: ShirtIcon },
+  { id: 'bottom', label: 'NOGI', slot: 'Spodnie', icon: Archive },
+  { id: 'left-hand', label: 'DŁOŃ (L)', slot: 'Puste', icon: Swords },
+  { id: 'right-hand', label: 'DŁOŃ (P)', slot: 'Puste', icon: Crosshair },
+  { id: 'feet', label: 'BUTY', slot: 'Obuwie', icon: FootprintsIcon },
+];
+
+function InventoryView({ creator, onNotice }: { creator: CreatorState; onNotice: (message: string) => void }) {
+  const [filter, setFilter] = useState<InventoryFilter>('ALL');
+  const [selectedId, setSelectedId] = useState('razor');
+  const selectedItem = inventoryItems.find((item) => item.id === selectedId) ?? inventoryItems[0];
+  const filteredItems = filter === 'ALL' ? inventoryItems : inventoryItems.filter((item) => item.category === filter);
+  const filters: Array<{ id: InventoryFilter; label: string; icon?: typeof Shield }> = [
+    { id: 'ALL', label: 'WSZYSTKIE', icon: Backpack },
+    { id: 'USABLE', label: 'UŻYTKOWE', icon: Droplets },
+    { id: 'WEAPON', label: 'BROŃ', icon: Swords },
+    { id: 'OTHER', label: 'INNE', icon: Plus },
+  ];
+
+  const selectItem = (item: InventoryItem) => setSelectedId(item.id);
+
+  return <section className="inventory-view" style={{ '--inventory-art-url': `url("${cellReference}")` } as CSSProperties} data-testid="inventory-view">
+    <header className="inventory-heading">
+      <div>
+        <h1>EKWIPUNEK</h1>
+        <p>TWOJE PRZEDMIOTY. WSZYSTKO, CO MASZ PRZY SOBIE.</p>
+      </div>
+      <div className="inventory-heading-mark">NIEWIELE<br />RZECZY<br />ALE WSZYSTKO<br />MA ZNACZENIE.</div>
+    </header>
+    <div className="inventory-layout">
+      <section className="inventory-equipment-panel game-panel">
+        <div className="inventory-panel-title">WYPOSAŻENIE</div>
+        <div className="inventory-equipment-stage">
+          <div className="inventory-slot-column inventory-slot-column-left">
+            {inventoryEquipment.filter((slot) => ['head', 'top', 'left-hand'].includes(slot.id)).map((slot) => <InventoryEquipmentSlot key={slot.id} slot={slot} onClick={() => onNotice(`${slot.label}: miejsce wyposażenia jest gotowe.`)} />)}
+          </div>
+          <div className="inventory-character">
+            <GamePortrait creator={creator} />
+            <span className="inventory-character-shadow" />
+          </div>
+          <div className="inventory-slot-column inventory-slot-column-right">
+            {inventoryEquipment.filter((slot) => ['face', 'bottom', 'right-hand', 'feet'].includes(slot.id)).map((slot) => <InventoryEquipmentSlot key={slot.id} slot={slot} onClick={() => onNotice(`${slot.label}: miejsce wyposażenia jest gotowe.`)} />)}
+          </div>
+        </div>
+      </section>
+      <section className="inventory-items-panel game-panel">
+        <div className="inventory-items-header">
+          <div className="inventory-panel-title">PRZEDMIOTY <span>(8/20)</span></div>
+          <div className="inventory-filters" role="tablist" aria-label="Filtry ekwipunku">
+            {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} role="tab" aria-selected={filter === id} data-testid={`inventory-filter-${id.toLowerCase()}`}>{FilterIcon && <FilterIcon size={13} />}{label}</button>)}
+          </div>
+        </div>
+        <div className="inventory-item-grid">
+          {filteredItems.map((item) => <button key={item.id} className={`inventory-item-card ${selectedId === item.id ? 'selected' : ''}`} onClick={() => selectItem(item)} data-testid={`inventory-item-${item.id}`}>
+            <span className={`inventory-item-art inventory-art-${item.id}`}><item.icon size={39} strokeWidth={1.35} /></span>
+            <span className="inventory-item-name">{item.name}</span>
+            <b>{item.quantity}</b>
+          </button>)}
+          {Array.from({ length: Math.max(0, 10 - filteredItems.length) }).map((_, index) => <span className="inventory-item-card inventory-item-empty" key={`empty-${index}`} aria-hidden="true" />)}
+        </div>
+      </section>
+      <section className="inventory-detail-panel game-panel">
+        <div className={`inventory-detail-art inventory-art-${selectedItem.id}`}><selectedItem.icon size={88} strokeWidth={1.1} /></div>
+        <div className="inventory-detail-copy">
+          <div className="inventory-detail-title"><h2>{selectedItem.name}</h2><span>{selectedItem.rarity}</span></div>
+          <p>{selectedItem.description}</p>
+          <div className="inventory-detail-actions">
+            <button className="inventory-action-primary" onClick={() => onNotice(`Używasz przedmiotu: ${selectedItem.name.toLowerCase()}.`)}>UŻYJ</button>
+            <button onClick={() => onNotice(`Wyposażasz: ${selectedItem.name.toLowerCase()}.`)}>WYPOSAŻ</button>
+            <button onClick={() => onNotice(`Przenosisz: ${selectedItem.name.toLowerCase()}.`)}>PRZENIEŚ</button>
+            <button className="inventory-delete" aria-label={`Usuń ${selectedItem.name}`} onClick={() => onNotice(`Nie można usunąć ${selectedItem.name.toLowerCase()} w trybie demonstracyjnym.`)}><Archive size={17} /></button>
+          </div>
+        </div>
+        <span className="inventory-detail-count">Posiadasz: {selectedItem.quantity}</span>
+      </section>
+    </div>
+  </section>;
+}
+
+function InventoryEquipmentSlot({ slot, onClick }: { slot: (typeof inventoryEquipment)[number]; onClick: () => void }) {
+  const SlotIcon = slot.icon;
+  return <button className={`inventory-equipment-slot inventory-slot-${slot.id}`} onClick={onClick}><span>{slot.label}</span><SlotIcon size={slot.id === 'top' || slot.id === 'bottom' ? 36 : 29} /><small>{slot.slot}</small></button>;
 }
 
 type TrainingExercise = {
@@ -980,14 +1505,14 @@ function WorkView({ creator, onNotice }: { creator: CreatorState; onNotice: (mes
 }
 
 const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shield }> = [
-  { id: 'cell', label: 'CELA', icon: Shield },
+  { id: 'cell', label: 'TWOJA POSTAĆ', icon: Shield },
   { id: 'messages', label: 'WIADOMOŚCI', icon: MessageSquare },
   { id: 'fight', label: 'WALKA', icon: Swords },
   { id: 'training', label: 'TRENING', icon: Dumbbell },
   { id: 'work', label: 'PRACA', icon: BriefcaseBusiness },
   { id: 'equipment', label: 'EKWIPUNEK', icon: Backpack },
   { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
-  { id: 'quests', label: 'ZADANIA', icon: ScrollText },
+  { id: 'quests', label: 'MISJE', icon: ScrollText },
   { id: 'gang', label: 'GANG', icon: Users },
   { id: 'ranking', label: 'RANKING', icon: Trophy },
 ];

@@ -1,0 +1,398 @@
+Zaimplementuj teraz ekran „TWOJA POSTAĆ” w PrisonLIFE.
+
+NAJWAŻNIEJSZE:
+Nie projektuj własnego layoutu.
+Masz możliwie wiernie odwzorować załączoną referencję graficzną ekranu „Twoja Postać”.
+
+To jest ekran referencyjny dla tego widoku. Traktuj go jako SOURCE OF TRUTH dla układu, proporcji, hierarchii i rozmieszczenia elementów.
+
+==================================================
+1. ELEMENTY, KTÓRYCH NIE WOLNO ZMIENIAĆ
+==================================================
+
+BEZWZGLĘDNIE NIE ZMIENIAJ istniejącego:
+
+- logo PRISON LIFE,
+- górnego paska HUD,
+- lewego panelu nawigacyjnego,
+- ikon w lewym menu,
+- kolejności pozycji w lewym menu,
+- stylistyki aktywnej pozycji menu,
+- kolorystyki górnego HUD,
+- wymiarów i proporcji górnego HUD,
+- ogólnego wyglądu aplikacji.
+
+Te elementy są już częścią ustalonego design systemu PrisonLIFE.
+
+Nie twórz ich ponownie.
+Nie zastępuj ich własnymi komponentami.
+Nie zmieniaj ich CSS tylko dlatego, że nowy ekran ma inny layout.
+
+Zmieniamy WYŁĄCZNIE zawartość główną ekranu.
+
+==================================================
+2. GŁÓWNY CEL
+==================================================
+
+Ekran ma wyglądać jak ekran gry, a nie jak panel administracyjny.
+
+Ma być:
+- ciemny,
+- ciężki,
+- industrialny,
+- więzienny,
+- premium,
+- bardzo czytelny,
+- gęsty wizualnie,
+- ale bez przeładowania.
+
+Nie chcę ogromnych pustych przestrzeni.
+
+Nie rozciągaj kart na całą dostępną wysokość tylko dlatego, że jest miejsce.
+
+Każdy panel powinien mieć wysokość wynikającą z jego zawartości.
+
+==================================================
+3. NAGŁÓWEK
+==================================================
+
+W głównej części:
+
+TWOJA POSTAĆ
+
+Pod nim mały opis:
+
+„ROZWIJAJ SIĘ. STAWAJ SIĘ SILNIEJSZY. ZDOBYWAJ PRZEWAGĘ.”
+
+Nagłówek powinien mieć dokładnie ten sam charakter typograficzny co pozostałe główne ekrany PrisonLIFE.
+
+Nie stosuj nowego fontu.
+
+==================================================
+4. LEWA KOLUMNA — POSTAĆ
+==================================================
+
+Pierwszy duży panel:
+
+POSTAĆ
+
+Panel powinien zawierać:
+
+- duży realistyczny portret więźnia,
+- nick gracza: F1QU,
+- możliwość edycji nazwy / profilu,
+- poziom,
+- pasek XP,
+- aktualne XP / wymagane XP.
+
+Obok / pod portretem:
+
+GANG
+Wilcza Paczka
+
+REPUTACJA
+Pozytywna
+
+GOTÓWKA
+1250 $
+
+PUNKTY
+3
+
+DO KOŃCA WYROKU
+informacja tekstowa
+
+Nie dodawaj tutaj:
+- numeru więźnia,
+- daty osadzenia,
+- odcisków palców,
+- sztucznych danych fabularnych,
+- losowych statystyk, które nic nie robią.
+
+==================================================
+5. STATUS
+==================================================
+
+Pod panelem postaci:
+
+STATUS
+
+Trzy główne wskaźniki:
+
+ZDROWIE
+100 / 100
+
+ENERGIA
+100 / 100
+
+PSYCHIKA
+85 / 100
+
+Każdy jako duży poziomy pasek.
+
+Użyj istniejącej stylistyki kolorystycznej PrisonLIFE:
+- zdrowie — czerwony,
+- energia — pomarańczowy,
+- psychika — niebieski.
+
+==================================================
+6. ŚRODKOWA KOLUMNA — STATYSTYKI
+==================================================
+
+To ma być najważniejszy panel ekranu.
+
+Nagłówek:
+
+STATYSTYKI
+
+W prawym górnym rogu:
+
+DOSTĘPNE PUNKTY: 3
+
+Statystyki:
+
+SIŁA
+5
+
+KONDYCJA
+5
+
+ZRĘCZNOŚĆ
+4
+
+TECHNIKA
+3
+
+CHARAKTER
+3
+
+Każdy wiersz:
+
+[ikona] NAZWA    [–] 5 [+]    Koszt: 250 $
+
+Przyciski minus / plus powinny być wyraźne, ale nie ogromne.
+
+PLUS ma być jednym z głównych pomarańczowych elementów interfejsu.
+
+Koszt kolejnego poziomu musi być pokazany przy konkretnej statystyce.
+
+Na dole panelu krótka informacja:
+
+„Zwiększaj statystyki, aby być skuteczniejszym w walce, pracy, misjach i na czarnym rynku.”
+
+==================================================
+7. PRAWA KOLUMNA — AKTYWNE BONUSY
+==================================================
+
+Zamiast „DODATKOWE INFORMACJE” użyj:
+
+AKTYWNE BONUSY
+
+Tutaj pokazujemy tylko rzeczy, które realnie wpływają na postać.
+
+Przykładowe wpisy:
+
+Premia gangowa
++10% do zarobków za pracę
+2 dni
+
+Dobra kondycja
++5% do regeneracji energii
+1 dzień
+
+Lepszy refleks
++5% szansy na unik w walce
+6 godzin
+
+Szacunek na dzielni
++5% do reputacji
+3 dni
+
+Każdy bonus jako kompaktowy element z ikoną, nazwą, opisem i czasem pozostałym.
+
+Nie rozciągaj tego panelu pionowo.
+
+==================================================
+8. ATUTY / UMIEJĘTNOŚCI
+==================================================
+
+Pod aktywnymi bonusami:
+
+ATUTY / UMIEJĘTNOŚCI
+
+Na początku może być tylko jeden odblokowany atut i kilka zablokowanych.
+
+Przykład:
+
+TWARDZIEL
++5% do obrażeń w walce
+
+Pozostałe:
+
+🔒
+Odblokuj na poziomie 10
+
+🔒
+Odblokuj na poziomie 15
+
+🔒
+Odblokuj na poziomie 20
+
+To ma wyglądać jak system rozwoju gry, ale NIE rób z tego wielkiego drzewa umiejętności.
+
+==================================================
+9. DOLNY PANEL
+==================================================
+
+Na dole ekranu:
+
+POSTĘP ROZWOJU
+
+Kilka małych kart pokazujących cele / osiągnięcia związane z rozwojem postaci.
+
+Przykłady:
+
+Osiągnij poziom 10
+8 / 10
+
+Podnieś siłę do 7
+5 / 7
+
+Dołącz do gangu
+✓ Ukończono
+
+Wygraj 10 walk
+3 / 10
+
+To ma być zwarty dolny pasek, a nie wielki panel zajmujący pół ekranu.
+
+==================================================
+10. KOMPOZYCJA
+==================================================
+
+Układ desktopowy:
+
+LEWA:
+POSTAĆ
+STATUS
+
+ŚRODEK:
+STATYSTYKI
+
+PRAWA:
+AKTYWNE BONUSY
+ATUTY / UMIEJĘTNOŚCI
+
+DÓŁ:
+POSTĘP ROZWOJU
+
+Całość ma być zwarta i dobrze wykorzystać szerokość ekranu.
+
+Nie rób:
+- trzech gigantycznych kolumn,
+- paneli rozciągniętych do dołu ekranu,
+- pustych przestrzeni,
+- ogromnych kart,
+- przypadkowego centrowania,
+- nadmiaru ramek.
+
+==================================================
+11. ESTETYKA
+==================================================
+
+Trzymaj się dokładnie istniejącego PrisonLIFE.
+
+Kolory:
+- prawie czarne / grafitowe tło,
+- ciemne niebiesko-zielone tony,
+- złamany biały tekst,
+- pomarańczowy jako główny kolor akcji,
+- czerwony dla zdrowia,
+- zielony dla pozytywnych efektów,
+- niebieski dla psychiki.
+
+Ramki cienkie, industrialne.
+
+Delikatne poświaty tylko tam, gdzie rzeczywiście mają znaczenie.
+
+Nie rób neonowego cyberpunku.
+
+Nie rób fantasy.
+
+Nie rób nowoczesnego SaaS dashboardu.
+
+To ma wyglądać jak INTERFEJS GRY O ŻYCIU W WIĘZIENIU.
+
+==================================================
+12. RESPONSYWNOŚĆ
+==================================================
+
+Desktop jest źródłem prawdy.
+
+Na szerokim ekranie wszystko ma mieścić się w jednym logicznym widoku bez ogromnego scrollowania.
+
+Na mniejszych ekranach układ może się przeorganizować, ale:
+
+- nie zmieniaj wyglądu logo,
+- nie zmieniaj górnego HUD,
+- nie zmieniaj lewego menu poza koniecznym zachowaniem responsywnym,
+- zachowaj hierarchię informacji.
+
+==================================================
+13. IMPLEMENTACJA
+==================================================
+
+Najpierw przeanalizuj istniejący kod i znajdź:
+
+- istniejący layout,
+- istniejące komponenty HUD,
+- istniejące komponenty lewego menu,
+- istniejące style,
+- istniejące zmienne kolorów,
+- istniejące fonty,
+- istniejące komponenty kart i przycisków.
+
+WYKORZYSTAJ istniejące komponenty zamiast tworzyć ich kopie.
+
+Nie przebudowuj całej aplikacji.
+
+Nie zmieniaj innych ekranów.
+
+Nie zmieniaj logiki gry.
+
+Nie dodawaj nowych funkcji backendowych.
+
+Jeżeli dane są jeszcze mockowane, użyj danych mockowanych.
+
+Najważniejsze jest TERAZ odwzorowanie wizualne.
+
+Po implementacji uruchom aplikację i sprawdź ekran na desktopowym viewportcie.
+
+Porównaj go z referencją i popraw:
+- proporcje,
+- spacing,
+- wysokości paneli,
+- wielkość nagłówków,
+- wielkość kart,
+- położenie elementów,
+- wykorzystanie przestrzeni.
+
+NIE KOŃCZ PRACY po samym utworzeniu komponentów.
+
+Doprowadź ekran wizualnie możliwie najbliżej referencji.
+
+==================================================
+NAJWAŻNIEJSZA ZASADA NA KONIEC
+==================================================
+
+PRISON LIFE MA MIEĆ JEDEN SPÓJNY JĘZYK WIZUALNY.
+
+Nie interpretuj tego projektu jako „stwórz dashboard postaci”.
+
+Masz stworzyć:
+
+„TEN KONKRETNY EKRAN TWOJA POSTAĆ W ISTNIEJĄCEJ GRZE PRISON LIFE”.
+
+Logo, górny HUD i lewe menu są NIETYKALNE.
+
+Główna zawartość ma zostać wykonana zgodnie z załączoną referencją.
