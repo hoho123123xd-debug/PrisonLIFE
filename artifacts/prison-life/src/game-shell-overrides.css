@@ -3545,6 +3545,14 @@
   border-color: var(--prison-orange);
   color: #eee8de;
 }
+.character-slot-card.filled {
+  cursor: grab;
+}
+.character-slot-card.drag-over {
+  border-color: var(--prison-orange);
+  background: rgba(225, 122, 46, .16);
+  box-shadow: inset 0 0 0 1px var(--prison-orange);
+}
 .character-slot-thumb {
   display: flex;
   align-items: center;
@@ -3685,6 +3693,10 @@
   grid-template-columns: repeat(4, 1fr);
   grid-auto-rows: minmax(0, 1fr);
   gap: 6px;
+  transition: box-shadow .15s ease;
+}
+.character-inventory-grid.drag-over {
+  box-shadow: inset 0 0 0 1px var(--prison-orange);
 }
 .character-inventory-item {
   position: relative;
@@ -3694,7 +3706,7 @@
   border: 1px solid var(--character-line);
   background: rgba(0, 0, 0, .25);
   color: #7d867f;
-  cursor: pointer;
+  cursor: grab;
   overflow: hidden;
 }
 .character-inventory-item img {
@@ -3705,6 +3717,22 @@
 .character-inventory-item:hover {
   border-color: var(--prison-orange);
   color: #eee8de;
+}
+.character-inventory-item.equipped {
+  border-color: rgba(225, 122, 46, .5);
+}
+.character-inventory-equipped-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--prison-orange);
+  color: #1d120b;
 }
 .character-inventory-rarity {
   position: absolute;
