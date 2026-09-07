@@ -3555,6 +3555,12 @@
   border: 1px solid rgba(255, 255, 255, .1);
   background: rgba(0, 0, 0, .3);
   color: #7d867f;
+  overflow: hidden;
+}
+.character-slot-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .character-slot-card:hover .character-slot-thumb {
   color: var(--prison-orange-light);
@@ -3689,6 +3695,12 @@
   background: rgba(0, 0, 0, .25);
   color: #7d867f;
   cursor: pointer;
+  overflow: hidden;
+}
+.character-inventory-item img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
 }
 .character-inventory-item:hover {
   border-color: var(--prison-orange);
