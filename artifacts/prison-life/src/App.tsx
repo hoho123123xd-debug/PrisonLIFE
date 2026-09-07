@@ -69,6 +69,7 @@ import {
   Youtube,
   Zap,
 } from 'lucide-react';
+import characterScenePhoto from '@assets/ChatGPT Image 7 wrz 2026, 15_07_50.png';
 import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864145.png';
 import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
 import prisonerAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_12_30_1788711187677.png';
@@ -560,8 +561,7 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
   return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
 }
 
-// TODO: swap in the real "Twoja Postać" scene photo once it's added to attached_assets.
-const characterSceneAsset = '';
+const characterSceneAsset = characterScenePhoto;
 
 const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof Shield; badge?: string }> = [
   { id: 'head', label: 'GŁOWA', icon: Shield },
