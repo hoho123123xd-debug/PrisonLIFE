@@ -41,7 +41,7 @@
 .notification-button b { position: absolute; right: -5px; top: -7px; min-width: 17px; height: 17px; padding: 0 3px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: #d84135; font: 10px 'Barlow'; }
 .game-logout { height: 38px; display: flex; align-items: center; gap: 7px; border: 1px solid #3e4b48; padding: 0 11px; color: #d0d3cb; background: #10181b; cursor: pointer; font: 11px 'Barlow Condensed'; letter-spacing: .07em; }
 .game-mobile-menu-toggle { display: none; }
-.game-layout { min-height: calc(100dvh - 111px); display: flex; }
+.game-layout { min-height: calc(100dvh - 147px); display: flex; }
 .game-sidebar { width: 160px; flex: 0 0 160px; padding: 15px 8px 18px; border-right: 1px solid rgba(189,199,191,.22); background: linear-gradient(90deg, #0a1114, #111a1d); }
 .sidebar-heading { padding: 4px 10px 12px; color: #66736e; font: 10px 'Barlow Condensed'; letter-spacing: .2em; border-bottom: 1px solid rgba(177,188,181,.15); }
 .game-sidebar button { position: relative; min-height: 44px; margin: 4px 0; padding: 0 10px; border: 1px solid transparent; border-left: 2px solid transparent; color: #8c9891; background: transparent; transition: .18s; }

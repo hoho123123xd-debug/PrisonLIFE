@@ -128,6 +128,15 @@ import cellBackground from './assets/cell/cell-background.webp';
 import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
 import trainingMockup from '@assets/Obraz_Codex_6_wrz_2026,_20_10_24_1788718237783.png';
+import hudBackground from '@assets/topbar/hud-background.png';
+import hudAvatarFrame from '@assets/topbar/hud-avatar-frame.png';
+import hudPlayerInfoFrame from '@assets/topbar/hud-player-info.png';
+import hudMoneyFrame from '@assets/topbar/hud-money.png';
+import hudPointsFrame from '@assets/topbar/hud-points.png';
+import hudEnergyFrame from '@assets/topbar/hud-energy.png';
+import hudMailIcon from '@assets/topbar/hud-mail.png';
+import hudSettingsIcon from '@assets/topbar/hud-settings.png';
+import hudXpTrack from '@assets/topbar/hud-xp-track.png';
 
 const queryClient = new QueryClient();
 
@@ -798,12 +807,33 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   };
 
   return <main className="game-shell-page">
-    <header className="game-header">
+    <header className="game-header hud-topbar" style={{ backgroundImage: `url(${hudBackground})` }}>
       <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
-       <div className="game-player-summary"><img className="game-header-avatar" src={prisonerAsset} alt="" /><div className="game-player-name"><strong>{gameData.nickname.toUpperCase()}</strong><span>POZIOM {gameData.level}</span><div className="game-xp"><i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} /><small>{gameData.xp} / {gameData.xpMax} XP</small></div></div></div>
-       <div className="game-resources"><span className="resource-money"><CircleDollarSign size={18} /> {gameData.gold}</span><span className="resource-points"><Gem size={18} /><span className="resource-points-copy"><b>{gameData.points}</b><small>PUNKTY</small></span></span><span className="resource-energy"><Zap size={18} /> {gameData.energy} / 100</span><span className="resource-health"><Heart size={18} /> {gameData.hp} / 100</span></div>
-      <div className="game-header-actions"><button aria-label="Powiadomienia" className="header-icon-button notification-button" onClick={() => showNotice('Nie masz nowych powiadomień.')}><Bell size={18} /><b>3</b></button><button aria-label="Ustawienia" className="header-icon-button" onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')}><Settings size={18} /></button><button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /> WYLOGUJ SIĘ <ArrowRight size={15} /></button></div>
+      <div className="hud-avatar-frame" style={{ ['--hud-avatar-frame-bg' as string]: `url(${hudAvatarFrame})` } as CSSProperties}><img src={prisonerAsset} alt="" /></div>
+      <div className="hud-player-info" style={{ backgroundImage: `url(${hudPlayerInfoFrame})` }} data-testid="hud-player-info">
+        <strong className="hud-player-name">{gameData.nickname}</strong>
+        <b className="hud-player-level-value">{gameData.level}</b>
+        <div className="hud-xp-bar" style={{ backgroundImage: `url(${hudXpTrack})` }}>
+          <i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} />
+          <small>{gameData.xp} / {gameData.xpMax}</small>
+        </div>
+      </div>
+      <div className="hud-chip hud-chip-money" style={{ backgroundImage: `url(${hudMoneyFrame})` }} data-testid="hud-money"><b className="hud-chip-value">{gameData.gold.toLocaleString('pl-PL')} $</b></div>
+      <div className="hud-chip hud-chip-points" style={{ backgroundImage: `url(${hudPointsFrame})` }} data-testid="hud-points">
+        <b className="hud-chip-value">{gameData.points}</b>
+        <button className="hud-plus-btn" onClick={() => showNotice('Zakup punktów będzie dostępny wkrótce.')} aria-label="Kup punkty" />
+      </div>
+      <div className="hud-chip hud-chip-energy" style={{ backgroundImage: `url(${hudEnergyFrame})` }} data-testid="hud-energy">
+        <b className="hud-chip-value">{gameData.energy} / 100</b>
+        <div className="hud-energy-bar"><i style={{ width: `${gameData.energy}%` }} /></div>
+      </div>
+      <div className="hud-chip hud-chip-health" data-testid="hud-health"><Heart size={17} /><b className="hud-chip-value">{gameData.hp} / 100</b></div>
+      <div className="game-header-actions">
+        <button aria-label="Powiadomienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudMailIcon})` }} onClick={() => showNotice('Nie masz nowych powiadomień.')}><span className="hud-icon-badge">3</span></button>
+        <button aria-label="Ustawienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudSettingsIcon})` }} onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')} />
+        <button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /> WYLOGUJ SIĘ <ArrowRight size={15} /></button>
+      </div>
     </header>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>

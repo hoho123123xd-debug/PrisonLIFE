@@ -7600,3 +7600,200 @@
   font: italic 600 11px/1.3 'Oswald';
   text-align: center;
 }
+
+/* HUD-style top bar — rebuilt with the supplied game-art frames (metal
+   texture background, riveted chip panels) instead of the flat dashboard
+   bar. Numbers/bars are real DOM content layered on top of each frame's
+   marked placeholder zone, not baked into the art, so they stay live. */
+.game-shell-page .game-header.hud-topbar {
+  height: 108px;
+  min-height: 108px;
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, .9vw, 14px);
+  padding: 0 clamp(10px, 1.4vw, 22px);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.game-shell-page .hud-avatar-frame {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(58px, 6vw, 74px);
+  aspect-ratio: 210 / 199;
+  background: var(--hud-avatar-frame-bg) center / 100% 100% no-repeat;
+}
+.game-shell-page .hud-avatar-frame img {
+  position: absolute;
+  inset: 8.5% 8% 9% 8%;
+  width: 84%;
+  height: 83%;
+  object-fit: cover;
+}
+.game-shell-page .hud-player-info {
+  position: relative;
+  flex: 0 0 auto;
+  height: clamp(52px, 8vh, 68px);
+  aspect-ratio: 565 / 184;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.game-shell-page .hud-player-name {
+  position: absolute;
+  left: 28.3%;
+  right: 24.4%;
+  top: 13.6%;
+  height: 25.3%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  color: #f1eee5;
+  font: 700 clamp(10px, .95vw, 13px) 'Oswald';
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.game-shell-page .hud-player-level-value {
+  position: absolute;
+  left: 27.1%;
+  width: 9.5%;
+  top: 40.8%;
+  height: 21.7%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--game-orange-soft);
+  font: 700 clamp(10px, .9vw, 13px) 'Oswald';
+}
+.game-shell-page .hud-xp-bar {
+  position: absolute;
+  left: 7.6%;
+  width: 68.5%;
+  top: 64.1%;
+  height: 20.1%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  overflow: hidden;
+}
+.game-shell-page .hud-xp-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d75c24, #f19a3d);
+}
+.game-shell-page .hud-xp-bar small {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #eee8de;
+  font: clamp(7px, .6vw, 9px) 'Barlow Condensed';
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .8);
+}
+.game-shell-page .hud-chip {
+  position: relative;
+  flex: 0 0 auto;
+  height: clamp(52px, 8vh, 68px);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.game-shell-page .hud-chip-money { aspect-ratio: 366 / 165; }
+.game-shell-page .hud-chip-points { aspect-ratio: 395 / 138; }
+.game-shell-page .hud-chip-energy { aspect-ratio: 508 / 167; }
+.game-shell-page .hud-chip-value {
+  position: absolute;
+  color: var(--game-orange-soft);
+  font: 700 clamp(12px, 1.05vw, 16px) 'Oswald';
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-shell-page .hud-chip-money .hud-chip-value { left: 39%; right: 8%; top: 20%; height: 59%; display: flex; align-items: center; justify-content: center; }
+.game-shell-page .hud-chip-points .hud-chip-value { left: 32%; right: 28%; top: 31%; height: 39%; display: flex; align-items: center; justify-content: center; color: #eee8de; }
+.game-shell-page .hud-chip-energy .hud-chip-value { left: 58%; right: 5%; top: 8%; height: 35%; display: flex; align-items: center; font-size: clamp(10px, .9vw, 13px); color: #eee8de; }
+.game-shell-page .hud-plus-btn {
+  position: absolute;
+  left: 76%;
+  right: 7%;
+  top: 28%;
+  bottom: 26%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: filter .15s;
+}
+.game-shell-page .hud-plus-btn:hover { filter: brightness(1.35); }
+.game-shell-page .hud-plus-btn:active { filter: brightness(.85); }
+.game-shell-page .hud-energy-bar {
+  position: absolute;
+  left: 28%;
+  right: 5.5%;
+  top: 53%;
+  height: 24%;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, .5);
+  overflow: hidden;
+}
+.game-shell-page .hud-energy-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #d75c24, #f19a3d);
+}
+.game-shell-page .hud-chip-health {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 clamp(8px, 1vw, 14px);
+  border: 1px solid rgba(230, 123, 47, .35);
+  background: linear-gradient(180deg, rgba(20, 26, 28, .9), rgba(10, 15, 17, .95));
+  color: #e57267;
+}
+.game-shell-page .hud-chip-health .hud-chip-value { position: static; color: #eee8de; font: 700 clamp(12px, 1vw, 15px) 'Oswald'; }
+.game-shell-page .hud-icon-btn {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(42px, 4.6vw, 52px);
+  aspect-ratio: 1;
+  border: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+.game-shell-page .hud-icon-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #d84135;
+  font: 700 10px 'Barlow';
+}
+@media (max-width: 1500px) {
+  .game-shell-page .game-header.hud-topbar { height: 92px; min-height: 92px; }
+  .game-shell-page .hud-player-info,
+  .game-shell-page .hud-chip { height: clamp(46px, 7vh, 58px); }
+  .game-shell-page .game-season { display: none; }
+  .game-shell-page .game-layout { min-height: calc(100dvh - 131px); }
+}
+@media (max-width: 1300px) {
+  .game-shell-page .game-header.hud-topbar { height: 80px; min-height: 80px; }
+  .game-shell-page .hud-player-info,
+  .game-shell-page .hud-chip { height: clamp(42px, 6.5vh, 50px); }
+  .game-shell-page .hud-avatar-frame { width: 52px; }
+  .game-shell-page .hud-icon-btn { width: 38px; }
+  .game-shell-page .game-layout { min-height: calc(100dvh - 119px); }
+}
+@media (max-width: 900px) {
+  .game-shell-page .game-header.hud-topbar { height: 72px; min-height: 72px; }
+  .game-shell-page .hud-avatar-frame,
+  .game-shell-page .hud-player-info,
+  .game-shell-page .hud-chip {
+    display: none;
+  }
+  .game-shell-page .game-layout { min-height: calc(100dvh - 111px); }
+}
