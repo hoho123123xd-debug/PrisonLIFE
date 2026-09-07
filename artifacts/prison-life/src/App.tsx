@@ -20,6 +20,9 @@ import {
   CircleDollarSign,
   ChevronRight,
   Coins,
+  Activity,
+  ChevronLeft,
+  Clover,
   Crosshair,
   Crown,
   Dices,
@@ -42,6 +45,7 @@ import {
   Menu,
   MessageSquare,
   Grid2X2,
+  Hand,
   Info,
   MoreHorizontal,
   Package,
@@ -52,6 +56,7 @@ import {
   ScanFace,
   Scissors,
   ScrollText,
+  Search,
   Send,
   Shield,
   Settings,
@@ -67,6 +72,7 @@ import {
   UserRound,
   UserRoundPen,
   Users,
+  Watch,
   Wind,
   Wrench,
   X,
@@ -81,6 +87,7 @@ import bullAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_57_13_1788713844519.
 import bullDefaultAsset from '@assets/byk_domyslny.png';
 import bullShortHairAsset from '@assets/byk_krotkie_composed.png';
 import fullBeardAsset from '@assets/broda_pelna.png';
+import wlosyIrokezAsset from '@assets/wlosy_irokez.png';
 import femaleBullAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_03_12_1788715039687.png';
 import ratAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_57_44_1788713877886.png';
 import femaleRatAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_04_23_1788715066292.png';
@@ -497,7 +504,8 @@ function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
           <div className="appearance-creator-photo">
             <div className={`appearance-creator-character-layer figure-skin-${creator.appearance.skin}`} style={{ '--hair-color': hairColorOptions[creator.appearance.hairColor].color } as CSSProperties}>
               <img className="appearance-creator-photo-img" src={creator.appearance.hair === 2 ? bullShortHairAsset : bullDefaultAsset} alt="Podgląd Twojej postaci" />
-              {creator.appearance.hair > 0 && creator.appearance.hair !== 2 && <span className={`appearance-creator-hair appearance-creator-hair-${creator.appearance.hair}`} aria-hidden="true" />}
+              {creator.appearance.hair === 4 && <img className="appearance-creator-hair-photo appearance-creator-hair-photo-irokez" src={wlosyIrokezAsset} alt="" aria-hidden="true" />}
+              {creator.appearance.hair > 0 && creator.appearance.hair !== 2 && creator.appearance.hair !== 4 && <span className={`appearance-creator-hair appearance-creator-hair-${creator.appearance.hair}`} aria-hidden="true" />}
               {creator.appearance.beard === 2 ? <img className="appearance-creator-beard-asset" src={fullBeardAsset} alt="" aria-hidden="true" /> : creator.appearance.beard > 0 && <span className={`appearance-creator-beard appearance-creator-beard-${creator.appearance.beard}`} aria-hidden="true" />}
               <span className="appearance-creator-eye-tint appearance-creator-eye-left" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
               <span className="appearance-creator-eye-tint appearance-creator-eye-right" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
@@ -714,74 +722,90 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
 
 const characterSceneAsset = characterScenePhoto;
 
-const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof Shield; badge?: string }> = [
+const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof Shield }> = [
   { id: 'head', label: 'GŁOWA', icon: Shield },
-  { id: 'face', label: 'TWARZ', icon: UserRound },
-  { id: 'top', label: 'GÓRA', icon: ShirtIcon, badge: '+2' },
-  { id: 'extras', label: 'DODATKI', icon: Gem },
-  { id: 'bottom', label: 'DÓŁ', icon: Archive },
-  { id: 'hands', label: 'RĘCE', icon: Wrench },
+  { id: 'neck', label: 'SZYJA', icon: Gem },
+  { id: 'torso', label: 'TORS', icon: ShirtIcon },
+  { id: 'back', label: 'PLECY', icon: Backpack },
+  { id: 'hands', label: 'DŁONIE', icon: Hand },
+  { id: 'legs', label: 'SPODNIE', icon: Archive },
   { id: 'feet', label: 'BUTY', icon: FootprintsIcon },
-  { id: 'backpack', label: 'PLECAK', icon: Backpack },
+  { id: 'weapon', label: 'BROŃ', icon: Swords },
+];
+const characterInventoryTabs = ['WSZYSTKIE', 'UBRANIA', 'DODATKI', 'BROŃ', 'INNE'] as const;
+const characterInventoryRarity = ['orange', 'blue', 'blue', 'gray', 'orange', 'blue', 'gray', 'gray', 'violet', 'orange', 'blue', 'gray'] as const;
+const characterInventoryIcons: Array<typeof Shield> = [ShirtIcon, ShirtIcon, ShirtIcon, Archive, FootprintsIcon, FootprintsIcon, Package, Gem, Gem, Wrench, Package, Watch];
+const characterInventoryItems = characterInventoryIcons.map((icon, index) => ({ id: `item-${index}`, icon, rarity: characterInventoryRarity[index] }));
+const characterStatsList: Array<{ key: string; label: string; value: number; max: number; icon: typeof Shield; tone: string }> = [
+  { key: 'health', label: 'ZDROWIE', value: 100, max: 100, icon: Heart, tone: 'red' },
+  { key: 'luck', label: 'SZCZĘŚCIE', value: 12, max: 100, icon: Clover, tone: 'green' },
+  { key: 'strength', label: 'SIŁA', value: 11, max: 100, icon: Dumbbell, tone: 'orange' },
+  { key: 'endurance', label: 'KONDYCJA', value: 17, max: 100, icon: Activity, tone: 'blue' },
+  { key: 'intelligence', label: 'INTELIGENCJA', value: 11, max: 100, icon: Brain, tone: 'violet' },
+  { key: 'reflex', label: 'REFLEKS', value: 14, max: 100, icon: Zap, tone: 'yellow' },
 ];
 
 function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState; gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string }; onNotice: (message: string) => void }) {
-  const [stats, setStats] = useState([
-    { label: 'SIŁA', value: 5, cost: 250, icon: Dumbbell, tone: 'orange' },
-    { label: 'KONDYCJA', value: 5, cost: 250, icon: FootprintsIcon, tone: 'green' },
-    { label: 'ZWINNOŚĆ', value: 4, cost: 200, icon: Wind, tone: 'blue' },
-    { label: 'TECHNIKA', value: 3, cost: 150, icon: Crosshair, tone: 'red' },
-    { label: 'CHARAKTER', value: 3, cost: 150, icon: Brain, tone: 'violet' },
-  ]);
+  const [stats, setStats] = useState(characterStatsList);
   const [availablePoints, setAvailablePoints] = useState(3);
-  const [equipmentTab, setEquipmentTab] = useState<'UBRANIA' | 'SPRZĘT' | 'PRZEDMIOTY'>('UBRANIA');
-  const increaseStat = (label: string) => {
+  const [inventoryTab, setInventoryTab] = useState<typeof characterInventoryTabs[number]>('WSZYSTKIE');
+  const [inventoryPage, setInventoryPage] = useState(1);
+  const inventoryPageCount = 3;
+  const increaseStat = (key: string) => {
     if (!availablePoints) {
       onNotice('Brak dostępnych punktów rozwoju.');
       return;
     }
-    setStats((current) => current.map((stat) => stat.label === label ? { ...stat, value: stat.value + 1 } : stat));
+    setStats((current) => current.map((stat) => stat.key === key ? { ...stat, value: Math.min(stat.max, stat.value + 1) } : stat));
     setAvailablePoints((current) => current - 1);
-    onNotice(`Rozwinięto statystykę: ${label.toLowerCase()}.`);
+    onNotice(`Rozwinięto statystykę: ${stats.find((s) => s.key === key)?.label.toLowerCase()}.`);
   };
-  const decreaseStat = (label: string) => {
-    setStats((current) => current.map((stat) => stat.label === label && stat.value > 1 ? { ...stat, value: stat.value - 1 } : stat));
-  };
-  const bonuses = [
-    { name: 'Premia gangowa', copy: '+10% do zarobków za pracę', time: '2 dni', icon: Crown, tone: 'gold' },
-    { name: 'Dobra kondycja', copy: '+5% do regeneracji energii', time: '1 dzień', icon: Heart, tone: 'green' },
-    { name: 'Lepszy refleks', copy: '+5% szansy na unik w walce', time: '6 godzin', icon: Wind, tone: 'blue' },
-    { name: 'Szacunek na dzielni', copy: '+5% do reputacji', time: '3 dni', icon: Users, tone: 'violet' },
-  ] as const;
-  const perks = [
-    { name: 'Twardziel', copy: '+5% do obrażeń w walce', status: 'POZIOM 1', icon: Dumbbell, unlocked: true },
-    { name: 'Szybka regeneracja', copy: 'Odblokuj na poziomie 10', status: '', icon: LockKeyhole, unlocked: false },
-    { name: 'Zimna krew', copy: 'Odblokuj na poziomie 15', status: '', icon: LockKeyhole, unlocked: false },
-    { name: 'Szósty zmysł', copy: 'Odblokuj na poziomie 20', status: '', icon: LockKeyhole, unlocked: false },
-  ] as const;
   return <section className="character-view" data-testid="character-view">
     <header className="character-heading">
       <div><span className="eyebrow">TWOJA POSTAĆ</span><h1>TWOJA POSTAĆ</h1><p>WYGLĄD TO NIE WSZYSTKO, ALE MÓWI O TOBIE WIĘCEJ NIŻ MYŚLISZ.</p></div>
       <strong>LEPSZY<br />WIĘZIEŃ<br />SILNIEJSZA<br />WERSJA<br /><em>CIEBIE</em></strong>
     </header>
     <div className="character-outfit-layout">
-      <aside className="character-panel character-equipment-panel">
-        <div className="character-panel-heading"><h2>EKWIPUNEK / UBIÓR</h2></div>
-        <div className="character-equipment-tabs">{(['UBRANIA', 'SPRZĘT', 'PRZEDMIOTY'] as const).map((tab) => <button className={equipmentTab === tab ? 'active' : ''} onClick={() => setEquipmentTab(tab)} key={tab}>{tab}</button>)}</div>
-        <div className="character-equipment-grid">{characterEquipmentSlots.map(({ id, label, icon: Icon, badge }) => <button className="character-equipment-slot" key={id} onClick={() => onNotice(`${label}: slot ekwipunku będzie dostępny wkrótce.`)}>{badge && <span className="character-equipment-badge">{badge}</span>}<Icon size={22} /><span>{label}</span><ChevronRight size={14} /></button>)}</div>
-        <button className="character-outfit-button" onClick={() => onNotice('Edycja wyglądu postaci będzie dostępna wkrótce.')}><ShirtIcon size={16} /> WYGLĄD POSTACI</button>
-        <p className="character-equipment-caption">Nie chodzi o to, żeby dobrze wyglądać.<br />Chodzi o to, żeby pokazać, kim jesteś.</p>
+      <aside className="character-slots-rail">
+        {characterEquipmentSlots.map(({ id, label, icon: Icon }) => <button className="character-slot-card" key={id} onClick={() => onNotice(`${label}: slot ekwipunku będzie dostępny wkrótce.`)}>
+          <span className="character-slot-thumb"><Icon size={22} /></span>
+          <span className="character-slot-label">{label}</span>
+        </button>)}
       </aside>
 
       <div className="character-scene" data-testid="character-scene">
         {characterSceneAsset && <span className="character-scene-photo" style={{ backgroundImage: `url("${characterSceneAsset}")` }} />}
       </div>
 
-      <aside className="character-side">
-        <section className="character-panel character-stats"><div className="character-panel-heading"><h2>STATYSTYKI</h2><span>DOSTĘPNE PUNKTY: <b>{availablePoints}</b></span></div>{stats.map(({ label, value, cost, icon: Icon, tone }) => <div className="character-stat-row" key={label}><span className={`character-icon-badge tone-${tone}`}><Icon size={16} /></span><strong>{label}</strong><button onClick={() => decreaseStat(label)} aria-label={`Zmniejsz ${label}`}><span>−</span></button><b>{value}</b><button className="character-stat-plus" onClick={() => increaseStat(label)} aria-label={`Zwiększ ${label}`}><Plus size={17} /></button><small>Koszt:<br /><b>{cost} $</b></small></div>)}<p className="character-stats-note"><Info size={14} /> Zwiększaj statystyki, aby być skuteczniejszym w walce, pracy, misjach i na czarnym rynku.</p></section>
-        <section className="character-panel character-bonuses"><div className="character-panel-heading"><h2>AKTYWNE BONUSY <Info size={13} /></h2><button onClick={() => onNotice('Pełna lista bonusów będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div>{bonuses.map(({ name, copy, time, icon: Icon, tone }) => <div className="character-bonus" key={name}><span className={`character-icon-badge tone-${tone}`}><Icon size={16} /></span><span><strong>{name}</strong><small>{copy}</small></span><time>{time}</time></div>)}</section>
-        <section className="character-panel character-perks"><div className="character-panel-heading"><h2>ATUTY / UMIEJĘTNOŚCI</h2><button onClick={() => onNotice('Lista wszystkich atutów będzie dostępna wkrótce.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div><div className="character-perk-grid">{perks.map(({ name, copy, status, icon: Icon, unlocked }) => <button className={`character-perk ${unlocked ? 'unlocked' : ''}`} key={name} onClick={() => onNotice(unlocked ? `Atut ${name.toLowerCase()} jest aktywny.` : copy)}><Icon size={20} /><strong>{name}</strong><small>{copy}</small>{status && <em>{status}</em>}</button>)}</div></section>
+      <aside className="character-inventory-panel">
+        <div className="character-panel-heading"><h2>EKWIPUNEK</h2></div>
+        <div className="character-inventory-tabs">{characterInventoryTabs.map((tab) => <button className={inventoryTab === tab ? 'active' : ''} onClick={() => setInventoryTab(tab)} key={tab}>{tab}</button>)}</div>
+        <div className="character-inventory-toolbar">
+          <label className="character-inventory-search"><Search size={14} /><input placeholder="Szukaj przedmiotu..." onChange={() => undefined} /></label>
+          <button className="character-inventory-sort" onClick={() => onNotice('Sortowanie ekwipunku będzie dostępne wkrótce.')}>Sortuj: Rzadkość <ChevronRight size={12} /></button>
+        </div>
+        <div className="character-inventory-grid">{characterInventoryItems.map(({ id, icon: Icon, rarity }) => <button className="character-inventory-item" key={id} onClick={() => onNotice('Podgląd przedmiotu będzie dostępny wkrótce.')}>
+          <span className={`character-inventory-rarity tone-${rarity}`} />
+          <Icon size={26} />
+        </button>)}</div>
+        <div className="character-inventory-pagination">
+          <button onClick={() => setInventoryPage((page) => Math.max(1, page - 1))} aria-label="Poprzednia strona"><ChevronLeft size={15} /></button>
+          <span>{inventoryPage}/{inventoryPageCount}</span>
+          <button onClick={() => setInventoryPage((page) => Math.min(inventoryPageCount, page + 1))} aria-label="Następna strona"><ChevronRight size={15} /></button>
+        </div>
+
+        <section className="character-panel character-stats">
+          <div className="character-panel-heading"><h2>STATYSTYKI</h2></div>
+          {stats.map(({ key, label, value, max, icon: Icon, tone }) => <div className="character-stat-row" key={key}>
+            <span className={`character-icon-badge tone-${tone}`}><Icon size={15} /></span>
+            <strong>{label}</strong>
+            <div className="character-stat-bar"><i className={`tone-${tone}`} style={{ width: `${Math.min(100, (value / max) * 100)}%` }} /></div>
+            <b>{value}</b>
+            <button className="character-stat-plus" onClick={() => increaseStat(key)} aria-label={`Zwiększ ${label}`}><Plus size={15} /></button>
+          </div>)}
+        </section>
       </aside>
+      <div className="character-flavor-badge"><Crown size={14} /><span>CHARAKTER<br />ROBI RÓŻNICĘ</span><em>HH</em></div>
     </div>
   </section>;
 }
