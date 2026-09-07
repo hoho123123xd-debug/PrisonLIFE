@@ -1224,11 +1224,11 @@ function MarketView({ wallet, items, setItems, onNotice }: { wallet: Wallet; ite
 // characterInventoryItemsData catalog (weapon-slot items excluded — those stay
 // a black-market matter) instead of a separate item list, so a purchase here
 // and a sale in TWOJA POSTAĆ both operate on the one shared ownedItemIds set.
-const shopRarityLabel: Record<string, 'POSPOLITY' | 'NIEPOSPOLITY' | 'RZADKI'> = { orange: 'POSPOLITY', gray: 'POSPOLITY', blue: 'NIEPOSPOLITY', violet: 'RZADKI' };
 const shopItems = characterInventoryItemsData.filter((item) => item.slot !== 'weapon');
 
 function ShopView({ wallet, ownedItemIds, setOwnedItemIds, onNotice }: { wallet: Wallet; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onNotice: (message: string) => void }) {
   const runLocked = useActionLock();
+  const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
 
   const buyItem = (item: (typeof shopItems)[number]) => runLocked(`shop-buy-${item.id}`, () => {
     if (ownedItemIds.has(item.id)) {
@@ -1260,13 +1260,31 @@ function ShopView({ wallet, ownedItemIds, setOwnedItemIds, onNotice }: { wallet:
       <div className="market-offer-time"><Timer size={19} /><span>OTWARTE:</span><b>24/7</b></div>
       <div className="market-offer-note">Zakupione przedmioty trafiają<br />prosto do Twojego ekwipunku.</div>
     </div>
-    <div className="market-item-grid shop-item-grid">
-      {shopItems.map((item) => { const owned = ownedItemIds.has(item.id); return <article key={item.id} className="market-item-card shop-item-card" data-testid={`shop-item-${item.id}`}>
-        <div className="market-item-art"><img src={item.asset} alt={item.name} /></div>
-        <div className="market-item-copy"><div className="market-item-title"><h2>{item.name}</h2><em className={`market-rarity market-rarity-${shopRarityLabel[item.rarity].toLowerCase()}`}>{shopRarityLabel[item.rarity]}</em></div><p>{owned ? 'Ten przedmiot jest już w Twoim ekwipunku.' : 'Legalny towar ze sklepu więziennego.'}</p><span className="market-item-stat"><Zap size={15} /> +{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span></div>
-        <div className="market-item-footer">{owned ? <span className="shop-item-owned">W EKWIPUNKU</span> : <strong>$ {item.price}</strong>}<button onClick={() => buyItem(item)} disabled={owned} data-testid={`shop-buy-${item.id}`}>{owned ? 'POSIADASZ' : 'KUP'}</button></div>
-      </article>; })}
+    <div className="shop-tile-grid" data-testid="shop-tile-grid">
+      {shopItems.map((item) => { const owned = ownedItemIds.has(item.id); return <button
+        key={item.id}
+        className={`character-inventory-item shop-tile ${owned ? 'owned' : ''}`}
+        onClick={() => buyItem(item)}
+        onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id: item.id, x: rect.left + rect.width / 2, y: rect.top }); }}
+        onMouseLeave={() => setHoveredItem((current) => current?.id === item.id ? null : current)}
+        data-testid={`shop-tile-${item.id}`}
+      >
+        <span className={`character-inventory-rarity tone-${item.rarity}`} />
+        <img src={item.asset} alt={item.name} />
+        <span className="shop-tile-badge">{owned ? <Check size={11} /> : `${item.price} $`}</span>
+      </button>; })}
     </div>
+    {hoveredItem && (() => {
+      const item = shopItems.find((entry) => entry.id === hoveredItem.id);
+      if (!item) return null;
+      const owned = ownedItemIds.has(item.id);
+      return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
+        <strong>{item.name}</strong>
+        <span>+{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
+        <br />
+        <span>{owned ? 'W ekwipunku' : `Cena: ${item.price} $`}</span>
+      </div>;
+    })()}
     <footer className="market-footnote"><span><Info size={16} /> Wszystkie przedmioty w sklepie są w pełni legalne. Możesz je nosić bez żadnego ryzyka.</span>
       <em>„Uczciwie zarobione, uczciwie wydane.”</em>
     </footer>
