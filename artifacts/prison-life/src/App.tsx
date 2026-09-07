@@ -120,10 +120,18 @@ const barItems = [
 type Screen = 'home' | 'register' | 'login' | 'game';
 type AppearanceKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'scar' | 'eyes' | 'outfit' | 'skin';
 type AppearanceTabKey = 'face' | 'hair' | 'beard' | 'tattoo' | 'scar' | 'eyes';
-type Appearance = Record<AppearanceKey, number>;
+type Appearance = Record<AppearanceKey, number> & { hairColor: number };
 type AppearanceOption = { id: number; label: string; color?: string };
 const skinToneColors = ['#c99a76', '#a9764f', '#8a6142', '#5c3d29'];
 const eyeColorSwatches = ['#4a2f1c', '#3d6b8a', '#3f6b45', '#767f82'];
+const hairColorOptions: AppearanceOption[] = [
+  { id: 0, label: 'CZARNY', color: '#171514' },
+  { id: 1, label: 'BRĄZ', color: '#4a2d20' },
+  { id: 2, label: 'KASZTAN', color: '#71412b' },
+  { id: 3, label: 'BLOND', color: '#a77a42' },
+  { id: 4, label: 'SIWY', color: '#8f9290' },
+  { id: 5, label: 'RUDY', color: '#8d3e24' },
+];
 const appearanceTabs: Array<{ key: AppearanceTabKey; label: string; icon: typeof Shield; options: AppearanceOption[] }> = [
   { key: 'face', label: 'TWARZ', icon: ScanFace, options: [
     { id: 0, label: 'OWALNA' },
@@ -132,10 +140,12 @@ const appearanceTabs: Array<{ key: AppearanceTabKey; label: string; icon: typeof
     { id: 3, label: 'WYDATNA SZCZĘKA' },
   ] },
   { key: 'hair', label: 'WŁOSY', icon: Scissors, options: [
-    { id: 0, label: 'ŁYSY' },
-    { id: 1, label: 'KRÓTKIE' },
-    { id: 2, label: 'IROKEZ' },
-    { id: 3, label: 'DREDY' },
+    { id: 0, label: 'OGOLONY' },
+    { id: 1, label: 'BUZZ CUT' },
+    { id: 2, label: 'KRÓTKIE' },
+    { id: 3, label: 'FADE' },
+    { id: 4, label: 'IROKEZ' },
+    { id: 5, label: 'DREDY' },
   ] },
   { key: 'beard', label: 'ZAROST', icon: Sparkles, options: [
     { id: 0, label: 'GŁADKO OGOLONY' },
@@ -353,7 +363,7 @@ function CharacterPreview({ appearance, nickname, type }: { appearance: Appearan
       <div className="preview-ruler" aria-hidden="true"><span>180</span><span>170</span><span>160</span><span>150</span><span>140</span></div>
       <div className="character-preview" data-testid="character-preview">
         <div className="preview-stamp">PRISON LIFE<br /><b>INTAKE / 2026</b></div>
-        <div className={`character-figure figure-skin-${appearance.skin} figure-outfit-${appearance.outfit} figure-face-${appearance.face}`} data-testid="character-figure">
+        <div className={`character-figure figure-skin-${appearance.skin} figure-outfit-${appearance.outfit} figure-face-${appearance.face}`} style={{ '--hair-color': hairColorOptions[appearance.hairColor].color } as CSSProperties} data-testid="character-figure">
           <img className="character-photo" src={prisonerAsset} alt={`Podgląd więźnia ${displayName}`} />
           {appearance.hair > 0 && <span className={`figure-hair figure-hair-${appearance.hair}`} aria-hidden="true" />}
           {appearance.beard > 0 && <span className={`figure-beard figure-beard-${appearance.beard}`} aria-hidden="true" />}
@@ -461,9 +471,9 @@ function Registration({ onNavigate, creator, setCreator }: { onNavigate: (screen
 function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
   creator: CreatorState; setCreator: Dispatch<SetStateAction<CreatorState>>; onNext: () => void; onBack: () => void;
 }) {
-  const [tab, setTab] = useState<AppearanceTabKey>('face');
+  const [tab, setTab] = useState<AppearanceTabKey>('hair');
   const activeTab = appearanceTabs.find((item) => item.key === tab)!;
-  const setAppearance = (key: AppearanceKey, value: number) => setCreator((current) => ({ ...current, appearance: { ...current.appearance, [key]: value } }));
+  const setAppearance = (key: AppearanceKey | 'hairColor', value: number) => setCreator((current) => ({ ...current, appearance: { ...current.appearance, [key]: value } }));
   const randomizeNickname = () => setCreator((current) => ({ ...current, nickname: randomNicknames[Math.floor(Math.random() * randomNicknames.length)], nicknameError: '' }));
   return (
     <main className="appearance-creator" data-testid="appearance-creator">
@@ -481,8 +491,9 @@ function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
           <em className="appearance-creator-nav-footer">TAKA<br />JEST GRA</em>
         </aside>
         <div className="appearance-creator-stage">
-          <div className={`appearance-creator-photo figure-skin-${creator.appearance.skin}`}>
+          <div className={`appearance-creator-photo figure-skin-${creator.appearance.skin}`} style={{ '--hair-color': hairColorOptions[creator.appearance.hairColor].color } as CSSProperties}>
             <img className="appearance-creator-photo-img" src={prisonerAsset} alt="Podgląd Twojej postaci" />
+            {creator.appearance.hair > 0 && <span className={`appearance-creator-hair appearance-creator-hair-${creator.appearance.hair}`} aria-hidden="true" />}
             <span className="appearance-creator-eye-tint appearance-creator-eye-left" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
             <span className="appearance-creator-eye-tint appearance-creator-eye-right" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
           </div>
@@ -499,6 +510,15 @@ function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
               <span className="appearance-option-label">{option.label}</span>
             </button>)}
           </div>
+          {tab === 'hair' && <>
+            <h2>KOLOR WŁOSÓW</h2>
+            <div className="appearance-option-grid appearance-color-grid">
+              {hairColorOptions.map((option) => <button type="button" key={option.id} className={`appearance-option-tile appearance-color-tile ${creator.appearance.hairColor === option.id ? 'selected' : ''}`} onClick={() => setAppearance('hairColor', option.id)} aria-pressed={creator.appearance.hairColor === option.id} data-testid={`button-hair-color-${option.id}`}>
+                <span className="appearance-option-swatch" style={{ background: option.color }} />
+                <span className="appearance-option-label">{option.label}</span>
+              </button>)}
+            </div>
+          </>}
           {tab === 'face' && <>
             <h2>KOLOR SKÓRY</h2>
             <div className="appearance-option-grid appearance-option-grid-swatches">
@@ -519,7 +539,7 @@ function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
 }
 
 type CreatorState = { step: number; nickname: string; nicknameError: string; gender: Gender; world: World; prisonerType: PrisonerType; appearance: Appearance; account: AccountData; accountError: string };
-const initialCreator: CreatorState = { step: 1, nickname: '', nicknameError: '', gender: 'male', world: 'central', prisonerType: 'bull', appearance: { face: 0, hair: 0, beard: 1, tattoo: 1, scar: 0, eyes: 0, outfit: 0, skin: 1 }, account: { email: '', password: '', confirmPassword: '' }, accountError: '' };
+const initialCreator: CreatorState = { step: 1, nickname: '', nicknameError: '', gender: 'male', world: 'central', prisonerType: 'bull', appearance: { face: 0, hair: 2, beard: 1, tattoo: 1, scar: 0, eyes: 0, outfit: 0, skin: 1, hairColor: 0 }, account: { email: '', password: '', confirmPassword: '' }, accountError: '' };
 
 function AuthScreen({ mode, onNavigate }: { mode: 'login' | 'register'; onNavigate: (screen: Screen) => void }) {
   const [email, setEmail] = useState('');
@@ -625,7 +645,14 @@ function App() {
   const [creator, setCreator] = useState<CreatorState>(() => {
     try {
       const saved = window.localStorage.getItem('prison-life-creator');
-      return saved ? { ...initialCreator, ...JSON.parse(saved) } : initialCreator;
+      if (!saved) return initialCreator;
+      const parsed = JSON.parse(saved) as Partial<CreatorState>;
+      return {
+        ...initialCreator,
+        ...parsed,
+        appearance: { ...initialCreator.appearance, ...(parsed.appearance ?? {}) },
+        account: { ...initialCreator.account, ...(parsed.account ?? {}) },
+      };
     } catch {
       return initialCreator;
     }
