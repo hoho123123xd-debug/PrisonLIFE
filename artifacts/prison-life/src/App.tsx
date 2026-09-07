@@ -493,11 +493,13 @@ function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
           <em className="appearance-creator-nav-footer">TAKA<br />JEST GRA</em>
         </aside>
         <div className="appearance-creator-stage">
-          <div className={`appearance-creator-photo figure-skin-${creator.appearance.skin}`} style={{ '--hair-color': hairColorOptions[creator.appearance.hairColor].color } as CSSProperties}>
-            <img className="appearance-creator-photo-img" src={bullDefaultAsset} alt="Podgląd Twojej postaci" />
-            {creator.appearance.hair === 2 ? <img className="appearance-creator-hair appearance-creator-hair-asset appearance-creator-hair-short" src={shortHairAsset} alt="" aria-hidden="true" /> : creator.appearance.hair > 0 && <span className={`appearance-creator-hair appearance-creator-hair-${creator.appearance.hair}`} aria-hidden="true" />}
-            <span className="appearance-creator-eye-tint appearance-creator-eye-left" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
-            <span className="appearance-creator-eye-tint appearance-creator-eye-right" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
+          <div className="appearance-creator-photo">
+            <div className={`appearance-creator-character-layer figure-skin-${creator.appearance.skin}`} style={{ '--hair-color': hairColorOptions[creator.appearance.hairColor].color } as CSSProperties}>
+              <img className="appearance-creator-photo-img" src={bullDefaultAsset} alt="Podgląd Twojej postaci" />
+              {creator.appearance.hair === 2 ? <img className="appearance-creator-hair appearance-creator-hair-asset appearance-creator-hair-short" src={shortHairAsset} alt="" aria-hidden="true" /> : creator.appearance.hair > 0 && <span className={`appearance-creator-hair appearance-creator-hair-${creator.appearance.hair}`} aria-hidden="true" />}
+              <span className="appearance-creator-eye-tint appearance-creator-eye-left" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
+              <span className="appearance-creator-eye-tint appearance-creator-eye-right" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
+            </div>
           </div>
           <div className="appearance-creator-name-bar">
             <label><UserRound size={15} /><input value={creator.nickname} onChange={(event) => setCreator((current) => ({ ...current, nickname: event.target.value, nicknameError: '' }))} placeholder="WPISZ SWOJĄ NAZWĘ" maxLength={18} data-testid="input-appearance-nickname" /></label>
