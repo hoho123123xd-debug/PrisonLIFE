@@ -95,6 +95,15 @@ import foxAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_58_23_1788713918595.png
 import femaleFoxAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_09_1788715078788.png';
 import wolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_59_09_1788713957701.png';
 import femaleWolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_54_1788715089958.png';
+import inventoryHeadCapAsset from '@assets/inventory/head-cap.png';
+import inventoryTopOrangeAsset from '@assets/inventory/top-orange.png';
+import inventoryTopBlackHoodieAsset from '@assets/inventory/top-black-hoodie.png';
+import inventoryBagBlackAsset from '@assets/inventory/bag-black.png';
+import inventoryHandGlovesAsset from '@assets/inventory/hand-gloves.png';
+import inventoryFaceBandanaAsset from '@assets/inventory/face-red-bandana.png';
+import inventoryBottomOrangeAsset from '@assets/inventory/bottom-orange.png';
+import inventoryFeetBlackBootsAsset from '@assets/inventory/feet-black-boots.png';
+import inventoryWeaponKnifeAsset from '@assets/inventory/weapon-knife.png';
 import cellBackground from './assets/cell/cell-background.webp';
 import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
@@ -1164,7 +1173,7 @@ function MissionsCardsView({ onNotice }: { onNotice: (message: string) => void }
   </section>;
 }
 
-type InventoryFilter = 'ALL' | 'USABLE' | 'WEAPON' | 'OTHER';
+type InventoryFilter = 'ALL' | 'CLOTHING' | 'ACCESSORY' | 'WEAPON';
 
 type InventoryItem = {
   id: string;
@@ -1174,41 +1183,41 @@ type InventoryItem = {
   description: string;
   rarity: string;
   icon: typeof Shield;
+  asset: string;
 };
 
 const inventoryItems: InventoryItem[] = [
-  { id: 'razor', name: 'ŻYLETKA', category: 'WEAPON', quantity: 1, description: 'Ostry kawałek metalu. Może być przydatny w wielu sytuacjach.', rarity: 'ZWYKŁY', icon: Swords },
-  { id: 'lighter', name: 'ZAPALNICZKA', category: 'USABLE', quantity: 1, description: 'Mała, wysłużona zapalniczka. Działa, kiedy naprawdę jej potrzebujesz.', rarity: 'ZWYKŁY', icon: Zap },
-  { id: 'cigarettes', name: 'PAPIEROSY', category: 'USABLE', quantity: 3, description: 'Kilka papierosów. W bloku zawsze znajdzie się ktoś, kto ich potrzebuje.', rarity: 'ZWYKŁY', icon: Wind },
-  { id: 'bread', name: 'CHLEB', category: 'USABLE', quantity: 2, description: 'Porcja chleba ze stołówki. Prosta rzecz, ale nigdy nie wiadomo, kiedy się przyda.', rarity: 'ZWYKŁY', icon: Archive },
-  { id: 'water', name: 'WODA', category: 'USABLE', quantity: 1, description: 'Butelka wody na długi dzień za kratami.', rarity: 'ZWYKŁY', icon: Droplets },
-  { id: 'towel', name: 'RĘCZNIK', category: 'OTHER', quantity: 1, description: 'Szorstki ręcznik z łaźni. Nie wygląda dobrze, ale spełnia swoje zadanie.', rarity: 'ZWYKŁY', icon: Shield },
-  { id: 'soap', name: 'MYDŁO', category: 'USABLE', quantity: 1, description: 'Zwykłe więzienne mydło. Czystość też buduje reputację.', rarity: 'ZWYKŁY', icon: Droplets },
-  { id: 'bandage', name: 'BANDAŻ', category: 'USABLE', quantity: 2, description: 'Podstawowy opatrunek na drobne urazy po treningu lub walce.', rarity: 'ZWYKŁY', icon: Plus },
-  { id: 'notebook', name: 'NOTATNIK', category: 'OTHER', quantity: 1, description: 'Kilka pustych stron. Dobre pomysły warto zapisać, zanim znikną.', rarity: 'ZWYKŁY', icon: ScrollText },
-  { id: 'knife', name: 'NÓŻ', category: 'WEAPON', quantity: 1, description: 'Krótki, ostry nóż. Lepiej mieć go przy sobie niż szukać go w potrzebie.', rarity: 'ZWYKŁY', icon: Crosshair },
+  { id: 'cap', name: 'CZAPKA PRISON', category: 'ACCESSORY', quantity: 1, description: 'Zużyta czapka z naszywką PRISON. Dobrze znosi kurz, pot i nocne obchody.', rarity: 'ZWYKŁY', icon: Shield, asset: inventoryHeadCapAsset },
+  { id: 'bandana', name: 'CZERWONA BANDANA', category: 'ACCESSORY', quantity: 1, description: 'Czerwony znak rozpoznawczy. Możesz nosić ją na twarzy albo przywiązać do plecaka.', rarity: 'RZADKI', icon: ScanFace, asset: inventoryFaceBandanaAsset },
+  { id: 'orange-shirt', name: 'KOSZULA A-7421', category: 'CLOTHING', quantity: 1, description: 'Pomarańczowa koszula więzienna z numerem skazanego.', rarity: 'ZWYKŁY', icon: ShirtIcon, asset: inventoryTopOrangeAsset },
+  { id: 'black-hoodie', name: 'CZARNA BLUZA', category: 'CLOTHING', quantity: 1, description: 'Ciężka bluza z kapturem. Daje trochę ciepła i jeszcze więcej charakteru.', rarity: 'RZADKI', icon: ShirtIcon, asset: inventoryTopBlackHoodieAsset },
+  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', category: 'ACCESSORY', quantity: 1, description: 'Czarny plecak z kieszeniami na wszystko, czego nie powinieneś mieć w celi.', rarity: 'RZADKI', icon: Backpack, asset: inventoryBagBlackAsset },
+  { id: 'gloves', name: 'RĘKAWICE', category: 'ACCESSORY', quantity: 1, description: 'Skórzane rękawice do treningu i brudnej roboty.', rarity: 'RZADKI', icon: Hand, asset: inventoryHandGlovesAsset },
+  { id: 'orange-pants', name: 'SPODNIE A-7421', category: 'CLOTHING', quantity: 1, description: 'Pomarańczowe spodnie do kompletu z koszulą więzienną.', rarity: 'ZWYKŁY', icon: Archive, asset: inventoryBottomOrangeAsset },
+  { id: 'black-boots', name: 'CZARNE TRAPERY', category: 'CLOTHING', quantity: 1, description: 'Ciężkie buty z grubą podeszwą. Dobre na spacerniak i jeszcze lepsze do pracy.', rarity: 'RZADKI', icon: FootprintsIcon, asset: inventoryFeetBlackBootsAsset },
+  { id: 'knife', name: 'NÓŻ', category: 'WEAPON', quantity: 1, description: 'Krótki, ostry nóż. Lepiej mieć go przy sobie niż szukać go w potrzebie.', rarity: 'RZADKI', icon: Crosshair, asset: inventoryWeaponKnifeAsset },
 ];
 
 const inventoryEquipment = [
-  { id: 'head', label: 'GŁOWA', slot: 'Czapka', icon: Shield },
-  { id: 'face', label: 'TWARZ', slot: 'Maska', icon: UserRound },
-  { id: 'top', label: 'GÓRA', slot: 'Koszula', icon: ShirtIcon },
-  { id: 'bottom', label: 'NOGI', slot: 'Spodnie', icon: Archive },
-  { id: 'left-hand', label: 'DŁOŃ (L)', slot: 'Puste', icon: Swords },
-  { id: 'right-hand', label: 'DŁOŃ (P)', slot: 'Puste', icon: Crosshair },
-  { id: 'feet', label: 'BUTY', slot: 'Obuwie', icon: FootprintsIcon },
+  { id: 'head', label: 'GŁOWA', slot: 'Czapka Prison', icon: Shield, asset: inventoryHeadCapAsset },
+  { id: 'face', label: 'TWARZ', slot: 'Bandana', icon: UserRound, asset: inventoryFaceBandanaAsset },
+  { id: 'top', label: 'GÓRA', slot: 'Koszula A-7421', icon: ShirtIcon, asset: inventoryTopOrangeAsset },
+  { id: 'bottom', label: 'NOGI', slot: 'Spodnie A-7421', icon: Archive, asset: inventoryBottomOrangeAsset },
+  { id: 'left-hand', label: 'DŁOŃ (L)', slot: 'Rękawice', icon: Hand, asset: inventoryHandGlovesAsset },
+  { id: 'right-hand', label: 'DŁOŃ (P)', slot: 'Nóż', icon: Crosshair, asset: inventoryWeaponKnifeAsset },
+  { id: 'feet', label: 'BUTY', slot: 'Czarne trapery', icon: FootprintsIcon, asset: inventoryFeetBlackBootsAsset },
 ];
 
 function InventoryView({ creator, onNotice }: { creator: CreatorState; onNotice: (message: string) => void }) {
   const [filter, setFilter] = useState<InventoryFilter>('ALL');
-  const [selectedId, setSelectedId] = useState('razor');
+  const [selectedId, setSelectedId] = useState('cap');
   const selectedItem = inventoryItems.find((item) => item.id === selectedId) ?? inventoryItems[0];
   const filteredItems = filter === 'ALL' ? inventoryItems : inventoryItems.filter((item) => item.category === filter);
   const filters: Array<{ id: InventoryFilter; label: string; icon?: typeof Shield }> = [
     { id: 'ALL', label: 'WSZYSTKIE', icon: Backpack },
-    { id: 'USABLE', label: 'UŻYTKOWE', icon: Droplets },
+    { id: 'CLOTHING', label: 'UBRANIA', icon: ShirtIcon },
+    { id: 'ACCESSORY', label: 'DODATKI', icon: Gem },
     { id: 'WEAPON', label: 'BROŃ', icon: Swords },
-    { id: 'OTHER', label: 'INNE', icon: Plus },
   ];
 
   const selectItem = (item: InventoryItem) => setSelectedId(item.id);
@@ -1239,14 +1248,14 @@ function InventoryView({ creator, onNotice }: { creator: CreatorState; onNotice:
       </section>
       <section className="inventory-items-panel game-panel">
         <div className="inventory-items-header">
-          <div className="inventory-panel-title">PRZEDMIOTY <span>(8/20)</span></div>
+           <div className="inventory-panel-title">PRZEDMIOTY <span>(10/20)</span></div>
           <div className="inventory-filters" role="tablist" aria-label="Filtry ekwipunku">
             {filters.map(({ id, label, icon: FilterIcon }) => <button key={id} className={filter === id ? 'active' : ''} onClick={() => setFilter(id)} role="tab" aria-selected={filter === id} data-testid={`inventory-filter-${id.toLowerCase()}`}>{FilterIcon && <FilterIcon size={13} />}{label}</button>)}
           </div>
         </div>
         <div className="inventory-item-grid">
           {filteredItems.map((item) => <button key={item.id} className={`inventory-item-card ${selectedId === item.id ? 'selected' : ''}`} onClick={() => selectItem(item)} data-testid={`inventory-item-${item.id}`}>
-            <span className={`inventory-item-art inventory-art-${item.id}`}><item.icon size={39} strokeWidth={1.35} /></span>
+            <span className={`inventory-item-art inventory-art-${item.id}`}><img src={item.asset} alt="" /></span>
             <span className="inventory-item-name">{item.name}</span>
             <b>{item.quantity}</b>
           </button>)}
@@ -1254,7 +1263,7 @@ function InventoryView({ creator, onNotice }: { creator: CreatorState; onNotice:
         </div>
       </section>
       <section className="inventory-detail-panel game-panel">
-        <div className={`inventory-detail-art inventory-art-${selectedItem.id}`}><selectedItem.icon size={88} strokeWidth={1.1} /></div>
+         <div className={`inventory-detail-art inventory-art-${selectedItem.id}`}><img src={selectedItem.asset} alt="" /></div>
         <div className="inventory-detail-copy">
           <div className="inventory-detail-title"><h2>{selectedItem.name}</h2><span>{selectedItem.rarity}</span></div>
           <p>{selectedItem.description}</p>
@@ -1272,8 +1281,7 @@ function InventoryView({ creator, onNotice }: { creator: CreatorState; onNotice:
 }
 
 function InventoryEquipmentSlot({ slot, onClick }: { slot: (typeof inventoryEquipment)[number]; onClick: () => void }) {
-  const SlotIcon = slot.icon;
-  return <button className={`inventory-equipment-slot inventory-slot-${slot.id}`} onClick={onClick}><span>{slot.label}</span><SlotIcon size={slot.id === 'top' || slot.id === 'bottom' ? 36 : 29} /><small>{slot.slot}</small></button>;
+  return <button className={`inventory-equipment-slot inventory-slot-${slot.id}`} onClick={onClick}><span>{slot.label}</span><img className="inventory-equipment-image" src={slot.asset} alt="" /><small>{slot.slot}</small></button>;
 }
 
 type TrainingExercise = {
