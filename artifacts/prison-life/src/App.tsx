@@ -845,7 +845,7 @@ function CharacterView({ creator, gameData, onNotice }: { creator: CreatorState;
             onDrop={(event) => handleSlotDrop(event, id)}
             onClick={() => equippedItem ? onNotice(`${equippedItem.name}: przeciągnij do ekwipunku, żeby zdjąć.`) : onNotice(`${label}: przeciągnij tu pasujący przedmiot z ekwipunku.`)}
           >
-            <span className="character-slot-thumb">{equippedItem ? <img src={equippedItem.asset} alt="" /> : <Icon size={22} />}</span>
+            <span className="character-slot-thumb">{equippedItem ? <img src={equippedItem.asset} alt="" /> : <Icon size={28} />}</span>
             <span className="character-slot-label">{label}</span>
           </button>;
         })}
