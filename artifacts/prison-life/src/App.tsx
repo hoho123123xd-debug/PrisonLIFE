@@ -659,6 +659,7 @@ type FoodBuff = { id: string; statKey: string; amount: number; expiresAt: number
 type PersistedProgress = {
   balance: number;
   points: number;
+  reputation: number;
   stats: Record<string, number>;
   equipped: Record<string, string | null>;
   ownedItemIds: string[];
@@ -710,6 +711,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [savedProgress] = useState(loadPersistedProgress);
   const wallet = useWallet(savedProgress.balance ?? 250);
   const pointsWallet = useWallet(savedProgress.points ?? 3);
+  const reputationWallet = useWallet(savedProgress.reputation ?? 0);
   const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
   const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterDefaultOwnedItemIds));
@@ -742,6 +744,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     const data: PersistedProgress = {
       balance: wallet.balance,
       points: pointsWallet.balance,
+      reputation: reputationWallet.balance,
       stats: Object.fromEntries(characterStats.map((stat) => [stat.key, stat.value])),
       equipped,
       ownedItemIds: Array.from(ownedItemIds),
@@ -750,7 +753,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       foodBuffs,
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-  }, [wallet.balance, pointsWallet.balance, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
+  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
@@ -761,7 +764,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     points: pointsWallet.balance,
     energy: 100,
     hp: 100,
-    reputation: 0,
+    reputation: reputationWallet.balance,
     rank: 'NOWY',
   };
 
@@ -838,7 +841,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1967,14 +1970,44 @@ const fightOpponents: FightOpponent[] = [
   { id: 'kosa', name: 'KOSA', level: 3, asset: prisonerAsset, description: 'Doświadczony i opanowany. Nie popełnia niepotrzebnych błędów, gra na swoich zasadach.', quote: 'Za kratami liczy się tylko wynik.', stats: { health: 110, luck: 11, strength: 12, endurance: 11, intelligence: 10, reflex: 9 }, rewardMoney: [60, 100], rewardItemA: [1, 2], rewardItemB: 1 },
 ];
 
-function FightView({ creator, gameData, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; onNotice: (message: string) => void; onReturn: () => void }) {
+// Combat is resolved instantly (no animation yet): each side's relevant
+// stats collapse into a single "power" score, and the win chance is that
+// score's share of the combined total - so a stronger opponent is more
+// likely, but never guaranteed, to win.
+function computeFightPower(stats: Record<FightStatKey, number>) {
+  return stats.strength * 1.2 + stats.endurance + stats.reflex + stats.luck * 0.6 + stats.intelligence * 0.4;
+}
+function randomInRange([min, max]: [number, number]) {
+  return Math.round(min + Math.random() * (max - min));
+}
+
+type FightResult = { won: boolean; opponent: FightOpponent; respectChange: number; moneyChange: number };
+
+function FightView({ creator, gameData, wallet, onAddRespect, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; wallet: Wallet; onAddRespect: (amount: number) => void; onNotice: (message: string) => void; onReturn: () => void }) {
   const [selectedId, setSelectedId] = useState<FightOpponentId>(fightOpponents[0].id);
+  const [fightResult, setFightResult] = useState<FightResult | null>(null);
   const opponent = fightOpponents.find((item) => item.id === selectedId)!;
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const playerAsset = getPrisonerAsset(type, creator.gender);
   const playerStats: Record<FightStatKey, number> = { health: characterStatsList[0].value, luck: characterStatsList[1].value, strength: characterStatsList[2].value, endurance: characterStatsList[3].value, intelligence: characterStatsList[4].value, reflex: characterStatsList[5].value };
 
-  const handleAttack = () => onNotice(`Rozpoczynasz walkę z: ${opponent.name}.`);
+  const handleAttack = () => {
+    const playerPower = computeFightPower(playerStats);
+    const opponentPower = computeFightPower(opponent.stats);
+    const won = Math.random() < playerPower / (playerPower + opponentPower);
+    // Beating a higher-level opponent earns more respect than beating a weaker one.
+    const respectChange = won ? Math.max(1, Math.round(5 + (opponent.level - gameData.level) * 2)) : 0;
+    let moneyChange: number;
+    if (won) {
+      moneyChange = randomInRange(opponent.rewardMoney);
+      wallet.addMoney(moneyChange);
+      onAddRespect(respectChange);
+    } else {
+      moneyChange = -Math.round(wallet.balance * 0.1);
+      wallet.removeMoney(-moneyChange);
+    }
+    setFightResult({ won, opponent, respectChange, moneyChange });
+  };
 
   return <section className="fight-select-view" data-testid="fight-view">
     <header className="fight-select-header">
@@ -2040,9 +2073,22 @@ function FightView({ creator, gameData, onNotice, onReturn }: { creator: Creator
             <div className="fight-reward-tile fight-reward-chance"><span>?</span><small>SZANSA</small></div>
           </div>
         </div>
-        <button className="fight-attack-button" onClick={handleAttack} data-testid="fight-attack-button"><Swords size={18} /> ATAKUJ</button>
+        <button className="fight-attack-button" onClick={handleAttack} disabled={fightResult !== null} data-testid="fight-attack-button"><Swords size={18} /> ATAKUJ</button>
       </aside>
     </div>
+
+    {fightResult && <div className="fight-result-overlay" role="dialog" aria-modal="true" data-testid="fight-result-modal">
+      <div className={`fight-result-modal ${fightResult.won ? 'won' : 'lost'}`}>
+        {fightResult.won ? <Trophy size={40} /> : <Shield size={40} />}
+        <h2>{fightResult.won ? 'ZWYCIĘSTWO!' : 'PORAŻKA'}</h2>
+        <p>{fightResult.won ? `Pokonałeś: ${fightResult.opponent.name}.` : `${fightResult.opponent.name} okazał się silniejszy.`}</p>
+        <div className="fight-result-rewards">
+          {fightResult.won && <span className="fight-result-stat respect"><Star size={16} /> +{fightResult.respectChange} SZACUNKU</span>}
+          <span className={`fight-result-stat money ${fightResult.moneyChange >= 0 ? 'positive' : 'negative'}`}><Coins size={16} /> {fightResult.moneyChange >= 0 ? '+' : ''}{fightResult.moneyChange} $</span>
+        </div>
+        <button className="fight-result-close" onClick={() => setFightResult(null)} data-testid="fight-result-close">OK</button>
+      </div>
+    </div>}
   </section>;
 }
 

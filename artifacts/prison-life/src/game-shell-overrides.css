@@ -1356,6 +1356,79 @@
 .fight-attack-button:hover {
   filter: brightness(1.08);
 }
+.fight-attack-button:disabled {
+  opacity: .6;
+  cursor: default;
+}
+.fight-result-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 8, 9, .72);
+}
+.fight-result-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(340px, 90vw);
+  padding: 28px 24px;
+  border: 1px solid var(--prison-line);
+  border-top: 3px solid var(--prison-orange);
+  background: #0b1416;
+  color: #e8e3d8;
+  text-align: center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .5);
+}
+.fight-result-modal.won { color: var(--prison-orange-light); }
+.fight-result-modal.lost { color: #c0796f; }
+.fight-result-modal h2 {
+  margin: 0;
+  font: 700 24px 'Oswald';
+  letter-spacing: .04em;
+}
+.fight-result-modal p {
+  margin: 0;
+  color: #cfd6cd;
+  font: 13px 'Barlow Condensed';
+}
+.fight-result-rewards {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.fight-result-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--prison-line);
+  background: rgba(0, 0, 0, .25);
+  font: 700 14px 'Oswald';
+}
+.fight-result-stat.respect { color: var(--prison-orange-light); }
+.fight-result-stat.money.positive { color: #7bc98a; }
+.fight-result-stat.money.negative { color: #e0665c; }
+.fight-result-close {
+  margin-top: 10px;
+  height: 42px;
+  width: 100%;
+  border: 0;
+  background: var(--prison-orange);
+  color: #1d120b;
+  cursor: pointer;
+  font: 700 14px 'Barlow Condensed';
+  letter-spacing: .08em;
+}
+.fight-result-close:hover {
+  filter: brightness(1.08);
+}
 
 @media (max-width: 1180px) {
   .fight-select-body { grid-template-columns: minmax(0, 1fr) minmax(230px, 260px); }
