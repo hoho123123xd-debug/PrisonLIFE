@@ -78,6 +78,7 @@ import prisonArtwork from '@assets/ChatGPT_Image_6_wrz_2026,_17_17_42_1788707864
 import registrationEnvironment from '@assets/generated_images/prison-intake-environment.png';
 import prisonerAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_12_30_1788711187677.png';
 import bullAsset from '@assets/ChatGPT_Image_6_wrz_2026,_18_57_13_1788713844519.png';
+import bullDefaultAsset from '@assets/byk_domyslny.png';
 import femaleBullAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_03_12_1788715039687.png';
 import ratAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_57_44_1788713877886.png';
 import femaleRatAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_04_23_1788715066292.png';
@@ -492,7 +493,7 @@ function AppearanceCreatorStep({ creator, setCreator, onNext, onBack }: {
         </aside>
         <div className="appearance-creator-stage">
           <div className={`appearance-creator-photo figure-skin-${creator.appearance.skin}`} style={{ '--hair-color': hairColorOptions[creator.appearance.hairColor].color } as CSSProperties}>
-            <img className="appearance-creator-photo-img" src={prisonerAsset} alt="Podgląd Twojej postaci" />
+            <img className="appearance-creator-photo-img" src={bullDefaultAsset} alt="Podgląd Twojej postaci" />
             {creator.appearance.hair > 0 && <span className={`appearance-creator-hair appearance-creator-hair-${creator.appearance.hair}`} aria-hidden="true" />}
             <span className="appearance-creator-eye-tint appearance-creator-eye-left" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
             <span className="appearance-creator-eye-tint appearance-creator-eye-right" style={{ background: eyeColorSwatches[creator.appearance.eyes] }} aria-hidden="true" />
