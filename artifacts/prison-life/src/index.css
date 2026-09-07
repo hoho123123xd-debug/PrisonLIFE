@@ -805,7 +805,7 @@ button { font: inherit; }
 .appearance-creator-nav-footer { margin-top: auto; padding-top: 20px; color: rgba(225, 122, 46, .35); font: italic 700 22px/1.05 'Oswald'; }
 .appearance-creator-stage { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; min-width: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 20%, rgba(40, 50, 48, .35), transparent 60%), #0d1417; }
 .appearance-creator-photo { position: relative; flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
-.appearance-creator-character-layer { position: relative; flex: 0 1 auto; width: min(100%, 820px); aspect-ratio: 1247 / 1261; max-height: 100%; transform: scale(1.35); transform-origin: center bottom; }
+.appearance-creator-character-layer { position: relative; flex: 0 1 auto; width: min(100%, 820px); aspect-ratio: 1247 / 1261; max-height: 100%; transform: scale(.95); transform-origin: center bottom; }
 .appearance-creator-photo-img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 22px 26px rgba(0, 0, 0, .6)); }
 .appearance-creator-hair { position: absolute; z-index: 1; top: 5.4%; left: 39.2%; width: 21.6%; height: 9%; border-radius: 52% 48% 32% 32%; background: var(--hair-color, #171514); box-shadow: inset 0 -8px 10px rgba(0,0,0,.3), 0 3px 3px rgba(0,0,0,.38); pointer-events: none; opacity: .96; transition: background .2s ease; }
 .appearance-creator-hair-1 { top: 6.8%; left: 40.5%; width: 19%; height: 5.8%; border-radius: 48% 48% 35% 35%; }
@@ -813,6 +813,7 @@ button { font: inherit; }
 .appearance-creator-hair-3 { top: 4.8%; left: 38%; width: 24%; height: 8.8%; border-radius: 58% 42% 25% 25%; clip-path: polygon(2% 45%, 13% 20%, 32% 7%, 58% 4%, 89% 20%, 100% 55%, 92% 72%, 83% 55%, 73% 74%, 61% 58%, 48% 78%, 35% 59%, 20% 71%, 10% 56%); }
 .appearance-creator-hair-4 { top: 2.5%; left: 45%; width: 10%; height: 14%; border-radius: 45% 45% 18% 18%; box-shadow: inset 0 -8px 10px rgba(0,0,0,.3), 0 2px 2px rgba(0,0,0,.45); }
 .appearance-creator-hair-5 { top: 3.7%; left: 35%; width: 30%; height: 15.5%; border-radius: 47% 47% 36% 36%; background: repeating-linear-gradient(90deg, var(--hair-color, #171514) 0 7%, color-mix(in srgb, var(--hair-color, #171514) 62%, #000) 8% 11%, var(--hair-color, #171514) 12% 17%); }
+.appearance-creator-beard-asset { position: absolute; z-index: 2; top: 6%; left: 50%; width: 14%; height: auto; transform: translateX(-50%); pointer-events: none; filter: drop-shadow(0 2px 2px rgba(0,0,0,.28)); }
 .appearance-creator-eye-tint { position: absolute; top: 15.5%; width: 7px; height: 7px; margin: -3px 0 0 -3px; border-radius: 50%; mix-blend-mode: multiply; opacity: .55; pointer-events: none; }
 .appearance-creator-eye-left { left: 44.8%; }
 .appearance-creator-eye-right { left: 52.6%; }
