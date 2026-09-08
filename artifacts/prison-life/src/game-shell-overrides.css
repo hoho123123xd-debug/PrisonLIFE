@@ -7814,7 +7814,7 @@
 }
 
 .game-shell-page .game-layout {
-  grid-template-columns: clamp(250px, 20vw, 310px) minmax(0, 1fr);
+  grid-template-columns: clamp(360px, 28vw, 460px) minmax(0, 1fr);
 }
 
 .game-shell-page .hud-rail-brand {
@@ -8022,8 +8022,8 @@
 }
 
 .game-shell-page .game-sidebar {
-  width: clamp(250px, 20vw, 310px);
-  flex: 0 0 clamp(250px, 20vw, 310px);
+  width: clamp(360px, 28vw, 460px);
+  flex: 0 0 clamp(360px, 28vw, 460px);
   min-height: calc(100dvh - clamp(96px, 11dvh, 120px));
   padding: 13px clamp(12px, 1.2vw, 20px) 14px;
   overflow-y: auto;
@@ -8040,6 +8040,7 @@
 }
 
 .game-shell-page .game-sidebar button {
+  width: clamp(226px, calc(20vw - 24px), 286px);
   min-height: 54px;
   height: auto;
   margin: 4px 0;
@@ -8107,7 +8108,7 @@
 }
 
 .game-shell-page .game-footer {
-  padding-left: clamp(264px, 21vw, 325px);
+  padding-left: clamp(374px, 29vw, 475px);
 }
 
 @media (max-width: 1300px) {
@@ -8151,6 +8152,9 @@
     width: min(236px, 82vw);
     flex-basis: auto;
     min-height: calc(100dvh - 72px);
+  }
+  .game-shell-page .game-sidebar button {
+    width: calc(100% - 2px);
   }
   .game-shell-page .game-layout {
     display: block;
