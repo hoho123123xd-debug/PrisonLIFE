@@ -7813,6 +7813,10 @@
   border-bottom: 1px solid rgba(224, 99, 31, .56);
 }
 
+.game-shell-page .game-layout {
+  grid-template-columns: clamp(250px, 20vw, 310px) minmax(0, 1fr);
+}
+
 .game-shell-page .hud-rail-brand {
   flex: 0 0 clamp(250px, 20vw, 310px);
   min-width: 0;
@@ -8144,6 +8148,9 @@
     width: min(236px, 82vw);
     flex-basis: auto;
     min-height: calc(100dvh - 72px);
+  }
+  .game-shell-page .game-layout {
+    display: block;
   }
   .game-shell-page .game-footer {
     padding-left: 11px;
