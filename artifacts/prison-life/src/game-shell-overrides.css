@@ -7523,12 +7523,6 @@
   object-fit: contain;
   filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .55));
 }
-.storefront-card-art-crop {
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-color: #080d0f;
-}
 .storefront-card-name {
   padding: 6px 9px 0;
   overflow: hidden;

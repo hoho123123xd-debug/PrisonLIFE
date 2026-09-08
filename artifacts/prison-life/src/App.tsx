@@ -1455,8 +1455,7 @@ function GangView({ onNotice }: { onNotice: (message: string) => void }) {
 // selection of offers drawn from a pool, refreshable early for points.
 // GameShell owns the offer-picking/persistence; these components only
 // render whatever offer list they're handed and know how to buy one item.
-type CatalogCrop = { x: number; y: number; width: number; height: number };
-type LegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } | { kind: 'crop'; src: string; crop: CatalogCrop } };
+type LegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
 const legalGenericGoods: LegalGood[] = [
   { id: 'tshirt', name: 'Koszulka', price: 60, render: { kind: 'icon', icon: ShirtIcon } },
   { id: 'shorts', name: 'Spodenki', price: 80, render: { kind: 'icon', icon: Package } },
@@ -1471,48 +1470,8 @@ const legalGenericGoods: LegalGood[] = [
 // Equip-catalog goods, zwykły/rzadki/elitarny only (see storefrontTiers):
 // buying one still lands straight in the character's equipment inventory.
 const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
-const catalogCropAssetMap = import.meta.glob('./assets/catalog-crops/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
-const clothingCatalogGoods: LegalGood[] = [
-  ...Array.from({ length: 14 }, (_, index) => ({
-    id: `catalog-top-${index + 1}`,
-    name: `KOSZULKA ${String(index + 1).padStart(2, '0')}`,
-    price: 70 + index * 5,
-    tier: 'common' as ItemTier,
-    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/top-${String(index + 1).padStart(2, '0')}.png`] },
-  })),
-  ...Array.from({ length: 12 }, (_, index) => ({
-    id: `catalog-outerwear-${index + 1}`,
-    name: `BLUZA ${String(index + 1).padStart(2, '0')}`,
-    price: 160 + index * 5,
-    tier: 'rare' as ItemTier,
-    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/outerwear-${String(index + 1).padStart(2, '0')}.png`] },
-  })),
-];
-const cleanCatalogGoods: LegalGood[] = [
-  ...Array.from({ length: 12 }, (_, index) => ({
-    id: `catalog-pants-${index + 1}`,
-    name: `SPODNIE ${String(index + 1).padStart(2, '0')}`,
-    price: 110 + index * 5,
-    tier: 'common' as ItemTier,
-    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/pants-${String(index + 1).padStart(2, '0')}.png`] },
-  })),
-  ...Array.from({ length: 12 }, (_, index) => ({
-    id: `catalog-shoes-${index + 1}`,
-    name: `BUTY ${String(index + 1).padStart(2, '0')}`,
-    price: 180 + index * 5,
-    tier: 'rare' as ItemTier,
-    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/shoes-${String(index + 1).padStart(2, '0')}.png`] },
-  })),
-  ...Array.from({ length: 10 }, (_, index) => ({
-    id: `catalog-headwear-${index + 1}`,
-    name: `NAKRYCIE GŁOWY ${String(index + 1).padStart(2, '0')}`,
-    price: 85 + index * 5,
-    tier: 'common' as ItemTier,
-    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/headwear-${String(index + 1).padStart(2, '0')}.png`] },
-  })),
-];
-const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods, ...clothingCatalogGoods, ...cleanCatalogGoods];
-const legalEquipIds = new Set([...legalEquipGoods, ...clothingCatalogGoods, ...cleanCatalogGoods].map((item) => item.id));
+const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods];
+const legalEquipIds = new Set(legalEquipGoods.map((item) => item.id));
 
 type IllegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
 const illegalFlavorGoods: IllegalGood[] = [
@@ -1595,7 +1554,7 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
       <div className="storefront-grid">
         {offers.map((item) => { const isEquip = legalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
           {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
-          <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : item.render.kind === 'crop' ? <div className="storefront-card-art-crop" aria-label={item.name} style={{ backgroundImage: `url(${item.render.src})`, backgroundSize: `${(1024 / item.render.crop.width) * 100}% ${(683 / item.render.crop.height) * 100}%`, backgroundPosition: `${(item.render.crop.x / (1024 - item.render.crop.width)) * 100}% ${(item.render.crop.y / (683 - item.render.crop.height)) * 100}%` }} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
+          <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
           <div className="storefront-card-footer">
             {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{item.price} $</b>}
             <button onClick={() => buyItem(item)} disabled={owned} aria-label={`Kup: ${item.name}`} data-testid={`shop-buy-${item.id}`}><ShoppingCart size={14} /></button>
