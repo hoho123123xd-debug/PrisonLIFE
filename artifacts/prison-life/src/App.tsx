@@ -1473,13 +1473,28 @@ const legalGenericGoods: LegalGood[] = [
 // buying one still lands straight in the character's equipment inventory.
 const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
 const catalogRows = [
-  { label: 'KOSZULKA', y: 8, height: 94, count: 14, tier: 'common' as ItemTier, price: 70 },
-  { label: 'BLUZA', y: 101, height: 94, count: 12, tier: 'rare' as ItemTier, price: 160 },
   { label: 'SPODNIE', y: 198, height: 94, count: 12, tier: 'common' as ItemTier, price: 110 },
   { label: 'BUTY', y: 293, height: 76, count: 14, tier: 'rare' as ItemTier, price: 180 },
   { label: 'DODATEK', y: 369, height: 70, count: 10, tier: 'common' as ItemTier, price: 85 },
   { label: 'PLECAK', y: 437, height: 94, count: 8, tier: 'elite' as ItemTier, price: 240 },
   { label: 'WYPOSAŻENIE', y: 530, height: 145, count: 10, tier: 'rare' as ItemTier, price: 130 },
+];
+const catalogCropAssetMap = import.meta.glob('./assets/catalog-crops/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const clothingCatalogGoods: LegalGood[] = [
+  ...Array.from({ length: 14 }, (_, index) => ({
+    id: `catalog-top-${index + 1}`,
+    name: `KOSZULKA ${String(index + 1).padStart(2, '0')}`,
+    price: 70 + index * 5,
+    tier: 'common' as ItemTier,
+    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/top-${String(index + 1).padStart(2, '0')}.png`] },
+  })),
+  ...Array.from({ length: 12 }, (_, index) => ({
+    id: `catalog-outerwear-${index + 1}`,
+    name: `BLUZA ${String(index + 1).padStart(2, '0')}`,
+    price: 160 + index * 5,
+    tier: 'rare' as ItemTier,
+    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/outerwear-${String(index + 1).padStart(2, '0')}.png`] },
+  })),
 ];
 const catalogGoods: LegalGood[] = catalogRows.flatMap((row, rowIndex) => Array.from({ length: row.count }, (_, index) => {
   const width = Math.floor(1024 / row.count);
@@ -1491,8 +1506,8 @@ const catalogGoods: LegalGood[] = catalogRows.flatMap((row, rowIndex) => Array.f
     render: { kind: 'crop' as const, src: catalogProductsAsset, crop: { x: index * width, y: row.y, width, height: row.height } },
   };
 }));
-const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods, ...catalogGoods];
-const legalEquipIds = new Set(legalEquipGoods.map((item) => item.id));
+const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods, ...clothingCatalogGoods, ...catalogGoods];
+const legalEquipIds = new Set([...legalEquipGoods, ...clothingCatalogGoods, ...catalogGoods].map((item) => item.id));
 
 type IllegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
 const illegalFlavorGoods: IllegalGood[] = [
