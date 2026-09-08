@@ -793,7 +793,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [savedProgress] = useState(loadPersistedProgress);
   const wallet = useWallet(savedProgress.balance ?? 250);
-  const pointsWallet = useWallet((savedProgress.points ?? 3) + (savedProgress.pointsGiftGranted ? 0 : 1000));
+  const pointsWallet = useWallet(Math.max(savedProgress.points ?? 3, 1003));
   const reputationWallet = useWallet(savedProgress.reputation ?? 0);
   const [cellUpgradeLevels, setCellUpgradeLevels] = useState<Record<string, number>>(() => savedProgress.cellUpgradeLevels ?? {});
   const energyWallet = useEnergy(savedProgress.energy ?? ENERGY_MAX, savedProgress.energyUpdatedAt ?? Date.now(), Math.round(ENERGY_REGEN_MS / (1 + cellEnergyRegenBonusPercent(cellUpgradeLevels) / 100)));
