@@ -26,7 +26,7 @@ const navigation: NavItem[] = [
   { label: "TRENING", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-trening.png" },
   { label: "WALKA", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-walka.png" },
   { label: "STOŁÓWKA", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-stolowka.png" },
-  { label: "SKLEP", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-sklep.png" },
+  { label: "KATYNA", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-sklep.png" },
   { label: "CZARNY RYNEK", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-czarny-rynek.png" },
   { label: "ZLECENIA", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-zlecenia.png" },
   { label: "GANG", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-gang.png" },
@@ -141,13 +141,11 @@ export function Industrial() {
 
       <div className="pls-layout">
         <aside className={`pls-rail ${mobileMenuOpen ? "is-open" : ""}`}>
-          <div className="pls-rail-brand">
-            <img
-              className="pls-rail-logo"
-              src="/__mockup/images/prison-life-shell-logo-clear.png"
-              alt="Prison Life — sezon 01, blok A, nocna warta"
-            />
-          </div>
+          <img
+            className="pls-rail-wordmark"
+            src="/__mockup/images/prison-life-reference/prison-life-wordmark.png"
+            alt="Prison Life"
+          />
           <nav className="pls-nav" aria-label="Nawigacja gry">
             {navigation.map(({ label, iconSrc }) => (
               <button
