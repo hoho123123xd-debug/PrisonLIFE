@@ -76,13 +76,16 @@ export const ITEM_DROP_CHANCE = 0.3;
 export const ELITE_LOOT_CHANCE = 1 / 5000;
 // unikat is event-only (events aren't built yet) and edycja limitowana
 // needs its own separate source that isn't decided yet either - neither
-// belongs behind an ordinary mission/fight roll at all.
-export function pickRandomLootItem(ownedItemIds: Set<string>) {
-  const eliteCandidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && item.tier === 'elite');
+// belongs behind an ordinary mission/fight roll at all. Owning one already
+// no longer excludes it from future rolls (see ItemInstance below) - a
+// second copy is just another instance with its own rolled bonus, to be
+// worn or sold.
+export function pickRandomLootItem() {
+  const eliteCandidates = characterInventoryItemsData.filter((item) => item.tier === 'elite');
   if (eliteCandidates.length > 0 && Math.random() < ELITE_LOOT_CHANCE) {
     return eliteCandidates[Math.floor(Math.random() * eliteCandidates.length)];
   }
-  const candidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && (item.tier === 'common' || item.tier === 'rare'));
+  const candidates = characterInventoryItemsData.filter((item) => item.tier === 'common' || item.tier === 'rare');
   if (candidates.length === 0) return null;
   const totalWeight = candidates.reduce((sum, item) => sum + itemTierConfig[item.tier].dropWeight, 0);
   let roll = Math.random() * totalWeight;
@@ -91,6 +94,23 @@ export function pickRandomLootItem(ownedItemIds: Set<string>) {
     if (roll <= 0) return item;
   }
   return candidates[candidates.length - 1];
+}
+
+// Every purchase or loot drop is its own instance: same catalog item, same
+// tier, but the bonus this specific copy rolled can differ. The spread is
+// additive (±30% of the base, floored at ±1) rather than a straight
+// percentage multiply, since a percentage swing on a base as low as 2 always
+// rounds back to the same integer - the additive floor keeps even the
+// cheapest items visibly variable. Owning several of "the same" item is
+// normal - keep the best roll equipped, sell the rest.
+export type ItemInstance = { instanceId: string; itemId: string; bonusAmount: number };
+let itemInstanceCounter = 0;
+export function rollItemInstance(itemId: string): ItemInstance {
+  const item = characterInventoryItemsData.find((entry) => entry.id === itemId)!;
+  itemInstanceCounter += 1;
+  const spread = Math.max(1, Math.round(item.bonusAmount * 0.3));
+  const bonusAmount = Math.max(1, item.bonusAmount + Math.floor(Math.random() * (spread * 2 + 1)) - spread);
+  return { instanceId: `${itemId}-${Date.now()}-${itemInstanceCounter}`, itemId, bonusAmount };
 }
 
 // Sklep (legal) and Czarny Rynek (illegal) share one mechanic: a rotating

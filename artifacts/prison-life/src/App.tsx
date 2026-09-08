@@ -12,6 +12,8 @@ import {
   ITEM_DROP_CHANCE,
   ELITE_LOOT_CHANCE,
   pickRandomLootItem,
+  type ItemInstance,
+  rollItemInstance,
   type LegalGood,
   legalEquipGoods,
   legalGoodsPool,
@@ -758,7 +760,7 @@ type PersistedProgress = {
   cellUpgradeLevels: Record<string, number>;
   stats: Record<string, number>;
   equipped: Record<string, string | null>;
-  ownedItemIds: string[];
+  ownedItems: ItemInstance[];
   shopOffer: OfferState;
   marketOffer: OfferState;
   foodBuffs: FoodBuff[];
@@ -832,7 +834,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   };
   const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
   const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
-  const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterDefaultOwnedItemIds));
+  const [ownedItems, setOwnedItems] = useState<ItemInstance[]>(() => savedProgress.ownedItems ?? characterDefaultOwnedItems);
   const [shopOffer, setShopOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.shopOffer, legalGoodsPool));
   const [marketOffer, setMarketOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.marketOffer, illegalGoodsPool));
   const offerRunLocked = useActionLock();
@@ -871,13 +873,13 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       cellUpgradeLevels,
       stats: Object.fromEntries(characterStats.map((stat) => [stat.key, stat.value])),
       equipped,
-      ownedItemIds: Array.from(ownedItemIds),
+      ownedItems,
       shopOffer,
       marketOffer,
       foodBuffs,
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, energyWallet.energy, energyWallet.updatedAt, cellUpgradeLevels, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
+  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, energyWallet.energy, energyWallet.updatedAt, cellUpgradeLevels, characterStats, equipped, ownedItems, shopOffer, marketOffer, foodBuffs]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
@@ -970,7 +972,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />}<i className="game-nav-divider" aria-hidden="true" /><span>{label}</span></button>)}</aside>
         <div className={`game-content ${activeSection === 'character' ? 'game-content-character' : activeSection === 'cell' || activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' || activeSection === 'cafeteria' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
+        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} setOwnedItems={setOwnedItems} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} setOwnedItems={setOwnedItems} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} setOwnedItems={setOwnedItems} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} setOwnedItems={setOwnedItems} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1070,7 +1072,7 @@ const characterStatLabelByKey: Record<string, string> = { health: 'zdrowia', luc
 function statUpgradeCost(currentValue: number): number {
   return 20 + currentValue * 4;
 }
-const characterDefaultEquipped: Record<string, string | null> = {
+const characterDefaultEquippedItemIds: Record<string, string | null> = {
   head: 'cap',
   neck: null,
   torso: 'orange-shirt',
@@ -1082,7 +1084,15 @@ const characterDefaultEquipped: Record<string, string | null> = {
 };
 // A fresh prisoner starts owning only their issued/equipped loadout — anything
 // not in that set (e.g. the bandana, the hoodie) is bought from the Sklep.
-const characterDefaultOwnedItemIds: string[] = Object.values(characterDefaultEquipped).filter((id): id is string => Boolean(id));
+// Starter gear gets a fixed, deterministic instance (catalog's base bonus,
+// no roll) rather than going through rollItemInstance - only things bought
+// or looted after that vary.
+const characterDefaultOwnedItems: ItemInstance[] = Object.values(characterDefaultEquippedItemIds)
+  .filter((itemId): itemId is string => Boolean(itemId))
+  .map((itemId) => ({ instanceId: `starter-${itemId}`, itemId, bonusAmount: characterInventoryItemsData.find((entry) => entry.id === itemId)!.bonusAmount }));
+const characterDefaultEquipped: Record<string, string | null> = Object.fromEntries(
+  Object.entries(characterDefaultEquippedItemIds).map(([slot, itemId]) => [slot, itemId ? `starter-${itemId}` : null]),
+);
 const characterStatsList: Array<{ key: string; label: string; description: string; value: number; max: number; icon: typeof Shield; tone: string }> = [
   { key: 'health', label: 'ZDROWIE', description: 'Więcej wytrzymałości. Dłużej na nogach.', value: 100, max: 100, icon: Heart, tone: 'red' },
   { key: 'luck', label: 'SZCZĘŚCIE', description: 'Lepsze wydarzenia. Większe szanse.', value: 12, max: 100, icon: Clover, tone: 'green' },
@@ -1092,7 +1102,7 @@ const characterStatsList: Array<{ key: string; label: string; description: strin
   { key: 'reflex', label: 'REFLEKS', description: 'Szybsze reakcje. Przewaga w walce.', value: 14, max: 100, icon: Zap, tone: 'yellow' },
 ];
 
-function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, setEquipped, ownedItemIds, setOwnedItemIds, foodStatBonuses, onNotice }: {
+function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, setEquipped, ownedItems, setOwnedItems, foodStatBonuses, onNotice }: {
   creator: CreatorState;
   gameData: { nickname: string; level: number; xp: number; xpMax: number; gold: number; points: number; energy: number; hp: number; reputation: number; rank: string };
   wallet: Wallet;
@@ -1100,8 +1110,8 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
   setStats: Dispatch<SetStateAction<typeof characterStatsList>>;
   equipped: Record<string, string | null>;
   setEquipped: Dispatch<SetStateAction<Record<string, string | null>>>;
-  ownedItemIds: Set<string>;
-  setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
+  ownedItems: ItemInstance[];
+  setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>;
   foodStatBonuses: Record<string, number>;
   onNotice: (message: string) => void;
 }) {
@@ -1109,25 +1119,24 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
   const [inventoryPage, setInventoryPage] = useState(1);
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null);
   const [dragOverInventory, setDragOverInventory] = useState(false);
-  const [draggingItemId, setDraggingItemId] = useState<string | null>(null);
+  const [draggingInstanceId, setDraggingInstanceId] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ id: string; x: number; y: number } | null>(null);
   const runLocked = useActionLock();
   const inventoryPageCount = 3;
-  // Sale is atomic: money is only credited if the item was actually present
-  // (and removed) in the ownership set at the moment of the check.
+  // Sale is atomic: money is only credited if the instance was actually
+  // present (and removed) in the owned list at the moment of the check.
   // Ownership check reads directly from render-time state (accurate — reads
-  // aren't the fragile part) and runLocked already prevents this same item
-  // from being sold twice before a re-render can catch up, so the check
-  // stays a plain guard instead of routing a flag through a setState updater.
-  const sellItem = (itemId: string) => runLocked(`sell-${itemId}`, () => {
-    const item = characterInventoryItemsData.find((entry) => entry.id === itemId);
+  // aren't the fragile part) and runLocked already prevents this same
+  // instance from being sold twice before a re-render can catch up, so the
+  // check stays a plain guard instead of routing a flag through a setState
+  // updater.
+  const sellItem = (instanceId: string) => runLocked(`sell-${instanceId}`, () => {
+    const instance = ownedItems.find((entry) => entry.instanceId === instanceId);
+    if (!instance) { onNotice('Nie można sprzedać — przedmiot nie jest już w ekwipunku.'); return; }
+    const item = characterInventoryItemsData.find((entry) => entry.id === instance.itemId);
     if (!item) return;
-    if (!ownedItemIds.has(itemId)) {
-      onNotice('Nie można sprzedać — przedmiot nie jest już w ekwipunku.');
-      return;
-    }
-    setOwnedItemIds((current) => { const next = new Set(current); next.delete(itemId); return next; });
+    setOwnedItems((current) => current.filter((entry) => entry.instanceId !== instanceId));
     setContextMenu(null);
     wallet.addMoney(item.value);
     onNotice(`Sprzedano: ${item.name.toLowerCase()} za ${item.value} $.`);
@@ -1152,22 +1161,27 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
     onNotice(`Rozwinięto statystykę: ${stat.label.toLowerCase()} (-${cost} $).`);
   });
   const equipmentStatBonuses: Record<string, number> = {};
-  for (const equippedId of Object.values(equipped)) {
-    if (!equippedId) continue;
-    const equippedItem = characterInventoryItemsData.find((entry) => entry.id === equippedId);
-    if (!equippedItem) continue;
-    equipmentStatBonuses[equippedItem.bonusStat] = (equipmentStatBonuses[equippedItem.bonusStat] ?? 0) + equippedItem.bonusAmount;
+  for (const equippedInstanceId of Object.values(equipped)) {
+    if (!equippedInstanceId) continue;
+    const equippedInstance = ownedItems.find((entry) => entry.instanceId === equippedInstanceId);
+    const equippedItem = equippedInstance ? characterInventoryItemsData.find((entry) => entry.id === equippedInstance.itemId) : undefined;
+    if (!equippedInstance || !equippedItem) continue;
+    equipmentStatBonuses[equippedItem.bonusStat] = (equipmentStatBonuses[equippedItem.bonusStat] ?? 0) + equippedInstance.bonusAmount;
   }
-  const equippedItemIds = new Set(Object.values(equipped).filter((value): value is string => Boolean(value)));
-  const visibleInventoryItems = characterInventoryItemsData.filter(({ id }) => ownedItemIds.has(id) && !equippedItemIds.has(id));
-  const draggingItem = draggingItemId ? characterInventoryItemsData.find((entry) => entry.id === draggingItemId) : undefined;
-  const handleItemDragStart = (event: DragEvent<HTMLButtonElement>, itemId: string) => {
-    event.dataTransfer.setData('application/json', JSON.stringify({ source: 'inventory', itemId }));
+  const equippedInstanceIds = new Set(Object.values(equipped).filter((value): value is string => Boolean(value)));
+  const visibleInventoryItems = ownedItems
+    .filter((instance) => !equippedInstanceIds.has(instance.instanceId))
+    .map((instance) => ({ instance, item: characterInventoryItemsData.find((entry) => entry.id === instance.itemId) }))
+    .filter((entry): entry is { instance: ItemInstance; item: typeof characterInventoryItemsData[number] } => Boolean(entry.item));
+  const draggingInstance = draggingInstanceId ? ownedItems.find((entry) => entry.instanceId === draggingInstanceId) : undefined;
+  const draggingItem = draggingInstance ? characterInventoryItemsData.find((entry) => entry.id === draggingInstance.itemId) : undefined;
+  const handleItemDragStart = (event: DragEvent<HTMLButtonElement>, instanceId: string) => {
+    event.dataTransfer.setData('application/json', JSON.stringify({ source: 'inventory', instanceId }));
     event.dataTransfer.effectAllowed = 'move';
-    setDraggingItemId(itemId);
+    setDraggingInstanceId(instanceId);
   };
   const handleItemDragEnd = () => {
-    setDraggingItemId(null);
+    setDraggingInstanceId(null);
     setDragOverSlot(null);
   };
   const handleSlotDragStart = (event: DragEvent<HTMLButtonElement>, slotId: string) => {
@@ -1180,15 +1194,16 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
     setDragOverSlot(null);
     const payload = event.dataTransfer.getData('application/json');
     if (!payload) return;
-    const data = JSON.parse(payload) as { source: 'inventory' | 'slot'; itemId?: string; slotId?: string };
-    if (data.source !== 'inventory' || !data.itemId) return;
-    const item = characterInventoryItemsData.find((entry) => entry.id === data.itemId);
-    if (!item) return;
+    const data = JSON.parse(payload) as { source: 'inventory' | 'slot'; instanceId?: string; slotId?: string };
+    if (data.source !== 'inventory' || !data.instanceId) return;
+    const instance = ownedItems.find((entry) => entry.instanceId === data.instanceId);
+    const item = instance ? characterInventoryItemsData.find((entry) => entry.id === instance.itemId) : undefined;
+    if (!instance || !item) return;
     if (item.slot !== slotId) {
       onNotice(`${item.name} nie pasuje do tego miejsca.`);
       return;
     }
-    setEquipped((current) => ({ ...current, [slotId]: item.id }));
+    setEquipped((current) => ({ ...current, [slotId]: instance.instanceId }));
     onNotice(`Założono: ${item.name.toLowerCase()}.`);
   };
   const handleInventoryDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -1210,7 +1225,8 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
     <div className="character-outfit-layout">
       <aside className="character-slots-rail">
         {characterEquipmentSlots.map(({ id, label, icon: Icon }) => {
-          const equippedItem = equipped[id] ? characterInventoryItemsData.find((entry) => entry.id === equipped[id]) : undefined;
+          const equippedInstance = equipped[id] ? ownedItems.find((entry) => entry.instanceId === equipped[id]) : undefined;
+          const equippedItem = equippedInstance ? characterInventoryItemsData.find((entry) => entry.id === equippedInstance.itemId) : undefined;
           return <button
             className={`character-slot-card ${equippedItem ? 'filled' : ''} ${dragOverSlot === id ? 'drag-over' : ''} ${draggingItem && draggingItem.slot === id ? 'target' : ''}`}
             key={id}
@@ -1244,15 +1260,15 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
           onDragOver={(event) => { event.preventDefault(); setDragOverInventory(true); }}
           onDragLeave={() => setDragOverInventory(false)}
           onDrop={handleInventoryDrop}
-        >{visibleInventoryItems.map(({ id, name, asset, tier }) => <button
+        >{visibleInventoryItems.map(({ instance, item: { name, asset, tier } }) => <button
           className="character-inventory-item"
-          key={id}
+          key={instance.instanceId}
           draggable
-          onDragStart={(event) => handleItemDragStart(event, id)}
+          onDragStart={(event) => handleItemDragStart(event, instance.instanceId)}
           onDragEnd={handleItemDragEnd}
-          onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id, x: rect.left + rect.width / 2, y: rect.top }); }}
-          onMouseLeave={() => setHoveredItem((current) => current?.id === id ? null : current)}
-          onContextMenu={(event) => { event.preventDefault(); setHoveredItem(null); setContextMenu({ id, x: event.clientX, y: event.clientY }); }}
+          onMouseEnter={(event) => { const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id: instance.instanceId, x: rect.left + rect.width / 2, y: rect.top }); }}
+          onMouseLeave={() => setHoveredItem((current) => current?.id === instance.instanceId ? null : current)}
+          onContextMenu={(event) => { event.preventDefault(); setHoveredItem(null); setContextMenu({ id: instance.instanceId, x: event.clientX, y: event.clientY }); }}
           onClick={() => onNotice(`Podgląd przedmiotu: ${name.toLowerCase()}.`)}
         >
           <span className={`character-inventory-rarity tone-${tier}`} style={{ background: itemTierConfig[tier].color }} />
@@ -1299,21 +1315,23 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
       </div>
     </section>
     {hoveredItem && (() => {
-      const item = characterInventoryItemsData.find((entry) => entry.id === hoveredItem.id);
-      if (!item) return null;
+      const instance = ownedItems.find((entry) => entry.instanceId === hoveredItem.id);
+      const item = instance ? characterInventoryItemsData.find((entry) => entry.id === instance.itemId) : undefined;
+      if (!instance || !item) return null;
       return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
         <strong>{item.name}</strong>
         <em className={`character-item-tooltip-tier tone-${item.tier}`} style={{ color: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</em>
-        <span>+{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
+        <span>+{instance.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
       </div>;
     })()}
     {contextMenu && (() => {
-      const item = characterInventoryItemsData.find((entry) => entry.id === contextMenu.id);
-      if (!item) return null;
+      const instance = ownedItems.find((entry) => entry.instanceId === contextMenu.id);
+      const item = instance ? characterInventoryItemsData.find((entry) => entry.id === instance.itemId) : undefined;
+      if (!instance || !item) return null;
       return <>
         <div className="character-context-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(event) => { event.preventDefault(); setContextMenu(null); }} />
         <div className="character-context-menu" style={{ left: contextMenu.x, top: contextMenu.y }}>
-          <button onClick={() => sellItem(item.id)}><CircleDollarSign size={14} /> SPRZEDAJ <small>{item.value} $</small></button>
+          <button onClick={() => sellItem(instance.instanceId)}><CircleDollarSign size={14} /> SPRZEDAJ <small>{item.value} $</small></button>
         </div>
       </>;
     })()}
@@ -1392,11 +1410,10 @@ const blackMarketGangControl: GangControlEntry[] = [
 ];
 const blackMarketTaxCut = blackMarketGangControl.find((entry) => entry.controlling)?.cut ?? 0;
 
-function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function ShopView({ wallet, offers, setOwnedItems, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: LegalGood[];
-  ownedItemIds: Set<string>;
-  setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
+  setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>;
   refreshCost: number;
   pointsBalance: number;
   onRefresh: () => void;
@@ -1404,12 +1421,11 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
 }) {
   const runLocked = useActionLock();
 
+  // No "already own it" gate: every purchase rolls its own instance (see
+  // rollItemInstance), so buying the same item twice just means two copies
+  // with (probably) different bonuses - keep the better roll, sell the rest.
   const buyItem = (item: LegalGood) => runLocked(`shop-buy-${item.id}`, () => {
     const isEquip = legalEquipIds.has(item.id);
-    if (isEquip && ownedItemIds.has(item.id)) {
-      onNotice(`${item.name}: już posiadasz ten przedmiot.`);
-      return;
-    }
     if (!wallet.canAfford(item.price)) {
       onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - wallet.balance} $.`);
       return;
@@ -1418,7 +1434,7 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
       onNotice('Zakup nieudany — brak środków.');
       return;
     }
-    if (isEquip) setOwnedItemIds((current) => new Set(current).add(item.id));
+    if (isEquip) setOwnedItems((current) => [...current, rollItemInstance(item.id)]);
     onNotice(`Kupiono: ${item.name.toLowerCase()}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
   });
 
@@ -1440,12 +1456,12 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
         </div>
       </div>
       <div className="storefront-grid">
-        {offers.map((item) => { const isEquip = legalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
+        {offers.map((item) => { return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
           {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
           <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
           <div className="storefront-card-footer">
-            {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{item.price} $</b>}
-            <button onClick={() => buyItem(item)} disabled={owned} aria-label={`Kup: ${item.name}`} data-testid={`shop-buy-${item.id}`}><ShoppingCart size={14} /></button>
+            <b>{item.price} $</b>
+            <button onClick={() => buyItem(item)} aria-label={`Kup: ${item.name}`} data-testid={`shop-buy-${item.id}`}><ShoppingCart size={14} /></button>
           </div>
         </article>; })}
       </div>
@@ -1457,11 +1473,10 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
   </section>;
 }
 
-function MarketView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function MarketView({ wallet, offers, setOwnedItems, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: IllegalGood[];
-  ownedItemIds: Set<string>;
-  setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
+  setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>;
   refreshCost: number;
   pointsBalance: number;
   onRefresh: () => void;
@@ -1469,12 +1484,9 @@ function MarketView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost
 }) {
   const runLocked = useActionLock();
 
+  // No "already own it" gate here either - see ShopView's buyItem.
   const buyItem = (item: IllegalGood) => runLocked(`market-buy-${item.id}`, () => {
     const isEquip = illegalEquipIds.has(item.id);
-    if (isEquip && ownedItemIds.has(item.id)) {
-      onNotice(`${item.name}: już posiadasz ten przedmiot.`);
-      return;
-    }
     const total = Math.round(item.price * (1 + blackMarketTaxCut / 100));
     if (!wallet.canAfford(total)) {
       onNotice(`Brak środków. Potrzebujesz jeszcze ${total - wallet.balance} $.`);
@@ -1484,7 +1496,7 @@ function MarketView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost
       onNotice('Zakup nieudany — brak środków.');
       return;
     }
-    if (isEquip) setOwnedItemIds((current) => new Set(current).add(item.id));
+    if (isEquip) setOwnedItems((current) => [...current, rollItemInstance(item.id)]);
     onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
   });
 
@@ -1508,13 +1520,13 @@ function MarketView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost
           </div>
         </div>
         <div className="storefront-grid storefront-grid-named">
-          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); const isEquip = illegalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
+          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
             {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
             <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
             <strong className="storefront-card-name">{item.name}</strong>
             <div className="storefront-card-footer">
-              {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{total} $</b>}
-              <button onClick={() => buyItem(item)} disabled={owned} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
+              <b>{total} $</b>
+              <button onClick={() => buyItem(item)} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
             </div>
           </article>; })}
         </div>
@@ -1833,7 +1845,7 @@ function missionSkipCost(remainingMs: number) {
 
 const MISSION_BONUS_MONEY_CHANCE = 0.35;
 
-function MissionCardTile({ mission, wallet, pointsWallet, energy, ownedItemIds, setOwnedItemIds, onGainXp, onNotice }: { mission: MissionCard; wallet: Wallet; pointsWallet: Wallet; energy: Energy; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+function MissionCardTile({ mission, wallet, pointsWallet, energy, setOwnedItems, onGainXp, onNotice }: { mission: MissionCard; wallet: Wallet; pointsWallet: Wallet; energy: Energy; setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   const [status, setStatus] = useState<'idle' | 'in-progress'>('idle');
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remainingMs, setRemainingMs] = useState(0);
@@ -1854,8 +1866,8 @@ function MissionCardTile({ mission, wallet, pointsWallet, energy, ownedItemIds, 
         extras.push(`${bonusMoney} $`);
       }
       if (Math.random() < ITEM_DROP_CHANCE) {
-        const loot = pickRandomLootItem(ownedItemIds);
-        if (loot) { setOwnedItemIds((current) => new Set(current).add(loot.id)); extras.push(loot.name); }
+        const loot = pickRandomLootItem();
+        if (loot) { setOwnedItems((current) => [...current, rollItemInstance(loot.id)]); extras.push(loot.name); }
       }
       if (Math.random() < POINT_DROP_CHANCE) { pointsWallet.addMoney(1); extras.push('1 pkt'); }
       onNotice(`Misja "${mission.title.toLowerCase()}" zakończona sukcesem: +${mission.rewardXp} EXP${extras.length ? ' oraz ' + extras.join(', ') : ''}.`);
@@ -1916,14 +1928,14 @@ function MissionCardTile({ mission, wallet, pointsWallet, energy, ownedItemIds, 
   </article>;
 }
 
-function MissionsCardsView({ wallet, pointsWallet, energy, ownedItemIds, setOwnedItemIds, onGainXp, onNotice }: { wallet: Wallet; pointsWallet: Wallet; energy: Energy; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+function MissionsCardsView({ wallet, pointsWallet, energy, setOwnedItems, onGainXp, onNotice }: { wallet: Wallet; pointsWallet: Wallet; energy: Energy; setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   return <section className="missions-cards-view" style={{ '--missions-cards-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-cards-view">
     <header className="missions-cards-heading">
       <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WYBIERZ MISJĘ I PODEJMIJ RYZYKO. KAŻDA DECYZJA MA KONSEKWENCJE.</p></div>
       <div className="missions-cards-slogan">TU NIE MA<br />PRZYPADKÓW</div>
     </header>
     <div className="missions-cards-grid">
-      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} wallet={wallet} pointsWallet={pointsWallet} energy={energy} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onGainXp={onGainXp} onNotice={onNotice} />)}
+      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} wallet={wallet} pointsWallet={pointsWallet} energy={energy} setOwnedItems={setOwnedItems} onGainXp={onGainXp} onNotice={onNotice} />)}
     </div>
     <footer className="missions-cards-footer">
       <div className="missions-card-timer"><Archive size={26} /><span><small>NOWE MISJE ZA:</small><strong>01:58:27</strong></span></div>
@@ -2290,7 +2302,7 @@ type FightResult = { won: boolean; opponent: FightOpponent; respectChange: numbe
 
 const FIGHT_ENERGY_COST = 15;
 
-function FightView({ creator, gameData, wallet, energy, pointsWallet, ownedItemIds, setOwnedItemIds, onAddRespect, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; wallet: Wallet; energy: Energy; pointsWallet: Wallet; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onAddRespect: (amount: number) => void; onNotice: (message: string) => void; onReturn: () => void }) {
+function FightView({ creator, gameData, wallet, energy, pointsWallet, setOwnedItems, onAddRespect, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; wallet: Wallet; energy: Energy; pointsWallet: Wallet; setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>; onAddRespect: (amount: number) => void; onNotice: (message: string) => void; onReturn: () => void }) {
   const [selectedId, setSelectedId] = useState<FightOpponentId>(fightOpponents[0].id);
   const [fightResult, setFightResult] = useState<FightResult | null>(null);
   const opponent = fightOpponents.find((item) => item.id === selectedId)!;
@@ -2313,8 +2325,8 @@ function FightView({ creator, gameData, wallet, energy, pointsWallet, ownedItemI
       wallet.addMoney(moneyChange);
       onAddRespect(respectChange);
       if (Math.random() < ITEM_DROP_CHANCE) {
-        const loot = pickRandomLootItem(ownedItemIds);
-        if (loot) { setOwnedItemIds((current) => new Set(current).add(loot.id)); itemWon = loot.name; }
+        const loot = pickRandomLootItem();
+        if (loot) { setOwnedItems((current) => [...current, rollItemInstance(loot.id)]); itemWon = loot.name; }
       }
       if (Math.random() < POINT_DROP_CHANCE) { pointsWallet.addMoney(1); pointsWon = 1; }
     } else {
