@@ -938,7 +938,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1043,6 +1043,10 @@ const itemTierConfig: Record<ItemTier, { label: string; color: string; dropWeigh
   limited: { label: 'EDYCJA LIMITOWANA', color: '#e0a83d', dropWeight: 5 },
   unique: { label: 'UNIKAT', color: '#e0473d', dropWeight: 1 },
 };
+// Sklep and Czarny Rynek both only ever stock the three "everyday" tiers -
+// edycja limitowana and unikat stay out of ordinary storefronts the same
+// way they stay out of ordinary loot (see pickRandomLootItem below).
+const storefrontTiers = new Set<ItemTier>(['common', 'rare', 'elite']);
 const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; tier: ItemTier; slot: string; bonusStat: string; bonusAmount: number; value: number; price: number }> = [
   { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, tier: 'common', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 23, price: 50 },
   { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, tier: 'common', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 18, price: 40 },
@@ -1416,24 +1420,29 @@ const legalGenericGoods: LegalGood[] = [
   { id: 'slides', name: 'Klapki', price: 70, render: { kind: 'icon', icon: FootprintsIcon } },
   { id: 'notebook-set', name: 'Notes i długopis', price: 35, render: { kind: 'icon', icon: ScrollText } },
 ];
-// Equip-catalog goods (weapon excluded — that stays a black-market matter):
+// Equip-catalog goods, zwykły/rzadki/elitarny only (see storefrontTiers):
 // buying one still lands straight in the character's equipment inventory.
-const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => item.slot !== 'weapon').map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
+const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
 const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods];
 const legalEquipIds = new Set(legalEquipGoods.map((item) => item.id));
 
-type IllegalGood = { id: string; name: string; price: number; icon: typeof Shield };
-const illegalGoodsPool: IllegalGood[] = [
-  { id: 'prison-knife', name: 'Nóż więzienny', price: 450, icon: Swords },
-  { id: 'knuckles', name: 'Kastet', price: 380, icon: HandFist },
-  { id: 'amphetamine', name: 'Amfetamina (mała porcja)', price: 250, icon: Package },
-  { id: 'shiv', name: 'Sztylet', price: 600, icon: Crosshair },
-  { id: 'steroids', name: 'Sterydy', price: 350, icon: Dumbbell },
-  { id: 'weed', name: 'Marihuana', price: 180, icon: Leaf },
-  { id: 'burner-phone', name: 'Telefon', price: 1200, icon: Smartphone },
-  { id: 'tattoo-kit', name: 'Zestaw do tatuażu', price: 520, icon: Award },
-  { id: 'stolen-watch', name: 'Zegarek (skradziony)', price: 410, icon: Watch },
+type IllegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
+const illegalFlavorGoods: IllegalGood[] = [
+  { id: 'prison-knife', name: 'Nóż więzienny', price: 450, render: { kind: 'icon', icon: Swords } },
+  { id: 'knuckles', name: 'Kastet', price: 380, render: { kind: 'icon', icon: HandFist } },
+  { id: 'amphetamine', name: 'Amfetamina (mała porcja)', price: 250, render: { kind: 'icon', icon: Package } },
+  { id: 'shiv', name: 'Sztylet', price: 600, render: { kind: 'icon', icon: Crosshair } },
+  { id: 'steroids', name: 'Sterydy', price: 350, render: { kind: 'icon', icon: Dumbbell } },
+  { id: 'weed', name: 'Marihuana', price: 180, render: { kind: 'icon', icon: Leaf } },
+  { id: 'burner-phone', name: 'Telefon', price: 1200, render: { kind: 'icon', icon: Smartphone } },
+  { id: 'tattoo-kit', name: 'Zestaw do tatuażu', price: 520, render: { kind: 'icon', icon: Award } },
+  { id: 'stolen-watch', name: 'Zegarek (skradziony)', price: 410, render: { kind: 'icon', icon: Watch } },
 ];
+// Same equip catalog as the Sklep (zwykły/rzadki/elitarny only), so anything
+// buyable legally is also buyable here — at the usual black-market markup.
+const illegalEquipGoods: IllegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
+const illegalGoodsPool: IllegalGood[] = [...illegalFlavorGoods, ...illegalEquipGoods];
+const illegalEquipIds = new Set(illegalEquipGoods.map((item) => item.id));
 
 // Which gang currently controls the black market — a static snapshot for
 // now (no live gang-war simulation yet), applied as a real surcharge on
@@ -1513,9 +1522,11 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
   </section>;
 }
 
-function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function MarketView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: IllegalGood[];
+  ownedItemIds: Set<string>;
+  setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
   refreshCost: number;
   pointsBalance: number;
   onRefresh: () => void;
@@ -1524,6 +1535,11 @@ function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onN
   const runLocked = useActionLock();
 
   const buyItem = (item: IllegalGood) => runLocked(`market-buy-${item.id}`, () => {
+    const isEquip = illegalEquipIds.has(item.id);
+    if (isEquip && ownedItemIds.has(item.id)) {
+      onNotice(`${item.name}: już posiadasz ten przedmiot.`);
+      return;
+    }
     const total = Math.round(item.price * (1 + blackMarketTaxCut / 100));
     if (!wallet.canAfford(total)) {
       onNotice(`Brak środków. Potrzebujesz jeszcze ${total - wallet.balance} $.`);
@@ -1533,7 +1549,8 @@ function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onN
       onNotice('Zakup nieudany — brak środków.');
       return;
     }
-    onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.`);
+    if (isEquip) setOwnedItemIds((current) => new Set(current).add(item.id));
+    onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
   });
 
   return <section className="storefront-view storefront-market" data-testid="market-view">
@@ -1556,12 +1573,13 @@ function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onN
           </div>
         </div>
         <div className="storefront-grid storefront-grid-named">
-          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
-            <div className="storefront-card-art"><item.icon size={52} strokeWidth={1.15} /></div>
+          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); const isEquip = illegalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
+            {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
+            <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
             <strong className="storefront-card-name">{item.name}</strong>
             <div className="storefront-card-footer">
-              <b>{total} $</b>
-              <button onClick={() => buyItem(item)} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
+              {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{total} $</b>}
+              <button onClick={() => buyItem(item)} disabled={owned} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
             </div>
           </article>; })}
         </div>
