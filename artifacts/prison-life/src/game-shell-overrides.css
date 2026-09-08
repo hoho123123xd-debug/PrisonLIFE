@@ -2731,6 +2731,16 @@
 .training-exercise-card button:hover {
   background: #ff9340;
 }
+.training-exercise-card button.training-exercise-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #eee8de;
+  background: rgba(0, 0, 0, .35);
+  border-color: var(--game-line, rgba(184, 193, 187, .2));
+  cursor: default;
+}
 .training-bottom-grid {
   min-height: 0;
   display: grid;

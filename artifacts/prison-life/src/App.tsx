@@ -867,7 +867,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView pointsWallet={pointsWallet} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView pointsWallet={pointsWallet} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1853,25 +1853,96 @@ type TrainingExercise = {
   description: string;
   energy: number;
   duration: number;
+  statKey: string;
+  statGain: number;
   reward: string;
   icon: typeof Dumbbell;
 };
 
 const trainingExercises: TrainingExercise[] = [
-  { id: 'pushups', label: 'POMPKI', description: 'Rozwijaj siłę. Proste, ale skuteczne.', energy: 10, duration: 15, reward: 'Siła (XP)', icon: Dumbbell },
-  { id: 'squats', label: 'PRZYSIADY', description: 'Lepsza kondycja to większa wytrzymałość.', energy: 10, duration: 15, reward: 'Kondycja (XP)', icon: Heart },
-  { id: 'weights', label: 'CIĘŻARY', description: 'Prawdziwa siła rodzi się z wysiłku.', energy: 20, duration: 30, reward: 'Siła (więcej XP)', icon: Dumbbell },
-  { id: 'combat', label: 'TRENING WALKI', description: 'Technika, refleks, kontrola.', energy: 25, duration: 30, reward: 'Siła (max XP)', icon: Crosshair },
+  { id: 'pushups', label: 'POMPKI', description: 'Rozwijaj siłę. Proste, ale skuteczne.', energy: 10, duration: 15, statKey: 'strength', statGain: 2, reward: 'Siła (+2)', icon: Dumbbell },
+  { id: 'squats', label: 'PRZYSIADY', description: 'Lepsza kondycja to większa wytrzymałość.', energy: 10, duration: 15, statKey: 'endurance', statGain: 2, reward: 'Kondycja (+2)', icon: Heart },
+  { id: 'weights', label: 'CIĘŻARY', description: 'Prawdziwa siła rodzi się z wysiłku.', energy: 20, duration: 30, statKey: 'strength', statGain: 3, reward: 'Siła (+3)', icon: Dumbbell },
+  { id: 'combat', label: 'TRENING WALKI', description: 'Technika, refleks, kontrola.', energy: 25, duration: 30, statKey: 'reflex', statGain: 3, reward: 'Refleks (+3)', icon: Crosshair },
 ];
 
-const trainingStats = [
-  { label: 'SIŁA', level: 'POZIOM 5', value: '320 / 500', progress: '64%', icon: Dumbbell },
-  { label: 'KONDYCJA', level: 'POZIOM 4', value: '180 / 400', progress: '45%', icon: Heart },
-  { label: 'ZRĘCZNOŚĆ', level: 'POZIOM 3', value: '120 / 300', progress: '40%', icon: Crosshair },
-];
+type TrainingHistoryEntry = { id: string; label: string; xpText: string; time: string };
 
-function TrainingView({ onNotice }: { onNotice: (message: string) => void }) {
-  const [startedExercise, setStartedExercise] = useState<string | null>(null);
+function TrainingExerciseTile({ exercise, stats, setStats, onNotice, onCompleted }: {
+  exercise: TrainingExercise;
+  stats: typeof characterStatsList;
+  setStats: Dispatch<SetStateAction<typeof characterStatsList>>;
+  onNotice: (message: string) => void;
+  onCompleted: (exercise: TrainingExercise) => void;
+}) {
+  const [status, setStatus] = useState<'idle' | 'in-progress'>('idle');
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState(0);
+  const resolvedRef = useRef(false);
+  const statInfo = stats.find((stat) => stat.key === exercise.statKey)!;
+
+  const resolve = () => {
+    if (resolvedRef.current) return;
+    resolvedRef.current = true;
+    setStatus('idle');
+    setEndsAt(null);
+    setStats((current) => current.map((stat) => stat.key === exercise.statKey ? { ...stat, value: Math.min(stat.max, stat.value + exercise.statGain) } : stat));
+    onNotice(`Trening ukończony: ${exercise.label.toLowerCase()}. +${exercise.statGain} ${statInfo.label.toLowerCase()}.`);
+    onCompleted(exercise);
+  };
+
+  useEffect(() => {
+    if (status !== 'in-progress' || endsAt === null) return;
+    const tick = () => {
+      const remaining = endsAt - Date.now();
+      if (remaining <= 0) {
+        setRemainingMs(0);
+        resolve();
+      } else {
+        setRemainingMs(remaining);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, endsAt]);
+
+  const start = () => {
+    if (statInfo.value >= statInfo.max) { onNotice(`${statInfo.label} jest już na maksymalnym poziomie.`); return; }
+    resolvedRef.current = false;
+    setEndsAt(Date.now() + exercise.duration * 60 * 1000);
+    setRemainingMs(exercise.duration * 60 * 1000);
+    setStatus('in-progress');
+    onNotice(`Rozpoczynasz trening: ${exercise.label.toLowerCase()}.`);
+  };
+
+  const Icon = exercise.icon;
+  return <article className={`training-exercise-card ${status === 'in-progress' ? 'started' : ''}`} data-testid={`training-card-${exercise.id}`}>
+    <div className={`training-exercise-art training-art-${exercise.id}`} style={{ backgroundImage: `url("${trainingMockup}")` }} />
+    <div className="training-exercise-copy">
+      <h3>{exercise.label}</h3>
+      <p>{exercise.description}</p>
+      <div className="training-exercise-meta"><span><Zap size={13} /> {exercise.energy} energii</span><span><Timer size={13} /> {exercise.duration} minut</span><span><Icon size={13} /> {exercise.reward}</span></div>
+      {status === 'in-progress'
+        ? <button className="training-exercise-timer" disabled data-testid={`training-timer-${exercise.id}`}><Timer size={14} /> {formatWorkRemaining(remainingMs)}</button>
+        : <button onClick={start} data-testid={`training-start-${exercise.id}`}>ROZPOCZNIJ</button>}
+    </div>
+  </article>;
+}
+
+function TrainingView({ stats, setStats, onNotice }: { stats: typeof characterStatsList; setStats: Dispatch<SetStateAction<typeof characterStatsList>>; onNotice: (message: string) => void }) {
+  const [completedToday, setCompletedToday] = useState<Set<string>>(new Set());
+  const [history, setHistory] = useState<TrainingHistoryEntry[]>([
+    { id: 'seed-1', label: 'Pompki', xpText: '+12 XP (Siła)', time: 'Dziś, 06:30' },
+    { id: 'seed-2', label: 'Przysiady', xpText: '+10 XP (Kondycja)', time: 'Wczoraj, 18:45' },
+  ]);
+  const handleCompleted = (exercise: TrainingExercise) => {
+    setCompletedToday((current) => new Set(current).add(exercise.id));
+    setHistory((current) => [{ id: `${exercise.id}-${Date.now()}`, label: exercise.label, xpText: exercise.reward, time: 'Teraz' }, ...current].slice(0, 5));
+  };
+  const trainingStatKeys = ['strength', 'endurance', 'reflex'];
+  const trainingStats = trainingStatKeys.map((key) => stats.find((stat) => stat.key === key)!);
 
   return <section className="training-view" data-testid="training-view">
     <header className="training-page-header">
@@ -1890,24 +1961,21 @@ function TrainingView({ onNotice }: { onNotice: (message: string) => void }) {
 
         <section className="training-available">
           <div className="training-section-heading"><div><h2>DOSTĘPNE TRENINGI</h2><span>WYBIERZ ĆWICZENIE I ROZWIJAJ SWOJE UMIEJĘTNOŚCI.</span></div></div>
-          <div className="training-exercise-grid">{trainingExercises.map((exercise) => {
-            const Icon = exercise.icon;
-            const started = startedExercise === exercise.id;
-            return <article className={`training-exercise-card ${started ? 'started' : ''}`} key={exercise.id}>
-              <div className={`training-exercise-art training-art-${exercise.id}`} style={{ backgroundImage: `url("${trainingMockup}")` }} />
-              <div className="training-exercise-copy"><h3>{exercise.label}</h3><p>{exercise.description}</p><div className="training-exercise-meta"><span><Zap size={13} /> {exercise.energy} energii</span><span><Timer size={13} /> {exercise.duration} minut</span><span><Icon size={13} /> {exercise.reward}</span></div><button onClick={() => { setStartedExercise(exercise.id); onNotice(`Rozpoczynasz trening: ${exercise.label.toLowerCase()}.`); }}>{started ? 'W TRAKCIE' : 'ROZPOCZNIJ'}</button></div>
-            </article>;
-          })}</div>
+          <div className="training-exercise-grid">{trainingExercises.map((exercise) => <TrainingExerciseTile key={exercise.id} exercise={exercise} stats={stats} setStats={setStats} onNotice={onNotice} onCompleted={handleCompleted} />)}</div>
         </section>
 
         <div className="training-bottom-grid">
           <section className="training-progress-panel">
             <div className="training-section-heading"><div><h2>POSTĘP DZIŚ</h2><span>WYKONAJ WSZYSTKIE DZIŚ TRENINGI, ABY OTRZYMAĆ BONUS.</span></div></div>
-            <div className="training-progress-track"><div className="training-progress-line" /><i className="complete"><CheckCircle2 size={13} /></i><i className="complete"><CheckCircle2 size={13} /></i><i><span>3</span></i><i><span>4</span></i><div className="training-reward"><Trophy size={18} /><span><strong>NAGRODA</strong><small>+10% wszystkich treningów<br />(przez 24h)</small></span></div></div>
+            <div className="training-progress-track">
+              <div className="training-progress-line" />
+              {trainingExercises.map((exercise, index) => <i key={exercise.id} className={completedToday.has(exercise.id) ? 'complete' : ''}>{completedToday.has(exercise.id) ? <CheckCircle2 size={13} /> : <span>{index + 1}</span>}</i>)}
+              <div className="training-reward"><Trophy size={18} /><span><strong>NAGRODA</strong><small>+10% wszystkich treningów<br />(przez 24h)</small></span></div>
+            </div>
           </section>
           <section className="training-history-panel">
             <div className="training-section-heading"><div><h2>HISTORIA TRENINGÓW</h2><span>OSTATNIE AKTYWNOŚCI</span></div><button onClick={() => onNotice('Wyświetlasz pełną historię treningów.')}>ZOBACZ WIĘCEJ <ChevronRight size={12} /></button></div>
-            <div className="training-history-list"><div><CheckCircle2 size={15} /><strong>Pompki</strong><small>Dziś, 06:30</small><b>+12 XP (Siła)</b></div><div><CheckCircle2 size={15} /><strong>Przysiady</strong><small>Wczoraj, 18:45</small><b>+10 XP (Kondycja)</b></div></div>
+            <div className="training-history-list">{history.map((entry) => <div key={entry.id}><CheckCircle2 size={15} /><strong>{entry.label}</strong><small>{entry.time}</small><b>{entry.xpText}</b></div>)}</div>
           </section>
         </div>
       </div>
@@ -1915,8 +1983,8 @@ function TrainingView({ onNotice }: { onNotice: (message: string) => void }) {
       <aside className="training-side-column">
         <section className="training-side-panel training-stat-panel">
           <div className="training-side-heading"><h2>TWOJE STATYSTYKI</h2><button onClick={() => onNotice('Pełne statystyki postaci będą dostępne w zakładce STATYSTYKI.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div>
-          {trainingStats.map(({ label, level, value, progress, icon: Icon }) => <div className="training-stat-row" key={label}><Icon size={18} /><div><strong>{label}</strong><small>{level}</small><div className="training-stat-bar"><i style={{ width: progress }} /></div></div><span>{value}</span></div>)}
-          <div className="training-energy-row"><Zap size={23} /><div><strong>ENERGIA</strong><div className="training-stat-bar"><i style={{ width: '75%' }} /></div></div><span>75 / 100<small>+1 za 24 min</small></span></div>
+          {trainingStats.map(({ label, value, max, icon: Icon }) => <div className="training-stat-row" key={label}><Icon size={18} /><div><strong>{label}</strong><div className="training-stat-bar"><i style={{ width: `${(value / max) * 100}%` }} /></div></div><span>{value} / {max}</span></div>)}
+          <div className="training-energy-row"><Zap size={23} /><div><strong>ENERGIA</strong><div className="training-stat-bar"><i style={{ width: '100%' }} /></div></div><span>100 / 100</span></div>
         </section>
         <section className="training-side-panel training-efficiency-panel"><div className="training-side-heading"><h2>EFEKTYWNOŚĆ TRENINGU</h2></div><div><span>Podstawowa efektywność</span><b>100%</b></div><div><span>Bonus z celi (Kącik treningowy)</span><b>+15%</b></div><div><span>Bonus gangu (BRak)</span><b>0%</b></div><div className="training-efficiency-total"><span>Suma efektywności</span><b>115%</b></div></section>
         <section className="training-side-panel training-tip-panel"><Lightbulb size={25} /><div><h2>WSKAZÓWKA</h2><p>Regularny trening nie tylko zwiększa statystyki, ale też poprawia Twoje samopoczucie i morale.</p></div></section>
