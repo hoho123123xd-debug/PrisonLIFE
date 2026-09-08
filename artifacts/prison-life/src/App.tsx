@@ -136,7 +136,6 @@ import inventoryFeetBlackBootsAsset from '@assets/inventory/feet-black-boots.png
 import inventoryFeetTanBootsAsset from '@assets/inventory/feet-tan-boots-clean.png';
 import inventoryFeetRedSneakersAsset from '@assets/inventory/feet-red-sneakers-clean.png';
 import inventoryWeaponKnifeAsset from '@assets/inventory/weapon-knife.png';
-import catalogProductsAsset from '@assets/ChatGPT_Image_8_wrz_2026,_04_55_48_1788836152259.png';
 import cellBackground from './assets/cell/cell-background.webp';
 import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
@@ -1472,13 +1471,6 @@ const legalGenericGoods: LegalGood[] = [
 // Equip-catalog goods, zwykły/rzadki/elitarny only (see storefrontTiers):
 // buying one still lands straight in the character's equipment inventory.
 const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
-const catalogRows = [
-  { label: 'SPODNIE', y: 198, height: 94, count: 12, tier: 'common' as ItemTier, price: 110 },
-  { label: 'BUTY', y: 293, height: 76, count: 14, tier: 'rare' as ItemTier, price: 180 },
-  { label: 'DODATEK', y: 369, height: 70, count: 10, tier: 'common' as ItemTier, price: 85 },
-  { label: 'PLECAK', y: 437, height: 94, count: 8, tier: 'elite' as ItemTier, price: 240 },
-  { label: 'WYPOSAŻENIE', y: 530, height: 145, count: 10, tier: 'rare' as ItemTier, price: 130 },
-];
 const catalogCropAssetMap = import.meta.glob('./assets/catalog-crops/*.png', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 const clothingCatalogGoods: LegalGood[] = [
   ...Array.from({ length: 14 }, (_, index) => ({
@@ -1496,18 +1488,31 @@ const clothingCatalogGoods: LegalGood[] = [
     render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/outerwear-${String(index + 1).padStart(2, '0')}.png`] },
   })),
 ];
-const catalogGoods: LegalGood[] = catalogRows.flatMap((row, rowIndex) => Array.from({ length: row.count }, (_, index) => {
-  const width = Math.floor(1024 / row.count);
-  return {
-    id: `catalog-${rowIndex + 1}-${index + 1}`,
-    name: `${row.label} ${String(index + 1).padStart(2, '0')}`,
-    price: row.price + index * 5,
-    tier: row.tier,
-    render: { kind: 'crop' as const, src: catalogProductsAsset, crop: { x: index * width, y: row.y, width, height: row.height } },
-  };
-}));
-const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods, ...clothingCatalogGoods, ...catalogGoods];
-const legalEquipIds = new Set([...legalEquipGoods, ...clothingCatalogGoods, ...catalogGoods].map((item) => item.id));
+const cleanCatalogGoods: LegalGood[] = [
+  ...Array.from({ length: 12 }, (_, index) => ({
+    id: `catalog-pants-${index + 1}`,
+    name: `SPODNIE ${String(index + 1).padStart(2, '0')}`,
+    price: 110 + index * 5,
+    tier: 'common' as ItemTier,
+    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/pants-${String(index + 1).padStart(2, '0')}.png`] },
+  })),
+  ...Array.from({ length: 12 }, (_, index) => ({
+    id: `catalog-shoes-${index + 1}`,
+    name: `BUTY ${String(index + 1).padStart(2, '0')}`,
+    price: 180 + index * 5,
+    tier: 'rare' as ItemTier,
+    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/shoes-${String(index + 1).padStart(2, '0')}.png`] },
+  })),
+  ...Array.from({ length: 10 }, (_, index) => ({
+    id: `catalog-headwear-${index + 1}`,
+    name: `NAKRYCIE GŁOWY ${String(index + 1).padStart(2, '0')}`,
+    price: 85 + index * 5,
+    tier: 'common' as ItemTier,
+    render: { kind: 'image' as const, src: catalogCropAssetMap[`./assets/catalog-crops/headwear-${String(index + 1).padStart(2, '0')}.png`] },
+  })),
+];
+const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods, ...clothingCatalogGoods, ...cleanCatalogGoods];
+const legalEquipIds = new Set([...legalEquipGoods, ...clothingCatalogGoods, ...cleanCatalogGoods].map((item) => item.id));
 
 type IllegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
 const illegalFlavorGoods: IllegalGood[] = [
