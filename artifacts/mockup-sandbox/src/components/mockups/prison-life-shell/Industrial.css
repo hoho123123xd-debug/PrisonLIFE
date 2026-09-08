@@ -62,6 +62,7 @@
   height: 81%;
   margin: 0;
   padding: 0 18px 0 38px;
+  transform: translateX(-10px);
 }
 
 .prison-life-shell .pls-rail-note {
