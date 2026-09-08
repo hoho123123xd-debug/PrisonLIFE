@@ -24,6 +24,7 @@ import {
   Zap,
 } from "lucide-react";
 import "./_group.css";
+import "./Industrial.css";
 
 type NavItem = {
   label: string;
@@ -170,7 +171,7 @@ export function Industrial() {
             {navigation.map(({ label, icon: Icon }) => (
               <button
                 key={label}
-                className={`pls-button pls-nav-button ${activeSection === label ? "active" : ""}`}
+                className={`pls-button pls-nav-button pls-nav-button--plate ${activeSection === label ? "active" : ""}`}
                 onClick={() => navigate(label)}
                 aria-current={activeSection === label ? "page" : undefined}
               >
