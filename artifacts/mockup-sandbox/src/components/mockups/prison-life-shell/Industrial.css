@@ -23,6 +23,61 @@
     inset 0 1px 0 rgba(238, 124, 45, 0.14);
 }
 
+.prison-life-shell .pls-player {
+  height: 60px;
+  grid-template-columns: 49px minmax(0, 1fr);
+  gap: 10px;
+  padding: 4px 18px 4px 12px;
+  border: 0;
+  background: url("/__mockup/images/prison-life-reference/hud-player-box-bg.png") center / 100% 100% no-repeat;
+  box-shadow: none;
+}
+
+.prison-life-shell .pls-avatar {
+  width: 44px;
+  height: 50px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.prison-life-shell .pls-player-meta {
+  display: grid;
+  align-content: center;
+  min-width: 0;
+}
+
+.prison-life-shell .pls-player-meta-top {
+  gap: 8px;
+}
+
+.prison-life-shell .pls-player-meta strong {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.prison-life-shell .pls-player-meta small {
+  font-size: 8px;
+}
+
+.prison-life-shell .pls-level {
+  margin-top: 5px;
+  line-height: 1;
+}
+
+.prison-life-shell .pls-xp-track {
+  width: 100%;
+  height: 7px;
+  margin-top: 6px;
+}
+
+.prison-life-shell .pls-xp-label {
+  top: 50%;
+  right: 5px;
+  bottom: auto;
+  transform: translateY(-50%);
+}
+
 .prison-life-shell .pls-avatar {
   overflow: hidden;
   padding: 0;
