@@ -97,14 +97,12 @@ export function Industrial() {
           <div className="pls-player-meta">
             <div className="pls-player-meta-top">
               <strong>KOSA</strong>
-              <small>BYK</small>
             </div>
             <div className="pls-level">
               POZIOM <b>12</b>
             </div>
-            <div className="pls-xp-track">
-              <i style={{ width: "68.4%" }} />
-              <span className="pls-xp-label">BYK</span>
+            <div className="pls-gang">
+              GANG <b>BYK</b>
             </div>
           </div>
         </div>
