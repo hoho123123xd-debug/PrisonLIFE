@@ -2200,7 +2200,8 @@ function WorkView({ creator, wallet, onNotice }: { creator: CreatorState; wallet
 }
 
 const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shield }> = [
-  { id: 'cell', label: 'CEL', icon: Shield },
+  { id: 'character', label: 'TWOJA POSTAĆ', icon: Shield },
+  { id: 'cell', label: 'CELA', icon: Shield },
   { id: 'training', label: 'TRENING', icon: Dumbbell },
   { id: 'fight', label: 'WALKA', icon: Swords },
   { id: 'canteen', label: 'STOŁÓWKA', icon: Utensils },

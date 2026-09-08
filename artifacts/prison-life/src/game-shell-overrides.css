@@ -8041,7 +8041,7 @@
 
 .game-shell-page .game-sidebar button {
   width: calc(100% - 72px);
-  min-height: clamp(52px, calc((100dvh - 200px) / 10), 76px);
+  min-height: clamp(48px, calc((100dvh - 200px) / 11), 76px);
   height: auto;
   margin: 3px 0;
   margin-left: 30px;
