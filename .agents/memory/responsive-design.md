@@ -37,4 +37,6 @@ Every screen and every component in Prison Life must be one fluid, responsive in
 
 **Before adding anything new:** check how it affects the existing layout at other sizes; don't add an element in a way that only works at the current viewport size. Do a responsiveness pass after any significant change.
 
+**HUD-specific note:** older breakpoint rules may broadly hide `.hud-chip` or related live-resource elements. Any new compact HUD layout must explicitly restore the elements it intends to keep visible before tuning their sizes.
+
 **This rule has precedence over ad-hoc CSS fixes.** If a new change conflicts with the existing layout, fix the underlying layout mechanic rather than bolting on another CSS hack.

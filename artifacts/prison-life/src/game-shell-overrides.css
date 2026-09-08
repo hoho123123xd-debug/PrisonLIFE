@@ -8750,6 +8750,9 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
   }
+  .game-shell-page .hud-chip {
+    display: block;
+  }
   .game-shell-page .hud-chip-label {
     display: none;
   }
