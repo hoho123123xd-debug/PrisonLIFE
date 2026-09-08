@@ -1434,6 +1434,8 @@
 .fight-result-stat.respect { color: var(--prison-orange-light); }
 .fight-result-stat.money.positive { color: #7bc98a; }
 .fight-result-stat.money.negative { color: #e0665c; }
+.fight-result-stat.loot { color: #7bb0d6; }
+.fight-result-stat.points { color: #4fd6e0; }
 .fight-result-close {
   margin-top: 10px;
   height: 42px;
