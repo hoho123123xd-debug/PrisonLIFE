@@ -91,7 +91,6 @@ import {
   ScanFace,
   Scissors,
   ScrollText,
-  Search,
   Send,
   Shield,
   ShieldCheck,
@@ -1315,10 +1314,6 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
       <aside className="character-inventory-panel">
         <div className="character-panel-heading"><h2>EKWIPUNEK</h2></div>
         <div className="character-inventory-tabs">{characterInventoryTabs.map((tab) => <button className={inventoryTab === tab ? 'active' : ''} onClick={() => setInventoryTab(tab)} key={tab}>{tab}</button>)}</div>
-        <div className="character-inventory-toolbar">
-          <label className="character-inventory-search"><Search size={14} /><input placeholder="Szukaj przedmiotu..." onChange={() => undefined} /></label>
-          <button className="character-inventory-sort" onClick={() => onNotice('Sortowanie ekwipunku będzie dostępne wkrótce.')}>Sortuj: Rzadkość <ChevronRight size={12} /></button>
-        </div>
         <div
           className={`character-inventory-grid ${dragOverInventory ? 'drag-over' : ''}`}
           onDragOver={(event) => { event.preventDefault(); setDragOverInventory(true); }}

@@ -3771,44 +3771,6 @@
   color: #eee8de;
   background: rgba(225, 122, 46, .14);
 }
-.character-inventory-toolbar {
-  display: flex;
-  gap: 6px;
-  flex: 0 0 auto;
-}
-.character-inventory-search {
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 8px;
-  border: 1px solid var(--character-line);
-  background: rgba(0, 0, 0, .25);
-  color: #7d867f;
-}
-.character-inventory-search input {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 30px;
-  border: 0;
-  background: transparent;
-  color: #eee8de;
-  outline: 0;
-  font: 12px 'Barlow';
-}
-.character-inventory-sort {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 8px;
-  border: 1px solid var(--character-line);
-  background: transparent;
-  color: var(--character-muted);
-  font: 9.5px 'Barlow Condensed';
-  white-space: nowrap;
-  cursor: pointer;
-}
 .character-inventory-grid {
   flex: 1 1 0;
   min-height: 0;
