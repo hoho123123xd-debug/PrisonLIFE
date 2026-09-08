@@ -14,7 +14,8 @@
   padding: 0;
   border-right-color: rgba(230, 84, 22, 0.42);
   background:
-    url("/__mockup/images/prison-life-shell-sidebar-body.png") center top / 100% 100% no-repeat,
+    url("/__mockup/images/prison-life-shell-chain-rail.png") left top / 14px 100% no-repeat,
+    linear-gradient(90deg, rgba(13, 16, 17, 0.98) 0 14px, rgba(13, 16, 17, 0.97) 14px 100%),
     #0b0e0f;
   box-shadow: 8px 0 23px rgba(0, 0, 0, 0.55);
 }
@@ -29,7 +30,7 @@
   z-index: 1;
   display: grid;
   grid-template-rows: repeat(10, minmax(0, 1fr));
-  gap: 4px;
+  gap: 5px;
   height: 81%;
   margin: 0;
   padding: 0 18px 0 38px;
@@ -44,17 +45,25 @@
   min-height: 0;
   width: 100%;
   height: 100%;
-  display: block;
-  padding: 0;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 0 28px 0 14px;
   border: 0 !important;
   border-radius: 0;
-  background: transparent !important;
-  background-image: none !important;
+  background-color: transparent !important;
+  background-image: url("/__mockup/images/prison-life-shell-nav-button.png") !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   clip-path: none;
   box-shadow: none;
   cursor: pointer;
-  opacity: 0;
+  color: #ebe8df;
+  opacity: 1;
   transform: none !important;
+  transition: filter 160ms ease, transform 160ms ease, color 160ms ease;
 }
 
 .prison-life-shell .pls-nav-button--plate::before,
@@ -70,25 +79,36 @@
 }
 
 .prison-life-shell .pls-nav-button--plate .pls-nav-icon {
-  display: none;
+  display: block;
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
 }
 
 .prison-life-shell .pls-nav-button--plate .pls-nav-icon--market {
-  display: none;
+  width: 24px;
+  height: 27px;
 }
 
 .prison-life-shell .pls-nav-button--plate:hover {
-  background: transparent !important;
-  background-image: none !important;
-  filter: none !important;
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png") !important;
+  background-size: 100% 100%;
+  color: #fff0dc;
+  filter: drop-shadow(0 0 4px rgba(255, 115, 27, 0.25));
+  transform: translateX(1px) !important;
 }
 
 .prison-life-shell .pls-nav-button--plate.active {
   border: 0 !important;
-  background: transparent !important;
-  background-image: none !important;
+  background-color: transparent !important;
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png") !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   box-shadow: none !important;
-  filter: none !important;
+  color: #fff0dc;
 }
 
 .prison-life-shell .pls-nav-button--plate:focus-visible {
@@ -98,13 +118,28 @@
 }
 
 .prison-life-shell .pls-nav-button--plate.active:hover {
-  background: transparent !important;
-  background-image: none !important;
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png") !important;
 }
 
 @media (max-width: 720px) {
   .prison-life-shell .pls-brand-logo {
     width: 194px;
     height: 60px;
+  }
+
+  .prison-life-shell .pls-nav {
+    padding-left: 30px;
+    padding-right: 12px;
+  }
+
+  .prison-life-shell .pls-nav-button--plate {
+    grid-template-columns: 27px minmax(0, 1fr);
+    gap: 7px;
+    padding-right: 24px;
+  }
+
+  .prison-life-shell .pls-nav-button--plate .pls-nav-icon {
+    width: 23px;
+    height: 23px;
   }
 }
