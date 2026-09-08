@@ -162,6 +162,7 @@
 @media (min-width: 981px) {
   .prison-life-shell .pls-topbar {
     margin-left: 236px;
+    padding-left: 0;
   }
 
   .prison-life-shell .pls-layout {
