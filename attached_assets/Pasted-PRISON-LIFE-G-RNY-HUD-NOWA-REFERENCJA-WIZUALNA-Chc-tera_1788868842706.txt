@@ -1,0 +1,102 @@
+PRISON LIFE — GÓRNY HUD / NOWA REFERENCJA WIZUALNA
+
+Chcę teraz zmienić WYŁĄCZNIE wygląd górnego HUD-u.
+
+Załączona referencja pokazuje dokładnie kierunek, który chcę osiągnąć. 
+TO JEST NOWA REFERENCJA SOURCE OF TRUTH DLA GÓRNEGO HUD-U.
+
+Najważniejsza zmiana:
+
+NIE chcę osobnych metalowych paneli/kart dla pieniędzy, punktów, energii itd.
+
+Cały górny HUD ma wyglądać jak JEDNA DŁUGA, CIĄGŁA KONSTRUKCJA będąca częścią świata Prison Life.
+
+Ma przypominać ciężką, starą, więzienną belkę/element wyposażenia:
+- ciemne, zużyte tło,
+- beton/metal,
+- rdza,
+- pomarańczowe przetarcia,
+- śruby,
+- metalowe elementy,
+- łańcuchy,
+- industrialne detale,
+- mocne, ale kontrolowane cienie,
+- klimat brutalnej gry więziennej.
+
+ZACHOWAJ OBECNE DANE I FUNKCJONALNOŚĆ:
+- logo PRISON LIFE,
+- avatar,
+- ksywa,
+- poziom,
+- XP i pasek XP,
+- pieniądze,
+- punkty,
+- energia,
+- wiadomości,
+- ustawienia,
+- wylogowanie.
+
+Ale zmień sposób ich prezentacji tak, aby były częścią JEDNEJ BELKI.
+
+REFERENCJA:
+Logo znajduje się po lewej.
+Następnie znajduje się sekcja gracza z avatarem, ksywą, poziomem i XP.
+Następnie pieniądze.
+Następnie punkty.
+Następnie energia.
+Na końcu wiadomości, ustawienia i wylogowanie.
+
+Nie twórz wokół każdego z tych elementów osobnej prostokątnej karty.
+
+Podziały między sekcjami mogą być wykonane subtelnymi metalowymi separatorami, zmianą faktury, śrubami lub elementami konstrukcyjnymi, ale wszystko musi nadal wyglądać jak jeden fizyczny element.
+
+WAŻNE — NIE UŻYWAJ REFERENCJI JAKO JEDNEGO OBRAZKA HUD-U.
+
+HUD MA BYĆ ZBUDOWANY W KODZIE.
+
+Teksty, liczby, XP, energia itd. muszą pozostać dynamicznymi elementami HTML/React.
+
+Grafiki mogą być używane jako osobne elementy dekoracyjne:
+- tekstury,
+- logo,
+- avatar,
+- ikony,
+- łańcuchy,
+- śruby,
+- metalowe elementy itd.
+
+Nie chcę, żeby cała belka była jednym PNG.
+
+DOPASOWANIE:
+
+Nie zmniejszaj wszystkiego tylko po to, żeby zmieścić zawartość.
+
+Zachowaj proporcje i hierarchię wizualną z referencji.
+
+Szczególnie:
+- logo ma być duże i wyraźne,
+- avatar ma mieć odpowiednią wielkość,
+- ksywa ma być czytelna,
+- XP ma być wyraźnie widoczny,
+- pieniądze i punkty mają mieć dużo miejsca na duże wartości,
+- energia ma mieć wystarczająco dużo miejsca na napis, wartość i pasek,
+- ikony wiadomości/ustawień/wylogowania mają być czytelne, ale nie mogą dominować nad głównymi informacjami.
+
+NIE projektuj tego jak dashboardu.
+NIE projektuj tego jak aplikacji SaaS.
+NIE używaj typowych kart UI.
+NIE używaj minimalistycznych paneli.
+
+To ma wyglądać jak HUD PRAWDZIWEJ GRY.
+
+ZACHOWAJ obecną funkcjonalność i dane. Zmieniamy przede wszystkim WARSTWĘ WIZUALNĄ.
+
+Po implementacji sprawdź rzeczywisty preview aplikacji i popraw:
+- nachodzenie tekstów,
+- proporcje,
+- odstępy,
+- wysokość HUD-u,
+- skalowanie elementów,
+- responsywność.
+
+Nie zmieniaj żadnej innej części gry poza górnym HUD-em.
