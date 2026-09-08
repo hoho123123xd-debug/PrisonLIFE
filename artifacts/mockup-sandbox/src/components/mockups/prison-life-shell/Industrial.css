@@ -1,0 +1,504 @@
+.prison-life-shell .pls-brand-logo {
+  display: block;
+  width: 228px;
+  height: 74px;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.52));
+}
+
+.prison-life-shell .pls-topbar {
+  grid-template-columns: minmax(205px, 1.1fr) minmax(370px, 1.45fr) auto;
+  background-color: #101617;
+  background-image:
+    linear-gradient(180deg, rgba(101, 112, 111, 0.1), rgba(8, 11, 12, 0.18)),
+    url("/__mockup/images/prison-life-shell-topbar-bg.png");
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-size: 100% 100%, 100% 100%;
+  border-bottom-color: rgba(224, 99, 31, 0.56);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.7),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.46),
+    inset 0 1px 0 rgba(238, 124, 45, 0.14);
+}
+
+.prison-life-shell .pls-player {
+  height: 70px;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 12px;
+  padding: 5px 18px 5px 14px;
+  border: 0;
+  background: url("/__mockup/images/prison-life-reference/prison-life-shell-hud-player-box-bg-clean.png") center / 100% 100% no-repeat;
+  box-shadow: none;
+}
+
+.prison-life-shell .pls-player::before,
+.prison-life-shell .pls-player::after,
+.prison-life-shell .pls-avatar::before,
+.prison-life-shell .pls-avatar::after,
+.prison-life-shell .pls-player-meta::before,
+.prison-life-shell .pls-player-meta::after {
+  display: none;
+  content: none;
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+
+.prison-life-shell .pls-avatar {
+  width: 54px;
+  height: 60px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.prison-life-shell .pls-player-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) auto auto;
+  align-items: center;
+  column-gap: clamp(14px, 2.2vw, 28px);
+  min-width: 0;
+}
+
+.prison-life-shell .pls-player-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.prison-life-shell .pls-player-info strong {
+  color: var(--pls-paper);
+  font-family: "Oxanium", sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.prison-life-shell .pls-player-info span {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  color: #c9ceca;
+  font-family: "Geist Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.prison-life-shell .pls-player-info span:last-child {
+  color: #d87837;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.prison-life-shell .pls-player-info span b {
+  color: var(--pls-orange-hot);
+  font-weight: 500;
+  font-size: 9px;
+}
+
+.prison-life-shell .pls-player-info span:last-child b {
+  color: #f0d7bd;
+}
+
+.prison-life-shell .pls-avatar {
+  overflow: hidden;
+  padding: 0;
+  background: transparent;
+}
+
+.prison-life-shell .pls-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  filter: none;
+}
+
+.prison-life-shell .pls-resource--energy {
+  position: relative;
+  overflow: hidden;
+  min-width: 150px;
+  min-height: 64px;
+  padding: 0;
+  border: 0;
+  background: url("/__mockup/images/prison-life-reference/hud-energy-card-bg.png") center / 100% 100% no-repeat;
+  box-shadow: none;
+  clip-path: none;
+}
+
+.prison-life-shell .pls-resource--energy > svg,
+.prison-life-shell .pls-resource--energy .pls-resource-label {
+  display: none;
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-body {
+  position: absolute;
+  top: 11px;
+  right: 7px;
+  left: 48%;
+  z-index: 1;
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-value {
+  margin: 0;
+  color: #f2eee5;
+  font-size: 14px;
+  line-height: 1.05;
+  letter-spacing: 0.015em;
+  text-shadow: 0 1px 0 #050707, 0 0 5px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-track {
+  position: absolute;
+  right: 9%;
+  bottom: 9px;
+  left: 28%;
+  z-index: 1;
+  height: 7px;
+  border: 1px solid rgba(20, 25, 26, 0.86);
+  background: rgba(17, 24, 27, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-track i {
+  background: linear-gradient(90deg, #bd461a, var(--pls-orange-hot));
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-status {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  color: #f0d7bd;
+  font-family: "Geist Mono", monospace;
+  font-size: 7px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+
+.prison-life-shell .pls-money-card {
+  position: relative;
+  min-width: 105px;
+  min-height: 64px;
+  overflow: hidden;
+  background: url("/__mockup/images/prison-life-reference/hud-money-card-bg.png") center / 100% 100% no-repeat;
+}
+
+.prison-life-shell .pls-money-label {
+  position: absolute;
+  top: 15px;
+  left: 45%;
+  color: #b6bdba;
+  font-family: "Geist Mono", monospace;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.prison-life-shell .pls-money-value {
+  position: absolute;
+  top: 30px;
+  left: 45%;
+  color: #f2eee5;
+  font-family: "Oxanium", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 0 #050707;
+}
+
+.prison-life-shell .pls-points-card {
+  position: relative;
+  min-width: 134px;
+  min-height: 64px;
+  overflow: hidden;
+  background: url("/__mockup/images/prison-life-reference/hud-points-card.png") center / 100% 100% no-repeat;
+}
+
+.prison-life-shell .pls-points-label {
+  position: absolute;
+  top: 14px;
+  left: 38%;
+  color: #aab6ca;
+  font-family: "Geist Mono", monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.prison-life-shell .pls-points-value {
+  position: absolute;
+  top: 29px;
+  left: 38%;
+  color: #f3efe7;
+  font-family: "Geist Mono", monospace;
+  font-size: 15px;
+  line-height: 1;
+  text-shadow: 0 1px 0 #050707, 0 0 5px rgba(0, 0, 0, 0.55);
+}
+
+.prison-life-shell .pls-points-add {
+  position: absolute;
+  top: 16%;
+  right: 7%;
+  width: 28%;
+  height: 68%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.prison-life-shell .pls-resources {
+  grid-template-columns: minmax(105px, 1fr) minmax(128px, 1.1fr) minmax(145px, 1.25fr);
+}
+
+.prison-life-shell .pls-rail {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 0;
+  border-right-color: rgba(230, 84, 22, 0.22);
+  background: #0b0e0f;
+  box-shadow: 8px 0 23px rgba(0, 0, 0, 0.55);
+}
+
+.prison-life-shell .pls-rail::before {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: auto;
+  pointer-events: none;
+  background: url("/__mockup/images/prison-life-shell-left-menu-bg-trim.png") center / 100% 100% no-repeat;
+}
+
+.prison-life-shell .pls-rail-wordmark {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  z-index: 3;
+  display: block;
+  width: 180px;
+  height: auto;
+  max-width: calc(100% - 28px);
+  max-height: none;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.7));
+  transform: translateX(-50%);
+}
+
+.prison-life-shell .pls-nav {
+  position: absolute;
+  inset: 76px 0 16px;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: repeat(10, minmax(0, 1fr));
+  gap: 5px;
+  height: auto;
+  margin: 0;
+  padding: 0 28px;
+  transform: none;
+}
+
+.prison-life-shell .pls-rail-note {
+  display: none;
+}
+
+.prison-life-shell .pls-nav-button--plate {
+  z-index: 2;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 0 28px 0 14px;
+  border: 0 !important;
+  border-radius: 0;
+  background-color: transparent !important;
+  background-image: url("/__mockup/images/prison-life-shell-nav-button.png") !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  clip-path: none;
+  box-shadow: none;
+  cursor: pointer;
+  color: #ebe8df;
+  opacity: 1;
+  transform: none !important;
+  transition: filter 160ms ease, transform 160ms ease, color 160ms ease;
+}
+
+.prison-life-shell .pls-nav-button--plate::before,
+.prison-life-shell .pls-nav-button--plate::after {
+  display: none;
+}
+
+.prison-life-shell .pls-nav-button--plate > b {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.prison-life-shell .pls-nav-button--plate .pls-nav-icon {
+  display: block;
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.7));
+}
+
+.prison-life-shell .pls-nav-button--plate .pls-nav-icon--market {
+  width: 24px;
+  height: 27px;
+}
+
+.prison-life-shell .pls-nav-button--plate:hover {
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png") !important;
+  background-size: 100% 100%;
+  color: #fff0dc;
+  filter: drop-shadow(0 0 4px rgba(255, 115, 27, 0.25));
+  transform: translateX(1px) !important;
+}
+
+.prison-life-shell .pls-nav-button--plate.active {
+  border: 0 !important;
+  background-color: transparent !important;
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png") !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  box-shadow: none !important;
+  color: #fff0dc;
+}
+
+.prison-life-shell .pls-nav-button--plate:focus-visible {
+  opacity: 1;
+  outline: 2px solid #ff7d2f;
+  outline-offset: -3px;
+}
+
+.prison-life-shell .pls-nav-button--plate.active:hover {
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png") !important;
+}
+
+@media (min-width: 981px) {
+  .prison-life-shell .pls-topbar {
+    margin-left: 236px;
+    padding-left: 0;
+  }
+
+  .prison-life-shell .pls-layout {
+    position: relative;
+    display: block;
+    min-height: calc(100dvh - 84px);
+  }
+
+  .prison-life-shell .pls-rail {
+    position: absolute;
+    inset: -84px auto 0 0;
+    width: 236px;
+    height: 100dvh;
+  }
+
+  .prison-life-shell .pls-scene {
+    min-height: calc(100dvh - 84px);
+    margin-left: 236px;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 980px) {
+  .prison-life-shell .pls-topbar {
+    margin-left: 205px;
+  }
+
+  .prison-life-shell .pls-layout {
+    position: relative;
+    display: block;
+    min-height: calc(100dvh - 76px);
+  }
+
+  .prison-life-shell .pls-rail {
+    position: absolute;
+    inset: -76px auto 0 0;
+    width: 205px;
+    height: 100dvh;
+  }
+
+  .prison-life-shell .pls-scene {
+    min-height: calc(100dvh - 76px);
+    margin-left: 205px;
+  }
+}
+
+@media (max-width: 1220px) {
+  .prison-life-shell .pls-topbar {
+    grid-template-columns: minmax(190px, 0.8fr) minmax(330px, 1.3fr) auto;
+  }
+}
+
+@media (max-width: 980px) {
+  .prison-life-shell .pls-topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .prison-life-shell .pls-resources {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 720px) {
+  .prison-life-shell .pls-topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .prison-life-shell .pls-brand-logo {
+    width: 194px;
+    height: 60px;
+  }
+
+  .prison-life-shell .pls-nav {
+    inset: 68px 0 12px;
+    height: auto;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .prison-life-shell .pls-nav-button--plate {
+    grid-template-columns: 27px minmax(0, 1fr);
+    gap: 7px;
+    padding-right: 24px;
+  }
+
+  .prison-life-shell .pls-nav-button--plate .pls-nav-icon {
+    width: 23px;
+    height: 23px;
+  }
+}
