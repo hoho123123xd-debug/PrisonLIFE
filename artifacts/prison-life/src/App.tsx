@@ -792,6 +792,15 @@ function rollOfferIfStale(saved: OfferState | undefined, pool: { id: string }[])
   if (saved && saved.ids.length && Date.now() - saved.refreshedAt < OFFER_REFRESH_MS) return saved;
   return { ids: pickRandomOfferIds(pool, OFFER_SIZE), refreshedAt: Date.now() };
 }
+// Buying a product restocks just that slot with a different item from the
+// pool (not already showing elsewhere in the offer), instead of leaving the
+// same product sitting there to be bought again - a vending-machine restock
+// rather than a static grid.
+function restockOfferSlot(current: OfferState, pool: { id: string }[], purchasedId: string): OfferState {
+  const candidates = pool.filter((entry) => entry.id !== purchasedId && !current.ids.includes(entry.id));
+  const replacementId = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)].id : purchasedId;
+  return { ids: current.ids.map((id) => id === purchasedId ? replacementId : id), refreshedAt: current.refreshedAt };
+}
 
 type GameSection = 'cell' | 'character' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'canteen' | 'cafeteria' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'hospital' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
@@ -837,6 +846,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [ownedItems, setOwnedItems] = useState<ItemInstance[]>(() => savedProgress.ownedItems ?? characterDefaultOwnedItems);
   const [shopOffer, setShopOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.shopOffer, legalGoodsPool));
   const [marketOffer, setMarketOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.marketOffer, illegalGoodsPool));
+  const restockShopSlot = (purchasedId: string) => setShopOffer((current) => restockOfferSlot(current, legalGoodsPool, purchasedId));
+  const restockMarketSlot = (purchasedId: string) => setMarketOffer((current) => restockOfferSlot(current, illegalGoodsPool, purchasedId));
   const offerRunLocked = useActionLock();
   const refreshShopOffer = () => offerRunLocked('refresh-shop', () => {
     if (!pointsWallet.canAfford(OFFER_REFRESH_COST)) { showNotice(`Potrzebujesz ${OFFER_REFRESH_COST} pkt, aby odświeżyć ofertę.`); return; }
@@ -972,7 +983,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />}<i className="game-nav-divider" aria-hidden="true" /><span>{label}</span></button>)}</aside>
         <div className={`game-content ${activeSection === 'character' ? 'game-content-character' : activeSection === 'cell' || activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' || activeSection === 'cafeteria' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} setOwnedItems={setOwnedItems} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} setOwnedItems={setOwnedItems} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} setOwnedItems={setOwnedItems} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} setOwnedItems={setOwnedItems} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
+        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} setOwnedItems={setOwnedItems} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} setOwnedItems={setOwnedItems} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} setOwnedItems={setOwnedItems} onPurchased={restockMarketSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} setOwnedItems={setOwnedItems} onPurchased={restockShopSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1410,10 +1421,11 @@ const blackMarketGangControl: GangControlEntry[] = [
 ];
 const blackMarketTaxCut = blackMarketGangControl.find((entry) => entry.controlling)?.cut ?? 0;
 
-function ShopView({ wallet, offers, setOwnedItems, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function ShopView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: LegalGood[];
   setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>;
+  onPurchased: (itemId: string) => void;
   refreshCost: number;
   pointsBalance: number;
   onRefresh: () => void;
@@ -1435,6 +1447,7 @@ function ShopView({ wallet, offers, setOwnedItems, refreshCost, pointsBalance, o
       return;
     }
     if (isEquip) setOwnedItems((current) => [...current, rollItemInstance(item.id)]);
+    onPurchased(item.id);
     onNotice(`Kupiono: ${item.name.toLowerCase()}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
   });
 
@@ -1473,10 +1486,11 @@ function ShopView({ wallet, offers, setOwnedItems, refreshCost, pointsBalance, o
   </section>;
 }
 
-function MarketView({ wallet, offers, setOwnedItems, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function MarketView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: IllegalGood[];
   setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>;
+  onPurchased: (itemId: string) => void;
   refreshCost: number;
   pointsBalance: number;
   onRefresh: () => void;
@@ -1497,6 +1511,7 @@ function MarketView({ wallet, offers, setOwnedItems, refreshCost, pointsBalance,
       return;
     }
     if (isEquip) setOwnedItems((current) => [...current, rollItemInstance(item.id)]);
+    onPurchased(item.id);
     onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
   });
 
