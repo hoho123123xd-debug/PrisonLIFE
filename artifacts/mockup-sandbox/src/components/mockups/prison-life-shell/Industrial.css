@@ -17,9 +17,7 @@
   overflow: hidden;
   padding: 0;
   border-right-color: rgba(230, 84, 22, 0.22);
-  background:
-    url("/__mockup/images/prison-life-shell-rail-reference.png") center / 100% 100% no-repeat,
-    #0b0e0f;
+  background: #0b0e0f;
   box-shadow: 8px 0 23px rgba(0, 0, 0, 0.55);
 }
 
@@ -44,7 +42,14 @@
 }
 
 .prison-life-shell .pls-rail::before {
-  display: none;
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  width: calc(100% - 20px);
+  pointer-events: none;
+  background: url("/__mockup/images/prison-life-shell-rail-reference.png") left center / 100% 100% no-repeat;
 }
 
 .prison-life-shell .pls-nav {
