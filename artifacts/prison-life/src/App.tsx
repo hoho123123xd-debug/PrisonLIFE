@@ -1060,8 +1060,13 @@ const characterInventoryItemsData: Array<{ id: string; name: string; asset: stri
 // (it's due for a pass) doesn't require touching this logic.
 const POINT_DROP_CHANCE = 1 / 10000;
 const ITEM_DROP_CHANCE = 0.3;
+// Regular loot (fights, missions, and anything else this "everyday" pool
+// feeds) never hands out the top two tiers: unikat is event-only (events
+// aren't built yet), and edycja limitowana needs its own source that isn't
+// decided yet either - neither belongs behind an ordinary mission roll.
+const dailyLootTiers = new Set<ItemTier>(['common', 'rare', 'elite']);
 function pickRandomLootItem(ownedItemIds: Set<string>) {
-  const candidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id));
+  const candidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && dailyLootTiers.has(item.tier));
   if (candidates.length === 0) return null;
   const totalWeight = candidates.reduce((sum, item) => sum + itemTierConfig[item.tier].dropWeight, 0);
   let roll = Math.random() * totalWeight;
