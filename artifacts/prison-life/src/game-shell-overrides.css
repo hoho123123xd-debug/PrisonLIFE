@@ -1360,6 +1360,16 @@
   opacity: .6;
   cursor: default;
 }
+.fight-energy-cost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  color: var(--prison-orange-light);
+  font: 700 11px 'Barlow Condensed';
+  letter-spacing: .05em;
+}
 .fight-result-overlay {
   position: fixed;
   inset: 0;
@@ -2730,6 +2740,11 @@
 }
 .training-exercise-card button:hover {
   background: #ff9340;
+}
+.training-exercise-card button:disabled:not(.training-exercise-timer) {
+  opacity: .55;
+  cursor: default;
+  background: #4a3a2c;
 }
 .training-exercise-card button.training-exercise-timer {
   display: flex;
@@ -4959,6 +4974,11 @@
 }
 .mission-card-large button:hover {
   background: #ffad4f;
+}
+.mission-card-large button:disabled {
+  opacity: .55;
+  cursor: default;
+  background: #4a3a2c;
 }
 .mission-card-large-active {
   display: flex;

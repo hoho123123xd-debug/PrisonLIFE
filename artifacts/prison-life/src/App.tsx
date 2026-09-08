@@ -635,6 +635,64 @@ function useWallet(initialBalance: number): Wallet {
   return { balance: balanceRef.current, addMoney, removeMoney, canAfford };
 }
 
+// Energy: regenerates +1 every 5 minutes and fully resets to 100 at local
+// midnight, whether or not the app was open when midnight passed (the reset
+// check runs against the last-updated timestamp, not a running timer).
+// addEnergy is exposed so a future consumable (e.g. an energy drink from the
+// Sklep) can top it up the same way work/training/fights spend it.
+const ENERGY_MAX = 100;
+const ENERGY_REGEN_MS = 5 * 60 * 1000;
+function startOfLocalDay(ts: number) {
+  const date = new Date(ts);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+}
+type Energy = { energy: number; updatedAt: number; addEnergy: (amount: number) => void; removeEnergy: (amount: number) => boolean; canAfford: (amount: number) => boolean };
+function useEnergy(initialEnergy: number, initialUpdatedAt: number): Energy {
+  const energyRef = useRef(initialEnergy);
+  const updatedAtRef = useRef(initialUpdatedAt);
+  const [, render] = useState(0);
+
+  const applyRegen = () => {
+    const now = Date.now();
+    if (updatedAtRef.current < startOfLocalDay(now)) {
+      const changed = energyRef.current !== ENERGY_MAX;
+      energyRef.current = ENERGY_MAX;
+      updatedAtRef.current = now;
+      return changed;
+    }
+    if (energyRef.current >= ENERGY_MAX) return false;
+    const gained = Math.floor((now - updatedAtRef.current) / ENERGY_REGEN_MS);
+    if (gained <= 0) return false;
+    energyRef.current = Math.min(ENERGY_MAX, energyRef.current + gained);
+    updatedAtRef.current = energyRef.current >= ENERGY_MAX ? now : updatedAtRef.current + gained * ENERGY_REGEN_MS;
+    return true;
+  };
+
+  useEffect(() => {
+    if (applyRegen()) render((tick) => tick + 1);
+    const id = window.setInterval(() => { if (applyRegen()) render((tick) => tick + 1); }, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const addEnergy = (amount: number) => {
+    if (amount <= 0) return;
+    energyRef.current = Math.min(ENERGY_MAX, energyRef.current + amount);
+    updatedAtRef.current = Date.now();
+    render((tick) => tick + 1);
+  };
+  const removeEnergy = (amount: number) => {
+    if (amount <= 0) return true;
+    if (energyRef.current < amount) return false;
+    energyRef.current -= amount;
+    updatedAtRef.current = Date.now();
+    render((tick) => tick + 1);
+    return true;
+  };
+  const canAfford = (amount: number) => energyRef.current >= amount;
+  return { energy: energyRef.current, updatedAt: updatedAtRef.current, addEnergy, removeEnergy, canAfford };
+}
+
 // Guards a repeatable action (buy/sell/upgrade) against being fired more
 // than once from a fast double-click/double-drop before React can disable
 // the control that triggered it.
@@ -663,6 +721,8 @@ type PersistedProgress = {
   level: number;
   xp: number;
   xpMax: number;
+  energy: number;
+  energyUpdatedAt: number;
   stats: Record<string, number>;
   equipped: Record<string, string | null>;
   ownedItemIds: string[];
@@ -715,6 +775,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const wallet = useWallet(savedProgress.balance ?? 250);
   const pointsWallet = useWallet(savedProgress.points ?? 3);
   const reputationWallet = useWallet(savedProgress.reputation ?? 0);
+  const energyWallet = useEnergy(savedProgress.energy ?? ENERGY_MAX, savedProgress.energyUpdatedAt ?? Date.now());
   const [level, setLevel] = useState(savedProgress.level ?? 1);
   const [xp, setXp] = useState(savedProgress.xp ?? 120);
   const [xpMax, setXpMax] = useState(savedProgress.xpMax ?? 500);
@@ -771,6 +832,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       level,
       xp,
       xpMax,
+      energy: energyWallet.energy,
+      energyUpdatedAt: energyWallet.updatedAt,
       stats: Object.fromEntries(characterStats.map((stat) => [stat.key, stat.value])),
       equipped,
       ownedItemIds: Array.from(ownedItemIds),
@@ -779,7 +842,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       foodBuffs,
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
+  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, energyWallet.energy, energyWallet.updatedAt, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
@@ -788,7 +851,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     xpMax,
     gold: wallet.balance,
     points: pointsWallet.balance,
-    energy: 100,
+    energy: energyWallet.energy,
     hp: 100,
     reputation: reputationWallet.balance,
     rank: 'NOWY',
@@ -867,7 +930,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView pointsWallet={pointsWallet} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView pointsWallet={pointsWallet} energy={energyWallet} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1760,7 +1823,7 @@ function missionSkipCost(remainingMs: number) {
   return Math.max(1, Math.ceil(remainingMs / MISSION_SKIP_BLOCK_MS));
 }
 
-function MissionCardTile({ mission, pointsWallet, onGainXp, onNotice }: { mission: MissionCard; pointsWallet: Wallet; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+function MissionCardTile({ mission, pointsWallet, energy, onGainXp, onNotice }: { mission: MissionCard; pointsWallet: Wallet; energy: Energy; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   const [status, setStatus] = useState<'idle' | 'in-progress'>('idle');
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remainingMs, setRemainingMs] = useState(0);
@@ -1798,6 +1861,7 @@ function MissionCardTile({ mission, pointsWallet, onGainXp, onNotice }: { missio
   }, [status, endsAt]);
 
   const start = () => {
+    if (!energy.removeEnergy(mission.energy)) { onNotice(`Potrzebujesz ${mission.energy} energii, aby rozpocząć tę misję.`); return; }
     resolvedRef.current = false;
     setEndsAt(Date.now() + mission.durationMinutes * 60 * 1000);
     setRemainingMs(mission.durationMinutes * 60 * 1000);
@@ -1813,6 +1877,7 @@ function MissionCardTile({ mission, pointsWallet, onGainXp, onNotice }: { missio
   };
 
   const MissionIcon = mission.icon;
+  const disabled = status === 'idle' && !energy.canAfford(mission.energy);
   return <article className={`mission-card-large mission-card-large-${mission.riskTone}`} data-testid={`mission-card-${mission.id}`}>
     <div className="mission-card-large-top"><MissionIcon size={36} /><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></div>
     <h2>{mission.title}</h2>
@@ -1826,18 +1891,18 @@ function MissionCardTile({ mission, pointsWallet, onGainXp, onNotice }: { missio
     {status === 'in-progress' ? <div className="mission-card-large-active">
       <div className="mission-card-large-countdown"><Timer size={16} /> {formatWorkRemaining(remainingMs)}</div>
       <button className="mission-card-large-skip" onClick={skip} data-testid={`mission-skip-${mission.id}`}><Zap size={15} /> PRZYSPIESZ ZA {missionSkipCost(remainingMs)} PKT</button>
-    </div> : <button onClick={start} data-testid={`mission-start-${mission.id}`}><ArrowRight size={17} /> ROZPOCZNIJ MISJĘ</button>}
+    </div> : <button onClick={start} disabled={disabled} data-testid={`mission-start-${mission.id}`}><ArrowRight size={17} /> {disabled ? 'BRAK ENERGII' : 'ROZPOCZNIJ MISJĘ'}</button>}
   </article>;
 }
 
-function MissionsCardsView({ pointsWallet, onGainXp, onNotice }: { pointsWallet: Wallet; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+function MissionsCardsView({ pointsWallet, energy, onGainXp, onNotice }: { pointsWallet: Wallet; energy: Energy; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   return <section className="missions-cards-view" style={{ '--missions-cards-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-cards-view">
     <header className="missions-cards-heading">
       <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WYBIERZ MISJĘ I PODEJMIJ RYZYKO. KAŻDA DECYZJA MA KONSEKWENCJE.</p></div>
       <div className="missions-cards-slogan">TU NIE MA<br />PRZYPADKÓW</div>
     </header>
     <div className="missions-cards-grid">
-      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} pointsWallet={pointsWallet} onGainXp={onGainXp} onNotice={onNotice} />)}
+      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} pointsWallet={pointsWallet} energy={energy} onGainXp={onGainXp} onNotice={onNotice} />)}
     </div>
     <footer className="missions-cards-footer">
       <div className="missions-card-timer"><Archive size={26} /><span><small>NOWE MISJE ZA:</small><strong>01:58:27</strong></span></div>
@@ -1868,10 +1933,11 @@ const trainingExercises: TrainingExercise[] = [
 
 type TrainingHistoryEntry = { id: string; label: string; xpText: string; time: string };
 
-function TrainingExerciseTile({ exercise, stats, setStats, onNotice, onCompleted }: {
+function TrainingExerciseTile({ exercise, stats, setStats, energy, onNotice, onCompleted }: {
   exercise: TrainingExercise;
   stats: typeof characterStatsList;
   setStats: Dispatch<SetStateAction<typeof characterStatsList>>;
+  energy: Energy;
   onNotice: (message: string) => void;
   onCompleted: (exercise: TrainingExercise) => void;
 }) {
@@ -1910,6 +1976,7 @@ function TrainingExerciseTile({ exercise, stats, setStats, onNotice, onCompleted
 
   const start = () => {
     if (statInfo.value >= statInfo.max) { onNotice(`${statInfo.label} jest już na maksymalnym poziomie.`); return; }
+    if (!energy.removeEnergy(exercise.energy)) { onNotice(`Potrzebujesz ${exercise.energy} energii, aby rozpocząć ten trening.`); return; }
     resolvedRef.current = false;
     setEndsAt(Date.now() + exercise.duration * 60 * 1000);
     setRemainingMs(exercise.duration * 60 * 1000);
@@ -1918,6 +1985,7 @@ function TrainingExerciseTile({ exercise, stats, setStats, onNotice, onCompleted
   };
 
   const Icon = exercise.icon;
+  const disabled = status === 'idle' && !energy.canAfford(exercise.energy);
   return <article className={`training-exercise-card ${status === 'in-progress' ? 'started' : ''}`} data-testid={`training-card-${exercise.id}`}>
     <div className={`training-exercise-art training-art-${exercise.id}`} style={{ backgroundImage: `url("${trainingMockup}")` }} />
     <div className="training-exercise-copy">
@@ -1926,12 +1994,12 @@ function TrainingExerciseTile({ exercise, stats, setStats, onNotice, onCompleted
       <div className="training-exercise-meta"><span><Zap size={13} /> {exercise.energy} energii</span><span><Timer size={13} /> {exercise.duration} minut</span><span><Icon size={13} /> {exercise.reward}</span></div>
       {status === 'in-progress'
         ? <button className="training-exercise-timer" disabled data-testid={`training-timer-${exercise.id}`}><Timer size={14} /> {formatWorkRemaining(remainingMs)}</button>
-        : <button onClick={start} data-testid={`training-start-${exercise.id}`}>ROZPOCZNIJ</button>}
+        : <button onClick={start} disabled={disabled} data-testid={`training-start-${exercise.id}`}>{disabled ? 'BRAK ENERGII' : 'ROZPOCZNIJ'}</button>}
     </div>
   </article>;
 }
 
-function TrainingView({ stats, setStats, onNotice }: { stats: typeof characterStatsList; setStats: Dispatch<SetStateAction<typeof characterStatsList>>; onNotice: (message: string) => void }) {
+function TrainingView({ stats, setStats, energy, onNotice }: { stats: typeof characterStatsList; setStats: Dispatch<SetStateAction<typeof characterStatsList>>; energy: Energy; onNotice: (message: string) => void }) {
   const [completedToday, setCompletedToday] = useState<Set<string>>(new Set());
   const [history, setHistory] = useState<TrainingHistoryEntry[]>([
     { id: 'seed-1', label: 'Pompki', xpText: '+12 XP (Siła)', time: 'Dziś, 06:30' },
@@ -1961,7 +2029,7 @@ function TrainingView({ stats, setStats, onNotice }: { stats: typeof characterSt
 
         <section className="training-available">
           <div className="training-section-heading"><div><h2>DOSTĘPNE TRENINGI</h2><span>WYBIERZ ĆWICZENIE I ROZWIJAJ SWOJE UMIEJĘTNOŚCI.</span></div></div>
-          <div className="training-exercise-grid">{trainingExercises.map((exercise) => <TrainingExerciseTile key={exercise.id} exercise={exercise} stats={stats} setStats={setStats} onNotice={onNotice} onCompleted={handleCompleted} />)}</div>
+          <div className="training-exercise-grid">{trainingExercises.map((exercise) => <TrainingExerciseTile key={exercise.id} exercise={exercise} stats={stats} setStats={setStats} energy={energy} onNotice={onNotice} onCompleted={handleCompleted} />)}</div>
         </section>
 
         <div className="training-bottom-grid">
@@ -1984,7 +2052,7 @@ function TrainingView({ stats, setStats, onNotice }: { stats: typeof characterSt
         <section className="training-side-panel training-stat-panel">
           <div className="training-side-heading"><h2>TWOJE STATYSTYKI</h2><button onClick={() => onNotice('Pełne statystyki postaci będą dostępne w zakładce STATYSTYKI.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div>
           {trainingStats.map(({ label, value, max, icon: Icon }) => <div className="training-stat-row" key={label}><Icon size={18} /><div><strong>{label}</strong><div className="training-stat-bar"><i style={{ width: `${(value / max) * 100}%` }} /></div></div><span>{value} / {max}</span></div>)}
-          <div className="training-energy-row"><Zap size={23} /><div><strong>ENERGIA</strong><div className="training-stat-bar"><i style={{ width: '100%' }} /></div></div><span>100 / 100</span></div>
+          <div className="training-energy-row"><Zap size={23} /><div><strong>ENERGIA</strong><div className="training-stat-bar"><i style={{ width: `${energy.energy}%` }} /></div></div><span>{energy.energy} / {ENERGY_MAX}</span></div>
         </section>
         <section className="training-side-panel training-efficiency-panel"><div className="training-side-heading"><h2>EFEKTYWNOŚĆ TRENINGU</h2></div><div><span>Podstawowa efektywność</span><b>100%</b></div><div><span>Bonus z celi (Kącik treningowy)</span><b>+15%</b></div><div><span>Bonus gangu (BRak)</span><b>0%</b></div><div className="training-efficiency-total"><span>Suma efektywności</span><b>115%</b></div></section>
         <section className="training-side-panel training-tip-panel"><Lightbulb size={25} /><div><h2>WSKAZÓWKA</h2><p>Regularny trening nie tylko zwiększa statystyki, ale też poprawia Twoje samopoczucie i morale.</p></div></section>
@@ -2142,7 +2210,9 @@ function randomInRange([min, max]: [number, number]) {
 
 type FightResult = { won: boolean; opponent: FightOpponent; respectChange: number; moneyChange: number };
 
-function FightView({ creator, gameData, wallet, onAddRespect, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; wallet: Wallet; onAddRespect: (amount: number) => void; onNotice: (message: string) => void; onReturn: () => void }) {
+const FIGHT_ENERGY_COST = 15;
+
+function FightView({ creator, gameData, wallet, energy, onAddRespect, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; wallet: Wallet; energy: Energy; onAddRespect: (amount: number) => void; onNotice: (message: string) => void; onReturn: () => void }) {
   const [selectedId, setSelectedId] = useState<FightOpponentId>(fightOpponents[0].id);
   const [fightResult, setFightResult] = useState<FightResult | null>(null);
   const opponent = fightOpponents.find((item) => item.id === selectedId)!;
@@ -2151,6 +2221,7 @@ function FightView({ creator, gameData, wallet, onAddRespect, onNotice, onReturn
   const playerStats: Record<FightStatKey, number> = { health: characterStatsList[0].value, luck: characterStatsList[1].value, strength: characterStatsList[2].value, endurance: characterStatsList[3].value, intelligence: characterStatsList[4].value, reflex: characterStatsList[5].value };
 
   const handleAttack = () => {
+    if (!energy.removeEnergy(FIGHT_ENERGY_COST)) { onNotice(`Potrzebujesz ${FIGHT_ENERGY_COST} energii, aby zaatakować.`); return; }
     const playerPower = computeFightPower(playerStats);
     const opponentPower = computeFightPower(opponent.stats);
     const won = Math.random() < playerPower / (playerPower + opponentPower);
@@ -2232,7 +2303,8 @@ function FightView({ creator, gameData, wallet, onAddRespect, onNotice, onReturn
             <div className="fight-reward-tile fight-reward-chance"><span>?</span><small>SZANSA</small></div>
           </div>
         </div>
-        <button className="fight-attack-button" onClick={handleAttack} disabled={fightResult !== null} data-testid="fight-attack-button"><Swords size={18} /> ATAKUJ</button>
+        <div className="fight-energy-cost"><Zap size={13} /> KOSZT ENERGII: {FIGHT_ENERGY_COST}</div>
+        <button className="fight-attack-button" onClick={handleAttack} disabled={fightResult !== null || !energy.canAfford(FIGHT_ENERGY_COST)} data-testid="fight-attack-button"><Swords size={18} /> {energy.canAfford(FIGHT_ENERGY_COST) ? 'ATAKUJ' : 'BRAK ENERGII'}</button>
       </aside>
     </div>
 
