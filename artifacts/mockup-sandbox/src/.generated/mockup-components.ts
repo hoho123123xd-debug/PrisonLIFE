@@ -2,10 +2,10 @@
 type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/prison-hud/Current.tsx": () => import("../components/mockups/prison-hud/Current.tsx"),
-  "./components/mockups/prison-life-shell/Industrial.tsx": () => import("../components/mockups/prison-life-shell/Industrial.tsx"),
-  "./components/mockups/prison-sidebar/CommandDeck.tsx": () => import("../components/mockups/prison-sidebar/CommandDeck.tsx"),
-  "./components/mockups/prison-sidebar/CompactRail.tsx": () => import("../components/mockups/prison-sidebar/CompactRail.tsx"),
   "./components/mockups/prison-hud-redesign/BlockStatus.tsx": () => import("../components/mockups/prison-hud-redesign/BlockStatus.tsx"),
   "./components/mockups/prison-hud-redesign/InstrumentPanel.tsx": () => import("../components/mockups/prison-hud-redesign/InstrumentPanel.tsx"),
-  "./components/mockups/prison-hud-redesign/TacticalStrip.tsx": () => import("../components/mockups/prison-hud-redesign/TacticalStrip.tsx")
+  "./components/mockups/prison-hud-redesign/TacticalStrip.tsx": () => import("../components/mockups/prison-hud-redesign/TacticalStrip.tsx"),
+  "./components/mockups/prison-life-shell/Industrial.tsx": () => import("../components/mockups/prison-life-shell/Industrial.tsx"),
+  "./components/mockups/prison-sidebar/CommandDeck.tsx": () => import("../components/mockups/prison-sidebar/CommandDeck.tsx"),
+  "./components/mockups/prison-sidebar/CompactRail.tsx": () => import("../components/mockups/prison-sidebar/CompactRail.tsx")
 };
