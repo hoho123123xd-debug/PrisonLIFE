@@ -1060,13 +1060,23 @@ const characterInventoryItemsData: Array<{ id: string; name: string; asset: stri
 // (it's due for a pass) doesn't require touching this logic.
 const POINT_DROP_CHANCE = 1 / 10000;
 const ITEM_DROP_CHANCE = 0.3;
-// Regular loot (fights, missions, and anything else this "everyday" pool
-// feeds) never hands out the top two tiers: unikat is event-only (events
-// aren't built yet), and edycja limitowana needs its own source that isn't
-// decided yet either - neither belongs behind an ordinary mission roll.
-const dailyLootTiers = new Set<ItemTier>(['common', 'rare', 'elite']);
+// Elitarny is its own separate, lottery-rare roll on top of the regular
+// item drop, not just a low weight in the same pool - that keeps it "lotka"
+// rare (~1 in 16 700 per win, i.e. ITEM_DROP_CHANCE * ELITE_LOOT_CHANCE)
+// regardless of how the common/rare pool shrinks as the player collects
+// things. TODO once a level requirement is decided: gate elite items behind
+// it here (and unlock it as a guaranteed-ish reward on specific missions
+// that explicitly advertise an elite chance, once any exist).
+const ELITE_LOOT_CHANCE = 1 / 5000;
+// unikat is event-only (events aren't built yet) and edycja limitowana
+// needs its own separate source that isn't decided yet either - neither
+// belongs behind an ordinary mission/fight roll at all.
 function pickRandomLootItem(ownedItemIds: Set<string>) {
-  const candidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && dailyLootTiers.has(item.tier));
+  const eliteCandidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && item.tier === 'elite');
+  if (eliteCandidates.length > 0 && Math.random() < ELITE_LOOT_CHANCE) {
+    return eliteCandidates[Math.floor(Math.random() * eliteCandidates.length)];
+  }
+  const candidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && (item.tier === 'common' || item.tier === 'rare'));
   if (candidates.length === 0) return null;
   const totalWeight = candidates.reduce((sum, item) => sum + itemTierConfig[item.tier].dropWeight, 0);
   let roll = Math.random() * totalWeight;
