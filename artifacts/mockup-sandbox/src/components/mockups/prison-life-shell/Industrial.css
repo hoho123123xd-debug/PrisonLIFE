@@ -31,7 +31,7 @@
 
 .prison-life-shell .pls-rail-brand {
   position: absolute;
-  inset: 0 14px auto 14px;
+  inset: 35px 14px auto 14px;
   z-index: 3;
   height: 82px;
   display: grid;
@@ -62,7 +62,7 @@
 
 .prison-life-shell .pls-nav {
   position: absolute;
-  inset: 82px 0 auto;
+  inset: 117px 0 auto;
   z-index: 1;
   display: grid;
   grid-template-rows: repeat(10, minmax(0, 1fr));
@@ -235,7 +235,7 @@
   }
 
   .prison-life-shell .pls-rail-brand {
-    inset-inline: 10px;
+    inset: 14px 10px auto;
     height: 74px;
   }
 
@@ -244,7 +244,7 @@
   }
 
   .prison-life-shell .pls-nav {
-    inset: 74px 0 auto;
+    inset: 88px 0 auto;
     padding-left: 30px;
     padding-right: 12px;
   }
