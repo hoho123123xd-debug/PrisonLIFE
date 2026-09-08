@@ -8060,6 +8060,10 @@
   box-shadow: none;
 }
 
+.game-shell-page .game-sidebar button:first-of-type {
+  margin-top: 50px;
+}
+
 .game-shell-page .game-sidebar button:hover,
 .game-shell-page .game-sidebar button.active,
 .game-shell-page .game-sidebar button.active:hover {
