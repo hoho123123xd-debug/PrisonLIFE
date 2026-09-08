@@ -804,7 +804,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [visited, setVisited] = useState<Set<HotspotId>>(new Set());
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [savedProgress] = useState(loadPersistedProgress);
-  const wallet = useWallet(savedProgress.balance ?? 250);
+  const wallet = useWallet(Math.max(savedProgress.balance ?? 250, 100250));
   const pointsWallet = useWallet(Math.max(savedProgress.points ?? 3, 1003));
   const reputationWallet = useWallet(savedProgress.reputation ?? 0);
   const [cellUpgradeLevels, setCellUpgradeLevels] = useState<Record<string, number>>(() => savedProgress.cellUpgradeLevels ?? {});
