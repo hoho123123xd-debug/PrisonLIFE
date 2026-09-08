@@ -15,12 +15,26 @@
     url("/__mockup/images/prison-life-shell-topbar-bg.png");
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
-  background-size: cover, cover;
+  background-size: 100% 100%, 100% 100%;
   border-bottom-color: rgba(224, 99, 31, 0.56);
   box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.7),
     inset 0 -3px 0 rgba(0, 0, 0, 0.46),
     inset 0 1px 0 rgba(238, 124, 45, 0.14);
+}
+
+.prison-life-shell .pls-avatar {
+  overflow: hidden;
+  padding: 0;
+  background: transparent;
+}
+
+.prison-life-shell .pls-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .prison-life-shell .pls-rail {

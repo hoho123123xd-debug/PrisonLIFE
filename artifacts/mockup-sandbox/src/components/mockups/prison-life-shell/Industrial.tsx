@@ -8,7 +8,6 @@ import {
   Menu,
   Plus,
   Settings,
-  UserRound,
   WalletCards,
   X,
   Zap,
@@ -90,7 +89,10 @@ export function Industrial() {
       <header className="pls-topbar">
         <div className="pls-player" aria-label="Profil gracza">
           <div className="pls-avatar">
-            <UserRound aria-hidden="true" />
+            <img
+              src="/__mockup/images/prison-life-reference/avatar-kosa.png"
+              alt="KOSA"
+            />
           </div>
           <div className="pls-player-meta">
             <div className="pls-player-meta-top">
