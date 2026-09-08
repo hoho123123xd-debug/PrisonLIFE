@@ -7818,7 +7818,7 @@
 }
 
 .game-shell-page .hud-rail-brand {
-  flex: 0 0 clamp(250px, 20vw, 310px);
+  flex: 0 0 clamp(360px, 28vw, 460px);
   min-width: 0;
   height: 100%;
   display: flex;
@@ -7844,7 +7844,7 @@
 
 .game-shell-page .hud-wordmark-button img {
   display: block;
-  width: min(100%, 208px);
+  width: min(100%, 300px);
   max-height: 76px;
   object-fit: contain;
   filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .72));
