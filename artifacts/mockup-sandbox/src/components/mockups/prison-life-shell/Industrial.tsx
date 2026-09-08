@@ -2,8 +2,6 @@ import { useState } from "react";
 import {
   Activity,
   Bell,
-  Dumbbell,
-  Heart,
   Mail,
   Menu,
   Plus,
@@ -67,6 +65,30 @@ function Resource({
   );
 }
 
+function PointsCard({ onAdd }: { onAdd: () => void }) {
+  return (
+    <div className="pls-points-card" aria-label="Punkty">
+      <span className="pls-points-label">PUNKTY</span>
+      <strong className="pls-points-value">100</strong>
+      <button
+        className="pls-points-add"
+        type="button"
+        aria-label="Dodaj punkty"
+        onClick={onAdd}
+      />
+    </div>
+  );
+}
+
+function MoneyCard() {
+  return (
+    <div className="pls-money-card" aria-label="Gotówka: 1 250">
+      <span className="pls-money-label">GOTÓWKA</span>
+      <strong className="pls-money-value">1 250</strong>
+    </div>
+  );
+}
+
 export function Industrial() {
   const [activeSection, setActiveSection] = useState("CEL");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -97,33 +119,17 @@ export function Industrial() {
               alt="KOSA"
             />
           </div>
-          <div className="pls-player-meta">
-            <div className="pls-player-meta-top">
-              <strong>KOSA</strong>
-            </div>
-            <div className="pls-level">
-              POZIOM <b>12</b>
-            </div>
-            <div className="pls-gang">
-              GANG <b>BYK</b>
-            </div>
+          <div className="pls-player-info">
+            <strong>KOSA</strong>
+            <span>POZIOM <b>12</b></span>
+            <span>GANG <b>BYK</b></span>
           </div>
         </div>
 
         <div className="pls-resources" aria-label="Zasoby">
+          <MoneyCard />
+          <PointsCard onAdd={() => announce("PUNKTY — panel punktów niedostępny")} />
           <Resource label="ENERGIA" value="75 / 100" icon={Zap} progress={75} status="+1 za 04:12" className="pls-resource--energy" />
-          <Resource label="SIŁA" value="60 / 100" icon={Dumbbell} progress={60} className="pls-resource--strength" />
-          <Resource label="ZDROWIE" value="100 / 100" icon={Heart} progress={100} className="pls-resource--health" />
-          <div className="pls-wallet">
-            <WalletCards aria-hidden="true" />
-            <div>
-              <small>GOTÓWKA</small>
-              <strong>1 250</strong>
-            </div>
-            <button className="pls-button pls-plus" aria-label="Dodaj gotówkę" onClick={() => announce("KASA — panel zasilenia niedostępny")}>
-              <Plus size={13} />
-            </button>
-          </div>
         </div>
 
         <div className="pls-top-actions">
