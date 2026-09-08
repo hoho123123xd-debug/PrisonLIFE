@@ -8044,6 +8044,7 @@
   min-height: 76px;
   height: auto;
   margin: 6px 0;
+  margin-left: 30px;
   padding: 0 24px 0 15px;
   display: grid;
   grid-template-columns: 25px minmax(0, 1fr);
@@ -8159,6 +8160,7 @@
   }
   .game-shell-page .game-sidebar button {
     width: calc(100% - 2px);
+    margin-left: 0;
   }
   .game-shell-page .game-layout {
     display: block;
