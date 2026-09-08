@@ -2,23 +2,13 @@ import { useState } from "react";
 import {
   Activity,
   Bell,
-  ChevronRight,
-  ClipboardList,
-  Cross,
   Dumbbell,
   Heart,
-  Home,
   Mail,
   Menu,
   Plus,
   Settings,
-  ShoppingCart,
-  Swords,
-  Tag,
-  Trophy,
   UserRound,
-  Users,
-  Utensils,
   WalletCards,
   X,
   Zap,
@@ -28,20 +18,20 @@ import "./Industrial.css";
 
 type NavItem = {
   label: string;
-  icon: typeof Home;
+  iconSrc: string;
 };
 
 const navigation: NavItem[] = [
-  { label: "CEL", icon: Home },
-  { label: "TRENING", icon: Dumbbell },
-  { label: "WALKA", icon: Swords },
-  { label: "STOŁÓWKA", icon: Utensils },
-  { label: "SKLEP", icon: ShoppingCart },
-  { label: "CZARNY RYNEK", icon: Tag },
-  { label: "ZLECENIA", icon: ClipboardList },
-  { label: "GANG", icon: Users },
-  { label: "SZPITAL", icon: Cross },
-  { label: "RANKING", icon: Trophy },
+  { label: "CEL", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-cela.png" },
+  { label: "TRENING", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-trening.png" },
+  { label: "WALKA", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-walka.png" },
+  { label: "STOŁÓWKA", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-stolowka.png" },
+  { label: "SKLEP", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-sklep.png" },
+  { label: "CZARNY RYNEK", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-czarny-rynek.png" },
+  { label: "ZLECENIA", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-zlecenia.png" },
+  { label: "GANG", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-gang.png" },
+  { label: "SZPITAL", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-szpital.png" },
+  { label: "RANKING", iconSrc: "/__mockup/images/prison-life-reference/icons/icon-ranking.png" },
 ];
 
 type FlashMessage = string | null;
@@ -168,18 +158,20 @@ export function Industrial() {
             <span>10 / 10</span>
           </div>
           <nav className="pls-nav" aria-label="Nawigacja gry">
-            {navigation.map(({ label, icon: Icon }) => (
+            {navigation.map(({ label, iconSrc }) => (
               <button
                 key={label}
                 className={`pls-button pls-nav-button pls-nav-button--plate ${activeSection === label ? "active" : ""}`}
                 onClick={() => navigate(label)}
                 aria-current={activeSection === label ? "page" : undefined}
               >
-                <Icon aria-hidden="true" />
+                <img
+                  className={`pls-nav-icon ${label === "CZARNY RYNEK" ? "pls-nav-icon--market" : ""}`}
+                  src={iconSrc}
+                  alt=""
+                  aria-hidden="true"
+                />
                 <span>{label}</span>
-                <b aria-hidden="true">
-                  <ChevronRight size={16} />
-                </b>
               </button>
             ))}
           </nav>

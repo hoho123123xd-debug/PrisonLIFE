@@ -27,11 +27,29 @@
   visibility: hidden;
 }
 
+.prison-life-shell .pls-nav-button--plate .pls-nav-icon {
+  width: 25px;
+  height: 25px;
+  display: block;
+  justify-self: center;
+  object-fit: contain;
+  object-position: center;
+}
+
+.prison-life-shell .pls-nav-button--plate .pls-nav-icon--market {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
 .prison-life-shell .pls-nav-button--plate:hover {
   border-color: transparent;
   background-color: transparent;
-  background-image: url("/__mockup/images/prison-life-shell-nav-button.png");
-  filter: brightness(1.15) saturate(1.08) drop-shadow(0 0 7px rgba(243, 107, 32, 0.28));
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: none;
   transform: translateX(2px);
 }
 
@@ -47,4 +65,12 @@
 .prison-life-shell .pls-nav-button--plate.active svg,
 .prison-life-shell .pls-nav-button--plate.active > b {
   color: var(--pls-orange-hot);
+}
+
+.prison-life-shell .pls-nav-button--plate.active:hover {
+  background-image: url("/__mockup/images/prison-life-reference/nav-button-hover.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  filter: none;
 }
