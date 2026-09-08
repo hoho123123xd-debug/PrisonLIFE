@@ -104,7 +104,7 @@ export function Industrial() {
             </div>
             <div className="pls-xp-track">
               <i style={{ width: "68.4%" }} />
-              <span className="pls-xp-label">3420 / 5000 EXP</span>
+              <span className="pls-xp-label">BYK</span>
             </div>
           </div>
         </div>
