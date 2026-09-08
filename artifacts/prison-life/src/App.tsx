@@ -944,27 +944,30 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       <div className="hud-player-info" style={{ backgroundImage: `url(${hudPlayerBoxFrame})` }} data-testid="hud-player-info">
         <div className="hud-avatar-frame"><img src={playerAvatarAsset} alt={gameData.nickname} /></div>
         <div className="hud-player-copy">
-          <strong>{gameData.nickname}</strong>
-          <span>POZIOM <b>{gameData.level}</b></span>
-          <span>GANG <b>{type.name}</b></span>
+           <div className="hud-player-heading"><strong>{gameData.nickname}</strong><i>AKTYWNY</i></div>
+           <div className="hud-player-meta"><span>POZIOM <b>{gameData.level}</b></span><span>GANG <b>{type.name}</b></span></div>
+           <div className="hud-player-xp"><span>XP</span><div><i style={{ width: `${Math.min(100, (gameData.xp / Math.max(1, gameData.xpMax)) * 100)}%` }} /></div><small>{gameData.xp} / {gameData.xpMax}</small></div>
         </div>
       </div>
-      <div className="hud-chip hud-chip-money" style={{ backgroundImage: `url(${hudMoneyCardFrame})` }} data-testid="hud-money">
-        <span className="hud-chip-label">GOTÓWKA</span>
-        <b className="hud-chip-value">{gameData.gold.toLocaleString('pl-PL')} $</b>
-      </div>
-      <div className="hud-chip hud-chip-points" style={{ backgroundImage: `url(${hudPointsCardFrame})` }} data-testid="hud-points">
-        <b className="hud-chip-value">{gameData.points}</b>
-        <button className="hud-plus-btn" onClick={() => showNotice('Zakup punktów będzie dostępny wkrótce.')} aria-label="Kup punkty" />
-      </div>
-      <div className="hud-chip hud-chip-energy" style={{ backgroundImage: `url(${hudEnergyCardFrame})` }} data-testid="hud-energy">
-        <b className="hud-chip-value">{gameData.energy} / 100</b>
-        <div className="hud-energy-bar"><i style={{ width: `${gameData.energy}%` }} /></div>
+       <div className="hud-resource-dock" aria-label="Zasoby postaci">
+         <div className="hud-chip hud-chip-money" style={{ backgroundImage: `url(${hudMoneyCardFrame})` }} data-testid="hud-money">
+           <span className="hud-chip-label">GOTÓWKA</span>
+           <b className="hud-chip-value">{gameData.gold.toLocaleString('pl-PL')} $</b>
+         </div>
+         <div className="hud-chip hud-chip-points" style={{ backgroundImage: `url(${hudPointsCardFrame})` }} data-testid="hud-points">
+           <span className="hud-chip-label">PUNKTY</span>
+           <b className="hud-chip-value">{gameData.points}</b>
+           <button className="hud-plus-btn" onClick={() => showNotice('Zakup punktów będzie dostępny wkrótce.')} aria-label="Kup punkty" />
+         </div>
+         <div className="hud-chip hud-chip-energy" style={{ backgroundImage: `url(${hudEnergyCardFrame})` }} data-testid="hud-energy">
+           <b className="hud-chip-value">{gameData.energy} / 100</b>
+           <div className="hud-energy-bar"><i style={{ width: `${gameData.energy}%` }} /></div>
+         </div>
       </div>
       <div className="game-header-actions">
         <button aria-label="Powiadomienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudMailIcon})` }} onClick={() => showNotice('Nie masz nowych powiadomień.')}><span className="hud-icon-badge">3</span></button>
         <button aria-label="Ustawienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudSettingsIcon})` }} onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')} />
-        <button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /> WYLOGUJ SIĘ <ArrowRight size={15} /></button>
+         <button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /><span className="game-logout-label">WYLOGUJ SIĘ</span><ArrowRight size={15} /></button>
       </div>
     </header>
     <div className="game-layout">
