@@ -7802,8 +7802,8 @@
    approved shell redesign. The scene and all content panels keep their
    existing production layout. */
 .game-shell-page .game-header.hud-topbar {
-  height: clamp(82px, 9.5dvh, 108px);
-  min-height: clamp(82px, 9.5dvh, 108px);
+  height: clamp(96px, 11dvh, 120px);
+  min-height: clamp(96px, 11dvh, 120px);
   display: flex;
   align-items: stretch;
   gap: clamp(6px, .7vw, 12px);
@@ -7814,7 +7814,7 @@
 }
 
 .game-shell-page .hud-rail-brand {
-  flex: 0 0 clamp(236px, 19vw, 290px);
+  flex: 0 0 clamp(250px, 20vw, 310px);
   min-width: 0;
   height: 100%;
   display: flex;
@@ -8018,9 +8018,9 @@
 }
 
 .game-shell-page .game-sidebar {
-  width: clamp(236px, 19vw, 290px);
-  flex: 0 0 clamp(236px, 19vw, 290px);
-  min-height: calc(100dvh - clamp(82px, 9.5dvh, 108px));
+  width: clamp(250px, 20vw, 310px);
+  flex: 0 0 clamp(250px, 20vw, 310px);
+  min-height: calc(100dvh - clamp(96px, 11dvh, 120px));
   padding: 13px clamp(12px, 1.2vw, 20px) 14px;
   border-right: 1px solid rgba(193, 202, 200, .28);
   background-position: center;
@@ -8100,7 +8100,7 @@
 }
 
 .game-shell-page .game-footer {
-  padding-left: clamp(250px, 20vw, 305px);
+  padding-left: clamp(264px, 21vw, 325px);
 }
 
 @media (max-width: 1300px) {
