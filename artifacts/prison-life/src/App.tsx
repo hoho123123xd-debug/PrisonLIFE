@@ -140,18 +140,9 @@ import cellBackground from './assets/cell/cell-background.webp';
 import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
 import trainingMockup from '@assets/Obraz_Codex_6_wrz_2026,_20_10_24_1788718237783.png';
-import hudIndustrialBackground from '@assets/topbar/hud-industrial-background.png';
 import hudSidebarBackground from '@assets/topbar/hud-sidebar-bg.png';
-import hudAvatarFrame from '@assets/topbar/hud-avatar-frame.png';
-import hudMoneyIcon from '@assets/topbar/hud-money.png';
-import hudPointsIcon from '@assets/topbar/hud-points.png';
-import hudEnergyIcon from '@assets/topbar/hud-energy.png';
-import playerAvatarAsset from '@assets/topbar/avatar-kosa.png';
-import hudWordmark from '@assets/topbar/prison-life-wordmark.png';
 import hudNavButton from '@assets/topbar/hud-nav-button.png';
 import hudNavButtonHover from '@assets/topbar/hud-nav-button-hover.png';
-import hudMailIcon from '@assets/topbar/hud-mail.png';
-import hudSettingsIcon from '@assets/topbar/hud-settings.png';
 import navCellIcon from '@assets/topbar/icons/icon-cela.png';
 import navTrainingIcon from '@assets/topbar/icons/icon-trening.png';
 import navFightIcon from '@assets/topbar/icons/icon-walka.png';
@@ -878,7 +869,6 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
   }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, energyWallet.energy, energyWallet.updatedAt, cellUpgradeLevels, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
-  const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
     level,
@@ -933,50 +923,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setChatMessage('');
   };
 
-  return <main className="game-shell-page">
-    <header className="game-header hud-topbar" style={{ backgroundImage: `url(${hudIndustrialBackground})` }}>
-      <div className="game-header-brand hud-rail-brand" style={{ backgroundImage: `url(${hudSidebarBackground})` }}>
-        <button className="hud-wordmark-button" type="button" onClick={() => navigateSection('character')} aria-label="Prison Life — przejdź do postaci">
-          <img src={hudWordmark} alt="Prison Life" />
-        </button>
-      </div>
-      <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
-      <div className="hud-player-info hud-continuous-player" data-testid="hud-player-info">
-        <div className="hud-avatar-frame" style={{ backgroundImage: `url(${hudAvatarFrame})` }}><img src={playerAvatarAsset} alt={gameData.nickname} /></div>
-        <div className="hud-player-copy">
-           <div className="hud-player-heading"><strong>{gameData.nickname}</strong><i>AKTYWNY</i></div>
-           <div className="hud-player-meta"><span>POZIOM <b>{gameData.level}</b></span><span>GANG <b>{type.name}</b></span></div>
-           <div className="hud-player-xp"><span>XP</span><div><i style={{ width: `${Math.min(100, (gameData.xp / Math.max(1, gameData.xpMax)) * 100)}%` }} /></div><small>{gameData.xp} / {gameData.xpMax}</small></div>
-        </div>
-      </div>
-       <div className="hud-continuous-resources" aria-label="Zasoby postaci">
-         <div className="hud-continuous-resource hud-continuous-resource-money" data-testid="hud-money">
-           <span className="hud-continuous-resource-icon" style={{ backgroundImage: `url(${hudMoneyIcon})` }} aria-hidden="true" />
-           <span className="hud-continuous-resource-label">GOTÓWKA</span>
-           <b className="hud-continuous-resource-value">{gameData.gold.toLocaleString('pl-PL')} $</b>
-           <button className="hud-continuous-plus" onClick={() => showNotice('Doładowanie gotówki będzie dostępne wkrótce.')} aria-label="Dodaj gotówkę">+</button>
-         </div>
-         <div className="hud-continuous-resource hud-continuous-resource-points" data-testid="hud-points">
-           <span className="hud-continuous-resource-icon" style={{ backgroundImage: `url(${hudPointsIcon})` }} aria-hidden="true" />
-           <span className="hud-continuous-resource-label">PUNKTY</span>
-           <b className="hud-continuous-resource-value">{gameData.points}</b>
-           <button className="hud-continuous-plus" onClick={() => showNotice('Zakup punktów będzie dostępny wkrótce.')} aria-label="Kup punkty">+</button>
-         </div>
-         <div className="hud-continuous-resource hud-continuous-resource-energy" data-testid="hud-energy">
-           <span className="hud-continuous-resource-icon" style={{ backgroundImage: `url(${hudEnergyIcon})` }} aria-hidden="true" />
-           <span className="hud-continuous-resource-label">ENERGIA</span>
-           <b className="hud-continuous-resource-value">{gameData.energy} / 100</b>
-           <div className="hud-continuous-energy-meter"><i style={{ width: `${gameData.energy}%` }} /></div>
-           <button className="hud-continuous-plus" onClick={() => showNotice('Energia regeneruje się automatycznie.')} aria-label="Odnów energię">+</button>
-         </div>
-      </div>
-      <div className="game-header-actions">
-        <span className="hud-location" aria-label="Lokalizacja">BLOK<br />C</span>
-        <button aria-label="Powiadomienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudMailIcon})` }} onClick={() => showNotice('Nie masz nowych powiadomień.')}><span className="hud-icon-badge">3</span></button>
-        <button aria-label="Ustawienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudSettingsIcon})` }} onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')} />
-         <button className="game-logout" onClick={() => onNavigate('home')} aria-label="Wyloguj"><LogOut size={16} /><span className="game-logout-label">WYLOGUJ SIĘ</span><ArrowRight size={15} /></button>
-      </div>
-    </header>
+  return <main className="game-shell-page game-shell-page-no-header">
+    <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />}<i className="game-nav-divider" aria-hidden="true" /><span>{label}</span></button>)}</aside>
         <div className={`game-content ${activeSection === 'character' ? 'game-content-character' : activeSection === 'cell' || activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' || activeSection === 'cafeteria' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
