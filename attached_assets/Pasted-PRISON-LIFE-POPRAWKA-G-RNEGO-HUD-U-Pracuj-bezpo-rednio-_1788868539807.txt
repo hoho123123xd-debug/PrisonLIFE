@@ -1,0 +1,45 @@
+PRISON LIFE — POPRAWKA GÓRNEGO HUD-U
+
+Pracuj bezpośrednio na obecnym górnym pasku gry. NIE projektuj go od nowa i NIE twórz własnej interpretacji.
+
+Załączona grafika jest referencją docelowego wyglądu. Obecna wersja w Replit jest zbyt spłaszczona i ściśnięta. Chcę, żebyś poprawił IMPLEMENTACJĘ obecnego HUD-u tak, aby wizualnie możliwie najdokładniej odwzorowywała referencję.
+
+ZACHOWAJ:
+- obecny styl Prison Life,
+- ciemną, ciężką, metalową konstrukcję,
+- rdzę, przetarcia, śruby, industrialne detale,
+- pomarańczowe akcenty,
+- wszystkie obecne funkcjonalności i dynamiczne dane.
+
+NIE ZMIENIAJ:
+- kolejności elementów,
+- informacji znajdujących się w HUD,
+- logiki pieniędzy, punktów, energii, wiadomości itd.,
+- całej identyfikacji wizualnej Prison Life.
+
+POPRAW PRZEDE WSZYSTKIM KOMPOZYCJĘ:
+1. Logo po lewej ma być większe i zajmować odpowiednio dużą część wysokości paska.
+2. Panel postaci musi mieć wyraźnie większą szerokość. Avatar, ksywa, gang, poziom i XP mają być czytelnie rozmieszczone, bez nachodzenia na siebie.
+3. Pasek XP ma być integralną częścią panelu postaci i mieć odpowiednią szerokość.
+4. Panel PIENIĄDZE ma być duży, czytelny i proporcjonalny do pozostałych paneli.
+5. Panel PUNKTY ma mieć podobną wagę wizualną i odpowiednio dużo miejsca na duże wartości.
+6. Panel ENERGIA ma być wyraźnie szerszy — nie może być ściśnięty.
+7. Ikony wiadomości, ustawień i wylogowania mają pozostać osobnymi, czytelnymi elementami.
+8. Cały HUD ma mieć równy rytm, odpowiednie odstępy i proporcje zgodne z referencją.
+9. Elementy nie mogą wyglądać jak przypadkowo poukładane obrazki. Mają sprawiać wrażenie jednej ciężkiej, fizycznej konstrukcji.
+
+BARDZO WAŻNE:
+- NIE skaluj całego istniejącego HUD-u jako jednego obrazka.
+- NIE używaj jednego spłaszczonego PNG jako całego nagłówka.
+- Wykorzystaj przygotowane osobne assety jako elementy konstrukcji.
+- Teksty i wartości muszą pozostać HTML/CSS i być dynamiczne.
+- Assety graficzne mają być warstwą wizualną, a dane warstwą interaktywną.
+- Nie dodawaj nowych elementów tylko dlatego, że wydają Ci się potrzebne.
+- Nie zmieniaj wyglądu na bardziej minimalistyczny.
+- Nie upraszczaj detali.
+- Nie twórz kolejnego „ładnego dashboardu”.
+
+REFERENCJA JEST SOURCE OF TRUTH DLA WYGLĄDU.
+Obecny HUD jest tylko bazą techniczną, którą należy poprawić.
+
+Po wykonaniu zmian sprawdź HUD w rzeczywistym widoku aplikacji, a nie tylko w kodzie. Szczególnie sprawdź szerokość panelu postaci, pieniędzy, punktów i energii oraz czy żaden tekst ani grafika na siebie nie nachodzi.

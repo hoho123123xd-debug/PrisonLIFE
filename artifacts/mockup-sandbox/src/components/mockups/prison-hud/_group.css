@@ -1,0 +1,786 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+
+:root {
+  --hud-orange: #f07b32;
+  --hud-orange-soft: #ffad55;
+  --hud-cream: #eee9dd;
+  --hud-muted: #9da59d;
+  --hud-panel: rgba(10, 16, 18, .86);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #020405;
+  color: var(--hud-cream);
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+.hud-mockup-root {
+  width: 100%;
+  min-height: 100%;
+  background: #020405;
+}
+
+.hud-baseline {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 166px;
+  display: grid;
+  grid-template-columns: minmax(250px, 18%) minmax(340px, 25%) minmax(520px, 1fr) minmax(220px, max-content);
+  align-items: stretch;
+  gap: clamp(7px, .55vw, 10px);
+  padding: 9px 8px 9px 0;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(229, 104, 33, .84);
+  background:
+    radial-gradient(ellipse at 64% 0%, rgba(193, 86, 35, .27), transparent 30%),
+    linear-gradient(90deg, rgba(0, 0, 0, .1), rgba(1, 7, 9, .68) 55%, rgba(0, 0, 0, .88)),
+    url('/__mockup/images/prison-hud/hud-industrial-background.png') center / 100% 100% no-repeat;
+  box-shadow: 0 9px 22px rgba(0, 0, 0, .55), inset 0 -1px rgba(255, 182, 106, .16);
+}
+
+.hud-baseline::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: .7;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 27%, rgba(9, 19, 21, .18) 27% 67%, transparent 67%),
+    radial-gradient(circle at 45% 20%, rgba(205, 167, 119, .2), transparent 8%),
+    linear-gradient(0deg, rgba(0, 0, 0, .62), transparent 48%, rgba(255, 218, 163, .08));
+}
+
+.hud-baseline::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 16%;
+  bottom: 0;
+  left: 24%;
+  pointer-events: none;
+  opacity: .58;
+  background: url('/__mockup/images/prison-hud/hud-skyline-scene.png') center / cover no-repeat;
+  mix-blend-mode: screen;
+}
+
+.hud-brand {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+  border-right: 1px solid rgba(221, 229, 218, .28);
+  background: linear-gradient(90deg, rgba(2, 5, 7, .12), rgba(2, 5, 7, .54));
+}
+
+.hud-brand img {
+  display: block;
+  width: min(100%, 265px);
+  max-height: 116px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .82));
+}
+
+.hud-player {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: clamp(62px, 5.4vw, 84px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(8px, .8vw, 14px);
+  padding: 8px clamp(10px, 1vw, 16px);
+  border: 1px solid rgba(224, 231, 219, .38);
+  background-color: #11181a;
+  background:
+    linear-gradient(90deg, rgba(8, 14, 16, .26), rgba(8, 14, 16, .66)),
+    url('/__mockup/images/prison-hud/hud-player-box-bg.png') center / 100% 100% no-repeat;
+  background-color: #11181a;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, .7),
+    0 8px 16px rgba(0, 0, 0, .42),
+    inset 0 0 20px rgba(0, 0, 0, .54);
+}
+
+.hud-avatar {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  min-height: 88px;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+  border: 1px solid rgba(222, 122, 55, .46);
+  background: rgba(5, 9, 11, .35);
+}
+
+.hud-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hud-player-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 10px;
+  border-left: 1px solid rgba(210, 219, 209, .18);
+  background: rgba(5, 9, 11, .78);
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, .42);
+}
+
+.hud-player-top,
+.hud-player-meta,
+.hud-xp-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.hud-player-top {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hud-player-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #f3eee2;
+  font: 700 clamp(17px, 1.45vw, 24px)/1 'Oswald', sans-serif;
+  letter-spacing: .04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-player-rank {
+  flex: 0 0 auto;
+  color: var(--hud-orange-soft);
+  font: 700 clamp(9px, .65vw, 11px)/1 'Oswald', sans-serif;
+  letter-spacing: .05em;
+}
+
+.hud-player-meta {
+  gap: 12px;
+  color: #bbc1b9;
+  font: 700 clamp(9px, .65vw, 12px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.hud-player-meta b {
+  color: var(--hud-orange-soft);
+  font-weight: 700;
+}
+
+.hud-xp-row {
+  gap: 7px;
+}
+
+.hud-xp-row > span,
+.hud-xp-row > small {
+  flex: 0 0 auto;
+  color: #939e94;
+  font: 700 clamp(8px, .55vw, 10px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: .08em;
+}
+
+.hud-xp-track {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(206, 213, 195, .35);
+  background:
+    url('/__mockup/images/prison-hud/hud-xp-track.png') center / 100% 100% no-repeat,
+    #11191c;
+}
+
+.hud-xp-track i {
+  display: block;
+  width: 58%;
+  height: 100%;
+  background: linear-gradient(90deg, #d24d20, #f28e36);
+  box-shadow: 0 0 9px rgba(241, 126, 45, .62);
+}
+
+.hud-resources {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(160px, 1fr) minmax(225px, 1.35fr);
+  gap: clamp(4px, .35vw, 7px);
+  align-items: stretch;
+}
+
+.hud-resource {
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(224, 231, 219, .34);
+  background-color: #0d1416;
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, .78),
+    0 8px 14px rgba(0, 0, 0, .43),
+    inset 0 0 14px rgba(0, 0, 0, .34);
+}
+
+.hud-resource-money { background-image: url('/__mockup/images/prison-hud/hud-money-card-bg.png'); }
+.hud-resource-points { background-image: url('/__mockup/images/prison-hud/hud-points-card-bg.png'); }
+.hud-resource-energy { background-image: url('/__mockup/images/prison-hud/hud-energy-card-bg.png'); }
+
+.hud-resource > * {
+  z-index: 1;
+}
+
+.hud-resource-label {
+  position: absolute;
+  top: 22%;
+  left: 40%;
+  color: #b6bdb6;
+  font: 700 clamp(8px, .6vw, 11px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: .12em;
+}
+
+.hud-resource-energy::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 13%;
+  right: 5%;
+  left: 28%;
+  height: 27%;
+  border: 1px solid rgba(210, 219, 209, .12);
+  background: rgba(8, 13, 15, .92);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, .42);
+}
+
+.hud-resource-value {
+  position: absolute;
+  top: 49%;
+  left: 40%;
+  right: 7%;
+  overflow: hidden;
+  color: #f2eee4;
+  font: 700 clamp(13px, 1vw, 18px)/1 'Oswald', sans-serif;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-resource-points .hud-resource-value {
+  left: 38%;
+  right: 21%;
+}
+
+.hud-resource-money .hud-resource-value {
+  left: 35%;
+  right: 21%;
+}
+
+.hud-resource-money .hud-resource-label,
+.hud-resource-points .hud-resource-label {
+  left: 35%;
+}
+
+.hud-resource-energy .hud-resource-value {
+  top: 20%;
+  left: 69%;
+  right: 5%;
+  text-align: left;
+  font-size: clamp(11px, .8vw, 15px);
+}
+
+.hud-resource-energy .hud-resource-label {
+  top: 21%;
+  left: 33%;
+}
+
+.hud-energy-meter {
+  position: absolute;
+  top: 58%;
+  left: 29%;
+  right: 20%;
+  height: 17%;
+  overflow: hidden;
+  border: 1px solid rgba(18, 23, 24, .95);
+  background: rgba(11, 17, 19, .85);
+}
+
+.hud-energy-meter i {
+  display: block;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(90deg, #d45421, #f2933a);
+}
+
+.hud-resource-plus {
+  position: absolute;
+  top: 31%;
+  right: 7%;
+  bottom: 25%;
+  width: 16%;
+  border: 0;
+  border-radius: 3px;
+  color: #141719;
+  background: #f2a63b;
+  box-shadow: 0 0 8px rgba(249, 144, 49, .28);
+  cursor: pointer;
+  font: 900 clamp(15px, 1.2vw, 22px)/1 'Barlow', sans-serif;
+}
+
+.hud-resource-points .hud-resource-plus {
+  display: block;
+}
+
+.hud-resource-energy .hud-resource-plus {
+  top: 57%;
+  right: 7%;
+  bottom: 18%;
+  width: 11%;
+}
+
+.hud-actions {
+  min-width: max-content;
+  width: max-content;
+  display: flex;
+  align-items: center;
+  gap: clamp(5px, .45vw, 9px);
+  padding-left: clamp(2px, .3vw, 7px);
+}
+
+.hud-location {
+  align-self: stretch;
+  min-width: 74px;
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+  border-left: 1px solid rgba(217, 226, 215, .2);
+  border-right: 1px solid rgba(217, 226, 215, .2);
+  color: rgba(235, 228, 208, .68);
+  background: rgba(7, 12, 14, .28);
+  font: 700 10px/1.05 'Oswald', sans-serif;
+  letter-spacing: .1em;
+  text-align: center;
+}
+
+.hud-icon {
+  position: relative;
+  width: clamp(39px, 3.2vw, 52px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(222, 229, 218, .32);
+  background-color: rgba(7, 12, 14, .46);
+  background-position: center;
+  background-size: 100% 100%;
+  cursor: pointer;
+}
+
+.hud-icon:hover {
+  border-color: var(--hud-orange-soft);
+  filter: brightness(1.18);
+}
+
+.hud-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #d74137;
+  font: 700 11px/1 'Barlow', sans-serif;
+}
+
+.hud-logout {
+  width: clamp(42px, 3.4vw, 54px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(222, 229, 218, .32);
+  color: #ebe7dc;
+  background: rgba(7, 12, 14, .66);
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.hud-logout:hover {
+  color: var(--hud-orange-soft);
+  border-color: var(--hud-orange-soft);
+}
+
+@media (max-width: 1050px) {
+  .hud-baseline {
+    grid-template-columns: minmax(200px, 20%) minmax(290px, 28%) minmax(330px, 1fr) auto;
+  }
+  .hud-resources {
+    grid-template-columns: minmax(115px, 1fr) minmax(115px, 1fr) minmax(180px, 1.3fr);
+  }
+  .hud-resource-money .hud-resource-value {
+    left: 30%;
+    right: 17%;
+  }
+  .hud-resource-money .hud-resource-label {
+    left: 30%;
+  }
+  .hud-resource-points .hud-resource-value,
+  .hud-resource-points .hud-resource-label {
+    left: 32%;
+    right: 18%;
+  }
+  .hud-location { display: none; }
+}
+
+@media (max-width: 760px) {
+  .hud-baseline {
+    min-height: 124px;
+    grid-template-columns: minmax(125px, 27%) minmax(175px, 1fr) auto;
+    gap: 5px;
+    padding-block: 6px;
+  }
+  .hud-brand { padding-inline: 7px; }
+  .hud-player { padding-inline: 7px; }
+  .hud-player-name { font-size: 16px; }
+  .hud-resources {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    min-height: 42px;
+  }
+  .hud-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .hud-resource-label { display: none; }
+  .hud-resource-value { font-size: 11px; }
+  .hud-resource-energy { display: none; }
+  .hud-resources { grid-template-columns: repeat(2, minmax(75px, 1fr)); }
+}
+
+@media (max-width: 500px) {
+  .hud-baseline {
+    min-height: 86px;
+    grid-template-columns: 112px minmax(0, 1fr) auto;
+  }
+  .hud-brand img { max-height: 60px; }
+  .hud-player { grid-template-columns: 42px minmax(0, 1fr); padding-inline: 4px; }
+  .hud-avatar { min-height: 56px; }
+  .hud-player-meta,
+  .hud-xp-row { display: none; }
+  .hud-player-name { font-size: 13px; }
+  .hud-player-rank { display: none; }
+  .hud-resources { display: none; }
+  .hud-icon { width: 34px; }
+  .hud-logout { width: 34px; font-size: 18px; }
+}
+
+/* Current reference direction: one continuous prison beam, not a row of cards. */
+.hud-continuous.hud-baseline {
+  grid-template-columns: minmax(220px, 24%) minmax(290px, 25%) minmax(430px, 1fr) auto;
+  gap: 0;
+  padding: 6px 0;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, .16), rgba(3, 8, 10, .34) 48%, rgba(0, 0, 0, .7)),
+    url('/__mockup/images/prison-hud/hud-industrial-background.png') center / 100% 100% no-repeat;
+}
+
+.hud-continuous.hud-baseline::before {
+  opacity: .5;
+  background:
+    linear-gradient(90deg, rgba(2, 5, 7, .22), transparent 22% 77%, rgba(2, 5, 7, .28)),
+    linear-gradient(0deg, rgba(0, 0, 0, .42), transparent 42%, rgba(255, 218, 163, .08));
+}
+
+.hud-continuous.hud-baseline::after {
+  top: 2px;
+  right: 11%;
+  bottom: 2px;
+  left: 20%;
+  opacity: .75;
+  mix-blend-mode: screen;
+}
+
+.hud-continuous .hud-brand {
+  padding: 0 12px;
+  border-right: 1px solid rgba(229, 231, 213, .24);
+  background: linear-gradient(90deg, rgba(3, 6, 8, .18), rgba(3, 6, 8, .42));
+}
+
+.hud-continuous .hud-brand img {
+  width: min(100%, 270px);
+  max-height: 132px;
+}
+
+.hud-continuous .hud-player {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px 14px 10px 10px;
+  border: 0;
+  background:
+    linear-gradient(90deg, rgba(5, 9, 11, .78), rgba(5, 9, 11, .18));
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, .22);
+}
+
+.hud-continuous .hud-avatar {
+  min-height: 0;
+  align-self: stretch;
+  padding: 7px;
+  border: 0;
+  background:
+    url('/__mockup/images/prison-hud/hud-avatar-frame.png') center / 100% 100% no-repeat,
+    rgba(5, 9, 11, .62);
+}
+
+.hud-continuous .hud-player-copy {
+  padding: 5px 0 5px 10px;
+  border-left: 1px solid rgba(212, 221, 205, .22);
+  background: transparent;
+  box-shadow: none;
+}
+
+.hud-continuous .hud-player-name {
+  font-size: clamp(19px, 1.55vw, 26px);
+}
+
+.hud-continuous .hud-player-meta {
+  gap: 10px;
+  color: #d7a15f;
+}
+
+.hud-continuous .hud-xp-track {
+  height: 9px;
+}
+
+.hud-continuous .hud-resources {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(125px, .92fr) minmax(205px, 1.35fr);
+  gap: 0;
+  align-items: stretch;
+}
+
+.hud-continuous .hud-resource {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-right: 1px solid rgba(227, 230, 207, .22);
+  background: linear-gradient(90deg, rgba(3, 8, 10, .38), rgba(3, 8, 10, .12));
+  box-shadow: none;
+}
+
+.hud-continuous .hud-resource:first-child {
+  border-left: 1px solid rgba(227, 230, 207, .18);
+}
+
+.hud-continuous .hud-resource::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 17%;
+  right: 0;
+  bottom: 17%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(237, 226, 190, .35), transparent);
+  pointer-events: none;
+}
+
+.hud-continuous .hud-resource > * {
+  z-index: 2;
+}
+
+.hud-continuous .hud-resource::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 13%;
+  right: 4%;
+  bottom: 13%;
+  left: 4%;
+  border-top: 1px solid rgba(234, 228, 198, .12);
+  border-bottom: 1px solid rgba(0, 0, 0, .42);
+  pointer-events: none;
+}
+
+.hud-continuous .hud-resource-icon {
+  position: absolute;
+  z-index: 2;
+  top: 27%;
+  left: 5%;
+  width: 28%;
+  height: 49%;
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .76));
+}
+
+.hud-continuous .hud-resource-icon-money {
+  background-image: url('/__mockup/images/prison-hud/icons/money.png');
+}
+
+.hud-continuous .hud-resource-icon-points {
+  background-image: url('/__mockup/images/prison-hud/icons/points.png');
+}
+
+.hud-continuous .hud-resource-icon-energy {
+  top: 14%;
+  left: 4%;
+  width: 21%;
+  height: 70%;
+  background-image: url('/__mockup/images/prison-hud/icons/energy.png');
+}
+
+.hud-continuous .hud-resource-label {
+  top: 23%;
+  left: 34%;
+  color: #bfc2ae;
+  font-size: clamp(9px, .68vw, 12px);
+  letter-spacing: .08em;
+}
+
+.hud-continuous .hud-resource-value,
+.hud-continuous .hud-resource-money .hud-resource-value,
+.hud-continuous .hud-resource-points .hud-resource-value {
+  top: 49%;
+  left: 34%;
+  right: 17%;
+  font-size: clamp(14px, 1vw, 18px);
+  text-align: left;
+}
+
+.hud-continuous .hud-resource-energy::before {
+  top: 13%;
+  right: 4%;
+  bottom: auto;
+  left: 26%;
+  height: 27%;
+  border: 0;
+  border-top: 1px solid rgba(234, 228, 198, .12);
+  border-bottom: 1px solid rgba(0, 0, 0, .42);
+  background: transparent;
+  box-shadow: none;
+}
+
+.hud-continuous .hud-resource-energy .hud-resource-label {
+  top: 20%;
+  left: 29%;
+}
+
+.hud-continuous .hud-resource-energy .hud-resource-value {
+  top: 20%;
+  left: 70%;
+  right: 4%;
+  text-align: left;
+  font-size: clamp(11px, .85vw, 15px);
+}
+
+.hud-continuous .hud-energy-meter {
+  top: 58%;
+  right: 18%;
+  left: 28%;
+  height: 14%;
+  border: 1px solid rgba(224, 220, 191, .32);
+  background: rgba(3, 8, 10, .7);
+}
+
+.hud-continuous .hud-resource-plus {
+  top: 51%;
+  right: 3%;
+  bottom: auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(242, 200, 122, .64);
+  border-radius: 2px;
+  font-size: 18px;
+}
+
+.hud-continuous .hud-resource-energy .hud-resource-plus {
+  top: 56%;
+  right: 3%;
+  width: 22px;
+  height: 22px;
+}
+
+.hud-continuous .hud-actions {
+  min-width: max-content;
+  width: max-content;
+  gap: 7px;
+  padding: 0 10px;
+  border-left: 1px solid rgba(229, 231, 213, .2);
+}
+
+.hud-continuous .hud-location {
+  min-width: 74px;
+  border: 0;
+  color: rgba(235, 228, 208, .84);
+  background: transparent;
+}
+
+.hud-continuous .hud-icon,
+.hud-continuous .hud-logout {
+  border-color: rgba(222, 229, 218, .28);
+  background-color: rgba(7, 12, 14, .2);
+}
+
+@media (max-width: 1050px) {
+  .hud-continuous.hud-baseline {
+    grid-template-columns: minmax(185px, 22%) minmax(260px, 27%) minmax(390px, 1fr) auto;
+  }
+  .hud-continuous .hud-location { display: none; }
+  .hud-continuous .hud-resources {
+    grid-template-columns: minmax(120px, 1fr) minmax(115px, .92fr) minmax(180px, 1.3fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .hud-continuous.hud-baseline {
+    min-height: 124px;
+    grid-template-columns: minmax(125px, 27%) minmax(175px, 1fr) auto;
+    gap: 0;
+  }
+  .hud-continuous .hud-player {
+    grid-template-columns: 58px minmax(0, 1fr);
+    padding: 7px;
+  }
+  .hud-continuous .hud-player-name { font-size: 17px; }
+  .hud-continuous .hud-resources {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    min-height: 42px;
+    grid-template-columns: repeat(2, minmax(75px, 1fr));
+  }
+  .hud-continuous .hud-resource-energy { display: none; }
+  .hud-continuous .hud-resource-label { display: none; }
+  .hud-continuous .hud-resource-value {
+    top: 39%;
+    left: 35%;
+    font-size: 12px;
+  }
+  .hud-continuous .hud-resource-icon { top: 20%; height: 60%; }
+}
