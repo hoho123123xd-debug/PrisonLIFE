@@ -8026,6 +8026,9 @@
   flex: 0 0 clamp(250px, 20vw, 310px);
   min-height: calc(100dvh - clamp(96px, 11dvh, 120px));
   padding: 13px clamp(12px, 1.2vw, 20px) 14px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(224, 99, 31, .65) transparent;
   border-right: 1px solid rgba(193, 202, 200, .28);
   background-position: center;
   background-size: 100% 100%;
@@ -8037,10 +8040,10 @@
 }
 
 .game-shell-page .game-sidebar button {
-  min-height: 37px;
+  min-height: 54px;
   height: auto;
-  margin: 3px 0;
-  padding: 0 24px 0 12px;
+  margin: 4px 0;
+  padding: 0 24px 0 14px;
   display: grid;
   grid-template-columns: 25px minmax(0, 1fr);
   align-items: center;
@@ -8074,8 +8077,8 @@
 
 .game-shell-page .game-sidebar button svg,
 .game-shell-page .game-nav-asset {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .7));
 }
@@ -8084,7 +8087,7 @@
   min-width: 0;
   overflow: hidden;
   color: inherit;
-  font: 700 11px/1 "Barlow Condensed", sans-serif;
+  font: 700 13px/1 "Barlow Condensed", sans-serif;
   letter-spacing: .08em;
   text-overflow: ellipsis;
   white-space: nowrap;
