@@ -8062,7 +8062,40 @@
 }
 
 .game-shell-page .game-sidebar button:first-of-type {
-  margin-top: 50px;
+  margin-top: 12px;
+}
+
+.game-shell-page .hud-sidebar-brand {
+  height: 108px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px 4px;
+  border-bottom: 1px solid rgba(193, 202, 200, .28);
+}
+
+.game-shell-page .hud-sidebar-brand .hud-wordmark-button {
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  grid-template-columns: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+
+.game-shell-page .hud-sidebar-brand .hud-wordmark-button img {
+  display: block;
+  width: min(100%, 250px);
+  max-height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .72));
 }
 
 .game-shell-page .game-sidebar button:hover,
