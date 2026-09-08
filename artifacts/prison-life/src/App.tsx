@@ -11,7 +11,9 @@ import {
   POINT_DROP_CHANCE,
   ITEM_DROP_CHANCE,
   ELITE_LOOT_CHANCE,
+  ELITE_MIN_LEVEL,
   pickRandomLootItem,
+  filterPoolByLevel,
   type ItemInstance,
   rollItemInstance,
   type LegalGood,
@@ -843,21 +845,26 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
   const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
   const [ownedItems, setOwnedItems] = useState<ItemInstance[]>(() => savedProgress.ownedItems ?? characterDefaultOwnedItems);
-  const [shopOffer, setShopOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.shopOffer, legalGoodsPool));
-  const [marketOffer, setMarketOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.marketOffer, illegalGoodsPool));
-  const restockShopSlot = (purchasedId: string) => setShopOffer((current) => restockOfferSlot(current, legalGoodsPool, purchasedId));
-  const restockMarketSlot = (purchasedId: string) => setMarketOffer((current) => restockOfferSlot(current, illegalGoodsPool, purchasedId));
+  // Elite listings are hidden from both storefronts below ELITE_MIN_LEVEL -
+  // recomputed off `level` each render (cheap, ~20-item arrays) rather than
+  // memoized, so a level-up immediately opens up elite offers on refresh.
+  const availableLegalGoodsPool = filterPoolByLevel(legalGoodsPool, level);
+  const availableIllegalGoodsPool = filterPoolByLevel(illegalGoodsPool, level);
+  const [shopOffer, setShopOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.shopOffer, availableLegalGoodsPool));
+  const [marketOffer, setMarketOffer] = useState<OfferState>(() => rollOfferIfStale(savedProgress.marketOffer, availableIllegalGoodsPool));
+  const restockShopSlot = (purchasedId: string) => setShopOffer((current) => restockOfferSlot(current, availableLegalGoodsPool, purchasedId));
+  const restockMarketSlot = (purchasedId: string) => setMarketOffer((current) => restockOfferSlot(current, availableIllegalGoodsPool, purchasedId));
   const offerRunLocked = useActionLock();
   const refreshShopOffer = () => offerRunLocked('refresh-shop', () => {
     if (!pointsWallet.canAfford(OFFER_REFRESH_COST)) { showNotice(`Potrzebujesz ${OFFER_REFRESH_COST} pkt, aby odświeżyć ofertę.`); return; }
     if (!pointsWallet.removeMoney(OFFER_REFRESH_COST)) { showNotice('Nie udało się odświeżyć oferty.'); return; }
-    setShopOffer({ ids: pickRandomOfferIds(legalGoodsPool, OFFER_SIZE), refreshedAt: Date.now() });
+    setShopOffer({ ids: pickRandomOfferIds(availableLegalGoodsPool, OFFER_SIZE), refreshedAt: Date.now() });
     showNotice('Asortyment sklepu został odświeżony.');
   });
   const refreshMarketOffer = () => offerRunLocked('refresh-market', () => {
     if (!pointsWallet.canAfford(OFFER_REFRESH_COST)) { showNotice(`Potrzebujesz ${OFFER_REFRESH_COST} pkt, aby odświeżyć ofertę.`); return; }
     if (!pointsWallet.removeMoney(OFFER_REFRESH_COST)) { showNotice('Nie udało się odświeżyć oferty.'); return; }
-    setMarketOffer({ ids: pickRandomOfferIds(illegalGoodsPool, OFFER_SIZE), refreshedAt: Date.now() });
+    setMarketOffer({ ids: pickRandomOfferIds(availableIllegalGoodsPool, OFFER_SIZE), refreshedAt: Date.now() });
     showNotice('Asortyment czarnego rynku został odświeżony.');
   });
   const [foodBuffs, setFoodBuffs] = useState<FoodBuff[]>(() => (savedProgress.foodBuffs ?? []).filter((buff) => buff.expiresAt > Date.now()));
@@ -983,7 +990,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />}<i className="game-nav-divider" aria-hidden="true" /><span>{label}</span></button>)}</aside>
         <div className={`game-content ${activeSection === 'character' ? 'game-content-character' : activeSection === 'cell' || activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' || activeSection === 'cafeteria' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} setOwnedItems={setOwnedItems} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} setOwnedItems={setOwnedItems} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} equipped={equipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} onPurchased={restockMarketSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} equipped={equipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} onPurchased={restockShopSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
+        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} setOwnedItems={setOwnedItems} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} level={level} setOwnedItems={setOwnedItems} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} equipped={equipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} onPurchased={restockMarketSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} equipped={equipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} onPurchased={restockShopSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1944,7 +1951,7 @@ function missionSkipCost(remainingMs: number) {
 
 const MISSION_BONUS_MONEY_CHANCE = 0.35;
 
-function MissionCardTile({ mission, wallet, pointsWallet, energy, setOwnedItems, onGainXp, onNotice }: { mission: MissionCard; wallet: Wallet; pointsWallet: Wallet; energy: Energy; setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+function MissionCardTile({ mission, wallet, pointsWallet, energy, level, setOwnedItems, onGainXp, onNotice }: { mission: MissionCard; wallet: Wallet; pointsWallet: Wallet; energy: Energy; level: number; setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   const [status, setStatus] = useState<'idle' | 'in-progress'>('idle');
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [remainingMs, setRemainingMs] = useState(0);
@@ -1965,7 +1972,7 @@ function MissionCardTile({ mission, wallet, pointsWallet, energy, setOwnedItems,
         extras.push(`${bonusMoney} $`);
       }
       if (Math.random() < ITEM_DROP_CHANCE) {
-        const loot = pickRandomLootItem();
+        const loot = pickRandomLootItem(level);
         if (loot) { setOwnedItems((current) => [...current, rollItemInstance(loot.id)]); extras.push(loot.name); }
       }
       if (Math.random() < POINT_DROP_CHANCE) { pointsWallet.addMoney(1); extras.push('1 pkt'); }
@@ -2027,14 +2034,14 @@ function MissionCardTile({ mission, wallet, pointsWallet, energy, setOwnedItems,
   </article>;
 }
 
-function MissionsCardsView({ wallet, pointsWallet, energy, setOwnedItems, onGainXp, onNotice }: { wallet: Wallet; pointsWallet: Wallet; energy: Energy; setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+function MissionsCardsView({ wallet, pointsWallet, energy, level, setOwnedItems, onGainXp, onNotice }: { wallet: Wallet; pointsWallet: Wallet; energy: Energy; level: number; setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   return <section className="missions-cards-view" style={{ '--missions-cards-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-cards-view">
     <header className="missions-cards-heading">
       <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WYBIERZ MISJĘ I PODEJMIJ RYZYKO. KAŻDA DECYZJA MA KONSEKWENCJE.</p></div>
       <div className="missions-cards-slogan">TU NIE MA<br />PRZYPADKÓW</div>
     </header>
     <div className="missions-cards-grid">
-      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} wallet={wallet} pointsWallet={pointsWallet} energy={energy} setOwnedItems={setOwnedItems} onGainXp={onGainXp} onNotice={onNotice} />)}
+      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} wallet={wallet} pointsWallet={pointsWallet} energy={energy} level={level} setOwnedItems={setOwnedItems} onGainXp={onGainXp} onNotice={onNotice} />)}
     </div>
     <footer className="missions-cards-footer">
       <div className="missions-card-timer"><Archive size={26} /><span><small>NOWE MISJE ZA:</small><strong>01:58:27</strong></span></div>
@@ -2424,7 +2431,7 @@ function FightView({ creator, gameData, wallet, energy, pointsWallet, setOwnedIt
       wallet.addMoney(moneyChange);
       onAddRespect(respectChange);
       if (Math.random() < ITEM_DROP_CHANCE) {
-        const loot = pickRandomLootItem();
+        const loot = pickRandomLootItem(gameData.level);
         if (loot) { setOwnedItems((current) => [...current, rollItemInstance(loot.id)]); itemWon = loot.name; }
       }
       if (Math.random() < POINT_DROP_CHANCE) { pointsWallet.addMoney(1); pointsWon = 1; }

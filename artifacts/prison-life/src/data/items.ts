@@ -94,18 +94,20 @@ export const ITEM_DROP_CHANCE = 0.3;
 // item drop, not just a low weight in the same pool - that keeps it "lotka"
 // rare (~1 in 16 700 per win, i.e. ITEM_DROP_CHANCE * ELITE_LOOT_CHANCE)
 // regardless of how the common/rare pool shrinks as the player collects
-// things. TODO once a level requirement is decided: gate elite items behind
-// it here (and unlock it as a guaranteed-ish reward on specific missions
-// that explicitly advertise an elite chance, once any exist).
+// things.
 export const ELITE_LOOT_CHANCE = 1 / 5000;
+// Elitarny stays fully out of reach - both as loot and as something to buy -
+// until the player hits this level, so a fresh prisoner can't luck (or pay)
+// into top-tier gear on day one.
+export const ELITE_MIN_LEVEL = 10;
 // unikat is event-only (events aren't built yet) and edycja limitowana
 // needs its own separate source that isn't decided yet either - neither
 // belongs behind an ordinary mission/fight roll at all. Owning one already
 // no longer excludes it from future rolls (see ItemInstance below) - a
 // second copy is just another instance with its own rolled bonus, to be
 // worn or sold.
-export function pickRandomLootItem() {
-  const eliteCandidates = characterInventoryItemsData.filter((item) => item.tier === 'elite');
+export function pickRandomLootItem(level: number) {
+  const eliteCandidates = level >= ELITE_MIN_LEVEL ? characterInventoryItemsData.filter((item) => item.tier === 'elite') : [];
   if (eliteCandidates.length > 0 && Math.random() < ELITE_LOOT_CHANCE) {
     return eliteCandidates[Math.floor(Math.random() * eliteCandidates.length)];
   }
@@ -118,6 +120,13 @@ export function pickRandomLootItem() {
     if (roll <= 0) return item;
   }
   return candidates[candidates.length - 1];
+}
+// Filters a Sklep/Czarny Rynek offer pool down to what a player of this
+// level is allowed to see at all - elite listings are hidden below
+// ELITE_MIN_LEVEL, same threshold as the loot roll above, so gear you can't
+// yet earn also isn't for sale.
+export function filterPoolByLevel<T extends { tier?: ItemTier }>(pool: T[], level: number): T[] {
+  return level >= ELITE_MIN_LEVEL ? pool : pool.filter((item) => item.tier !== 'elite');
 }
 
 // Every purchase or loot drop is its own instance: same catalog item, same
