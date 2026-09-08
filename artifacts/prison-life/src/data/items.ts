@@ -97,20 +97,38 @@ export function pickRandomLootItem() {
 }
 
 // Every purchase or loot drop is its own instance: same catalog item, same
-// tier, but the bonus this specific copy rolled can differ. The spread is
-// additive (±30% of the base, floored at ±1) rather than a straight
+// tier, but which stats it boosts and by how much can both differ. Higher
+// tiers roll bonuses on more stats at once - common gets 1 or 2 (a coin
+// flip), rare 3, elite 4, edycja limitowana and unikat all 6. The catalog's
+// bonusStat is always one of the rolled stats (an item keeps its "identity"
+// stat); the rest are random picks from the other five.
+export const STAT_KEYS = ['health', 'luck', 'strength', 'endurance', 'intelligence', 'reflex'];
+const tierStatCount: Record<ItemTier, () => number> = {
+  common: () => (Math.random() < 0.5 ? 1 : 2),
+  rare: () => 3,
+  elite: () => 4,
+  limited: () => 6,
+  unique: () => 6,
+};
+// Additive spread (±30% of the base, floored at ±1) rather than a straight
 // percentage multiply, since a percentage swing on a base as low as 2 always
 // rounds back to the same integer - the additive floor keeps even the
-// cheapest items visibly variable. Owning several of "the same" item is
-// normal - keep the best roll equipped, sell the rest.
-export type ItemInstance = { instanceId: string; itemId: string; bonusAmount: number };
+// cheapest items visibly variable.
+function rollBonusAmount(base: number): number {
+  const spread = Math.max(1, Math.round(base * 0.3));
+  return Math.max(1, base + Math.floor(Math.random() * (spread * 2 + 1)) - spread);
+}
+export type ItemInstance = { instanceId: string; itemId: string; bonuses: Record<string, number> };
 let itemInstanceCounter = 0;
 export function rollItemInstance(itemId: string): ItemInstance {
   const item = characterInventoryItemsData.find((entry) => entry.id === itemId)!;
   itemInstanceCounter += 1;
-  const spread = Math.max(1, Math.round(item.bonusAmount * 0.3));
-  const bonusAmount = Math.max(1, item.bonusAmount + Math.floor(Math.random() * (spread * 2 + 1)) - spread);
-  return { instanceId: `${itemId}-${Date.now()}-${itemInstanceCounter}`, itemId, bonusAmount };
+  const count = tierStatCount[item.tier]();
+  const otherStats = STAT_KEYS.filter((stat) => stat !== item.bonusStat).sort(() => Math.random() - 0.5);
+  const chosenStats = [item.bonusStat, ...otherStats.slice(0, count - 1)];
+  const bonuses: Record<string, number> = {};
+  for (const stat of chosenStats) bonuses[stat] = rollBonusAmount(item.bonusAmount);
+  return { instanceId: `${itemId}-${Date.now()}-${itemInstanceCounter}`, itemId, bonuses };
 }
 
 // Sklep (legal) and Czarny Rynek (illegal) share one mechanic: a rotating

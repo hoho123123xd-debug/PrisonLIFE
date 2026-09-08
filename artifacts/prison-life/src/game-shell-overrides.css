@@ -7265,7 +7265,18 @@
 }
 .character-item-tooltip span {
   color: var(--prison-orange-light);
+  display: block;
 }
+.character-item-tooltip-compare-group {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+}
+.character-item-tooltip-compare {
+  font: 700 10px 'Barlow Condensed' !important;
+}
+.character-item-tooltip-compare.positive { color: #7bc98a !important; }
+.character-item-tooltip-compare.negative { color: #e0665c !important; }
 .character-context-backdrop {
   position: fixed;
   inset: 0;

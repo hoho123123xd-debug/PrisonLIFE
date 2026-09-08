@@ -1079,6 +1079,26 @@ const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof S
 const characterInventoryTabs = ['WSZYSTKIE', 'UBRANIA', 'DODATKI', 'BROŃ', 'INNE'] as const;
 const characterInventoryPageSize = 20;
 const characterStatLabelByKey: Record<string, string> = { health: 'zdrowia', luck: 'szczęścia', strength: 'siły', endurance: 'kondycji', intelligence: 'inteligencji', reflex: 'refleksu' };
+function getEquippedForSlot(slot: string, equipped: Record<string, string | null>, ownedItems: ItemInstance[]) {
+  const instanceId = equipped[slot];
+  if (!instanceId) return undefined;
+  const instance = ownedItems.find((entry) => entry.instanceId === instanceId);
+  return instance ? { bonuses: instance.bonuses, instanceId } : undefined;
+}
+// Comparison shown when hovering an item that could replace what's already
+// equipped in its slot: for every stat either one touches, show the delta
+// (a stat only the candidate has is a pure gain, one only the current item
+// has is a pure loss) - so a swap's full tradeoff is clear at a glance, not
+// just whatever single stat happens to match.
+function renderItemCompare(candidateBonuses: Record<string, number>, current: { bonuses: Record<string, number> } | undefined) {
+  if (!current) return null;
+  const statKeys = Array.from(new Set([...Object.keys(candidateBonuses), ...Object.keys(current.bonuses)]));
+  const lines = statKeys
+    .map((stat) => ({ stat, diff: (candidateBonuses[stat] ?? 0) - (current.bonuses[stat] ?? 0) }))
+    .filter(({ diff }) => diff !== 0);
+  if (lines.length === 0) return <div className="character-item-tooltip-compare-group"><span className="character-item-tooltip-compare">Tyle samo co założone</span></div>;
+  return <div className="character-item-tooltip-compare-group">{lines.map(({ stat, diff }) => <span key={stat} className={`character-item-tooltip-compare ${diff > 0 ? 'positive' : 'negative'}`}>{diff > 0 ? '+' : ''}{diff} do {characterStatLabelByKey[stat]}</span>)}</div>;
+}
 // Cost in cash to raise a stat by one point, given its current (pre-upgrade) value — rises with level.
 function statUpgradeCost(currentValue: number): number {
   return 20 + currentValue * 4;
@@ -1095,12 +1115,13 @@ const characterDefaultEquippedItemIds: Record<string, string | null> = {
 };
 // A fresh prisoner starts owning only their issued/equipped loadout — anything
 // not in that set (e.g. the bandana, the hoodie) is bought from the Sklep.
-// Starter gear gets a fixed, deterministic instance (catalog's base bonus,
-// no roll) rather than going through rollItemInstance - only things bought
-// or looted after that vary.
+// Starter gear gets a fixed, deterministic instance (just its catalog
+// identity stat, no roll, no extra stats) rather than going through
+// rollItemInstance - only things bought or looted after that vary or carry
+// bonuses on more than one stat.
 const characterDefaultOwnedItems: ItemInstance[] = Object.values(characterDefaultEquippedItemIds)
   .filter((itemId): itemId is string => Boolean(itemId))
-  .map((itemId) => ({ instanceId: `starter-${itemId}`, itemId, bonusAmount: characterInventoryItemsData.find((entry) => entry.id === itemId)!.bonusAmount }));
+  .map((itemId) => { const item = characterInventoryItemsData.find((entry) => entry.id === itemId)!; return { instanceId: `starter-${itemId}`, itemId, bonuses: { [item.bonusStat]: item.bonusAmount } }; });
 const characterDefaultEquipped: Record<string, string | null> = Object.fromEntries(
   Object.entries(characterDefaultEquippedItemIds).map(([slot, itemId]) => [slot, itemId ? `starter-${itemId}` : null]),
 );
@@ -1175,9 +1196,10 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
   for (const equippedInstanceId of Object.values(equipped)) {
     if (!equippedInstanceId) continue;
     const equippedInstance = ownedItems.find((entry) => entry.instanceId === equippedInstanceId);
-    const equippedItem = equippedInstance ? characterInventoryItemsData.find((entry) => entry.id === equippedInstance.itemId) : undefined;
-    if (!equippedInstance || !equippedItem) continue;
-    equipmentStatBonuses[equippedItem.bonusStat] = (equipmentStatBonuses[equippedItem.bonusStat] ?? 0) + equippedInstance.bonusAmount;
+    if (!equippedInstance) continue;
+    for (const [stat, amount] of Object.entries(equippedInstance.bonuses)) {
+      equipmentStatBonuses[stat] = (equipmentStatBonuses[stat] ?? 0) + amount;
+    }
   }
   const equippedInstanceIds = new Set(Object.values(equipped).filter((value): value is string => Boolean(value)));
   const visibleInventoryItems = ownedItems
@@ -1248,7 +1270,10 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
             onDragOver={(event) => { event.preventDefault(); setDragOverSlot(id); }}
             onDragLeave={() => setDragOverSlot((current) => current === id ? null : current)}
             onDrop={(event) => handleSlotDrop(event, id)}
-            onClick={() => equippedItem ? onNotice(`${equippedItem.name}: przeciągnij do ekwipunku, żeby zdjąć.`) : onNotice(`${label}: przeciągnij tu pasujący przedmiot z ekwipunku.`)}
+            onClick={() => equippedItem ? onNotice(`${equippedItem.name}: przeciągnij do ekwipunku, żeby zdjąć, albo kliknij prawym po więcej opcji.`) : onNotice(`${label}: przeciągnij tu pasujący przedmiot z ekwipunku.`)}
+            onMouseEnter={(event) => { if (!equippedInstance) return; const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id: equippedInstance.instanceId, x: rect.left + rect.width / 2, y: rect.top }); }}
+            onMouseLeave={() => setHoveredItem((current) => current?.id === equippedInstance?.instanceId ? null : current)}
+            onContextMenu={(event) => { event.preventDefault(); if (!equippedInstance) return; setHoveredItem(null); setContextMenu({ id: equippedInstance.instanceId, x: event.clientX, y: event.clientY }); }}
           >
             <span className="character-slot-thumb">{equippedItem ? <img src={equippedItem.asset} alt="" /> : <Icon size={30} />}</span>
           </button>;
@@ -1329,19 +1354,24 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
       const instance = ownedItems.find((entry) => entry.instanceId === hoveredItem.id);
       const item = instance ? characterInventoryItemsData.find((entry) => entry.id === instance.itemId) : undefined;
       if (!instance || !item) return null;
+      const isEquippedInstance = equipped[item.slot] === instance.instanceId;
+      const current = isEquippedInstance ? undefined : getEquippedForSlot(item.slot, equipped, ownedItems);
       return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
         <strong>{item.name}</strong>
         <em className={`character-item-tooltip-tier tone-${item.tier}`} style={{ color: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</em>
-        <span>+{instance.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
+        {Object.entries(instance.bonuses).map(([stat, amount]) => <span key={stat}>+{amount} do {characterStatLabelByKey[stat]}</span>)}
+        {renderItemCompare(instance.bonuses, current)}
       </div>;
     })()}
     {contextMenu && (() => {
       const instance = ownedItems.find((entry) => entry.instanceId === contextMenu.id);
       const item = instance ? characterInventoryItemsData.find((entry) => entry.id === instance.itemId) : undefined;
       if (!instance || !item) return null;
+      const isEquippedInstance = equipped[item.slot] === instance.instanceId;
       return <>
         <div className="character-context-backdrop" onClick={() => setContextMenu(null)} onContextMenu={(event) => { event.preventDefault(); setContextMenu(null); }} />
         <div className="character-context-menu" style={{ left: contextMenu.x, top: contextMenu.y }}>
+          {isEquippedInstance && <button onClick={() => { setEquipped((current) => ({ ...current, [item.slot]: null })); setContextMenu(null); onNotice(`${item.name}: zdjęto.`); }}><Shield size={14} /> ZDEJMIJ</button>}
           <button onClick={() => sellItem(instance.instanceId)}><CircleDollarSign size={14} /> SPRZEDAJ <small>{item.value} $</small></button>
         </div>
       </>;
