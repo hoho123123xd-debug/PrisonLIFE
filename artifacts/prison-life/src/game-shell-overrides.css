@@ -8041,10 +8041,10 @@
 
 .game-shell-page .game-sidebar button {
   width: 100%;
-  min-height: 54px;
+  min-height: 64px;
   height: auto;
-  margin: 4px 0;
-  padding: 0 24px 0 14px;
+  margin: 5px 0;
+  padding: 0 24px 0 15px;
   display: grid;
   grid-template-columns: 25px minmax(0, 1fr);
   align-items: center;
@@ -8078,8 +8078,8 @@
 
 .game-shell-page .game-sidebar button svg,
 .game-shell-page .game-nav-asset {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   object-fit: contain;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .7));
 }
@@ -8088,7 +8088,7 @@
   min-width: 0;
   overflow: hidden;
   color: inherit;
-  font: 700 13px/1 "Barlow Condensed", sans-serif;
+  font: 700 14px/1 "Barlow Condensed", sans-serif;
   letter-spacing: .08em;
   text-overflow: ellipsis;
   white-space: nowrap;
