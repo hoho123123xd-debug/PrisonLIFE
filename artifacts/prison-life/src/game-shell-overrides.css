@@ -3709,6 +3709,10 @@
     radial-gradient(ellipse at 50% 18%, rgba(90, 110, 100, .16), transparent 55%),
     linear-gradient(180deg, #171f20 0%, #0b1213 60%, #06090a 100%);
 }
+.character-scene.drag-target {
+  border-color: var(--prison-orange);
+  box-shadow: inset 0 0 0 2px rgba(224, 137, 32, .35);
+}
 .character-scene::after {
   content: '';
   position: absolute;
@@ -7277,6 +7281,13 @@
 }
 .character-item-tooltip-compare.positive { color: #7bc98a !important; }
 .character-item-tooltip-compare.negative { color: #e0665c !important; }
+.character-item-tooltip-note {
+  white-space: normal !important;
+  max-width: 180px;
+  margin-top: 3px;
+  opacity: .7;
+  font-size: 10px !important;
+}
 .character-context-backdrop {
   position: fixed;
   inset: 0;

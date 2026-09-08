@@ -983,7 +983,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />}<i className="game-nav-divider" aria-hidden="true" /><span>{label}</span></button>)}</aside>
         <div className={`game-content ${activeSection === 'character' ? 'game-content-character' : activeSection === 'cell' || activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' || activeSection === 'cafeteria' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} setOwnedItems={setOwnedItems} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} setOwnedItems={setOwnedItems} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} setOwnedItems={setOwnedItems} onPurchased={restockMarketSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} setOwnedItems={setOwnedItems} onPurchased={restockShopSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
+        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} setOwnedItems={setOwnedItems} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} setOwnedItems={setOwnedItems} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} equipped={equipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} onPurchased={restockMarketSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} equipped={equipped} ownedItems={ownedItems} setOwnedItems={setOwnedItems} onPurchased={restockShopSlot} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1250,7 +1250,23 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
     setEquipped((current) => ({ ...current, [data.slotId as string]: null }));
     onNotice(`${slotMeta?.label ?? 'Przedmiot'}: zdjęto.`);
   };
-  return <section className="character-view" data-testid="character-view">
+  // Dropping an inventory item straight onto the character model equips it
+  // to its own slot, same as dropping it on the matching rail slot - lets
+  // the player just drag onto the figure instead of finding the right icon.
+  const handleSceneDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDragOverSlot(null);
+    const payload = event.dataTransfer.getData('application/json');
+    if (!payload) return;
+    const data = JSON.parse(payload) as { source: 'inventory' | 'slot'; instanceId?: string };
+    if (data.source !== 'inventory' || !data.instanceId) return;
+    const instance = ownedItems.find((entry) => entry.instanceId === data.instanceId);
+    const item = instance ? characterInventoryItemsData.find((entry) => entry.id === instance.itemId) : undefined;
+    if (!instance || !item) return;
+    setEquipped((current) => ({ ...current, [item.slot]: instance.instanceId }));
+    onNotice(`Założono: ${item.name.toLowerCase()}.`);
+  };
+  return <section className="character-view" data-testid="character-view" onDragOver={(event) => event.preventDefault()} onDrop={(event) => event.preventDefault()}>
     <header className="character-heading">
       <div><span className="eyebrow">TWOJA POSTAĆ</span><h1>TWOJA POSTAĆ</h1><p>WYGLĄD TO NIE WSZYSTKO, ALE MÓWI O TOBIE WIĘCEJ NIŻ MYŚLISZ.</p></div>
       <strong>LEPSZY<br />WIĘZIEŃ<br />SILNIEJSZA<br />WERSJA<br /><em>CIEBIE</em></strong>
@@ -1280,7 +1296,12 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
         })}
       </aside>
 
-      <div className="character-scene" data-testid="character-scene">
+      <div
+        className={`character-scene ${draggingItem ? 'drag-target' : ''}`}
+        data-testid="character-scene"
+        onDragOver={(event) => { event.preventDefault(); }}
+        onDrop={handleSceneDrop}
+      >
         {characterSceneAsset && <span className="character-scene-photo" style={{ backgroundImage: `url("${characterSceneAsset}")` }} />}
       </div>
 
@@ -1451,9 +1472,11 @@ const blackMarketGangControl: GangControlEntry[] = [
 ];
 const blackMarketTaxCut = blackMarketGangControl.find((entry) => entry.controlling)?.cut ?? 0;
 
-function ShopView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function ShopView({ wallet, offers, equipped, ownedItems, setOwnedItems, onPurchased, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: LegalGood[];
+  equipped: Record<string, string | null>;
+  ownedItems: ItemInstance[];
   setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>;
   onPurchased: (itemId: string) => void;
   refreshCost: number;
@@ -1462,6 +1485,7 @@ function ShopView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, poi
   onNotice: (message: string) => void;
 }) {
   const runLocked = useActionLock();
+  const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
 
   // No "already own it" gate: every purchase rolls its own instance (see
   // rollItemInstance), so buying the same item twice just means two copies
@@ -1499,13 +1523,27 @@ function ShopView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, poi
         </div>
       </div>
       <div className="storefront-grid">
-        {offers.map((item) => { return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
+        {offers.map((item) => { const catalogItem = legalEquipIds.has(item.id) ? characterInventoryItemsData.find((entry) => entry.id === item.id) : undefined; return <article
+          key={item.id}
+          className="storefront-card"
+          title={catalogItem ? undefined : item.name}
+          data-testid={`shop-card-${item.id}`}
+          onMouseEnter={(event) => { if (!catalogItem) return; const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id: item.id, x: rect.left + rect.width / 2, y: rect.top }); }}
+          onMouseLeave={() => setHoveredItem((current) => current?.id === item.id ? null : current)}
+        >
           {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
           <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
           <div className="storefront-card-footer">
             <b>{item.price} $</b>
             <button onClick={() => buyItem(item)} aria-label={`Kup: ${item.name}`} data-testid={`shop-buy-${item.id}`}><ShoppingCart size={14} /></button>
           </div>
+          {hoveredItem?.id === item.id && catalogItem && <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
+            <strong>{catalogItem.name}</strong>
+            <em className={`character-item-tooltip-tier tone-${catalogItem.tier}`} style={{ color: itemTierConfig[catalogItem.tier].color }}>{itemTierConfig[catalogItem.tier].label}</em>
+            <span>+{catalogItem.bonusAmount} do {characterStatLabelByKey[catalogItem.bonusStat]}</span>
+            <span className="character-item-tooltip-note">Po zakupie losowane są dokładne statystyki (im wyższa rzadkość, tym więcej cech).</span>
+            {renderItemCompare({ [catalogItem.bonusStat]: catalogItem.bonusAmount }, getEquippedForSlot(catalogItem.slot, equipped, ownedItems))}
+          </div>}
         </article>; })}
       </div>
     </section>
@@ -1516,9 +1554,11 @@ function ShopView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, poi
   </section>;
 }
 
-function MarketView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function MarketView({ wallet, offers, equipped, ownedItems, setOwnedItems, onPurchased, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: IllegalGood[];
+  equipped: Record<string, string | null>;
+  ownedItems: ItemInstance[];
   setOwnedItems: Dispatch<SetStateAction<ItemInstance[]>>;
   onPurchased: (itemId: string) => void;
   refreshCost: number;
@@ -1527,6 +1567,7 @@ function MarketView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, p
   onNotice: (message: string) => void;
 }) {
   const runLocked = useActionLock();
+  const [hoveredItem, setHoveredItem] = useState<{ id: string; x: number; y: number } | null>(null);
 
   // No "already own it" gate here either - see ShopView's buyItem.
   const buyItem = (item: IllegalGood) => runLocked(`market-buy-${item.id}`, () => {
@@ -1565,7 +1606,13 @@ function MarketView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, p
           </div>
         </div>
         <div className="storefront-grid storefront-grid-named">
-          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
+          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); const catalogItem = illegalEquipIds.has(item.id) ? characterInventoryItemsData.find((entry) => entry.id === item.id) : undefined; return <article
+            key={item.id}
+            className="storefront-card storefront-card-named"
+            data-testid={`market-card-${item.id}`}
+            onMouseEnter={(event) => { if (!catalogItem) return; const rect = event.currentTarget.getBoundingClientRect(); setHoveredItem({ id: item.id, x: rect.left + rect.width / 2, y: rect.top }); }}
+            onMouseLeave={() => setHoveredItem((current) => current?.id === item.id ? null : current)}
+          >
             {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
             <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
             <strong className="storefront-card-name">{item.name}</strong>
@@ -1573,6 +1620,13 @@ function MarketView({ wallet, offers, setOwnedItems, onPurchased, refreshCost, p
               <b>{total} $</b>
               <button onClick={() => buyItem(item)} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
             </div>
+            {hoveredItem?.id === item.id && catalogItem && <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
+              <strong>{catalogItem.name}</strong>
+              <em className={`character-item-tooltip-tier tone-${catalogItem.tier}`} style={{ color: itemTierConfig[catalogItem.tier].color }}>{itemTierConfig[catalogItem.tier].label}</em>
+              <span>+{catalogItem.bonusAmount} do {characterStatLabelByKey[catalogItem.bonusStat]}</span>
+              <span className="character-item-tooltip-note">Po zakupie losowane są dokładne statystyki (im wyższa rzadkość, tym więcej cech).</span>
+              {renderItemCompare({ [catalogItem.bonusStat]: catalogItem.bonusAmount }, getEquippedForSlot(catalogItem.slot, equipped, ownedItems))}
+            </div>}
           </article>; })}
         </div>
       </section>
