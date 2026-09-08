@@ -43,12 +43,15 @@
 
 .prison-life-shell .pls-player-meta {
   display: grid;
-  align-content: center;
+  grid-template-columns: minmax(0, 1.25fr) auto auto;
+  align-items: center;
+  column-gap: clamp(14px, 2.2vw, 28px);
   min-width: 0;
 }
 
 .prison-life-shell .pls-player-meta-top {
   gap: 8px;
+  min-width: 0;
 }
 
 .prison-life-shell .pls-player-meta strong {
@@ -61,19 +64,21 @@
 }
 
 .prison-life-shell .pls-level {
-  margin-top: 6px;
+  margin-top: 0;
   font-size: 9px;
   line-height: 1;
+  white-space: nowrap;
 }
 
 .prison-life-shell .pls-gang {
-  margin-top: 7px;
+  margin-top: 0;
   color: #d87837;
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.16em;
   line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .prison-life-shell .pls-gang b {
