@@ -21,13 +21,25 @@ import {
   Watch,
 } from 'lucide-react';
 import inventoryHeadCapAsset from '@assets/inventory/head-cap.png';
+import inventoryHeadBeanieAsset from '@assets/inventory/head-beanie-clean.png';
+import inventoryHeadBlackCapAsset from '@assets/inventory/head-black-cap.png';
+import inventoryHeadBandanaAsset from '@assets/inventory/head-bandana.png';
 import inventoryTopOrangeAsset from '@assets/inventory/top-orange.png';
 import inventoryTopBlackHoodieAsset from '@assets/inventory/top-black-hoodie.png';
+import inventoryTopGrayHoodieAsset from '@assets/inventory/top-gray-hoodie.png';
+import inventoryTopRedShirtAsset from '@assets/inventory/top-red-shirt-clean.png';
 import inventoryBagBlackAsset from '@assets/inventory/bag-black.png';
+import inventoryBagGreenAsset from '@assets/inventory/bag-green-clean.png';
+import inventoryBagCamoAsset from '@assets/inventory/bag-camo-clean.png';
 import inventoryHandGlovesAsset from '@assets/inventory/hand-gloves.png';
 import inventoryFaceBandanaAsset from '@assets/inventory/face-red-bandana.png';
 import inventoryBottomOrangeAsset from '@assets/inventory/bottom-orange.png';
+import inventoryBottomBlackAsset from '@assets/inventory/bottom-black.png';
+import inventoryBottomTanAsset from '@assets/inventory/bottom-tan.png';
+import inventoryFeetSlidesAsset from '@assets/inventory/feet-slides-clean.png';
 import inventoryFeetBlackBootsAsset from '@assets/inventory/feet-black-boots.png';
+import inventoryFeetTanBootsAsset from '@assets/inventory/feet-tan-boots-clean.png';
+import inventoryFeetRedSneakersAsset from '@assets/inventory/feet-red-sneakers-clean.png';
 import inventoryWeaponKnifeAsset from '@assets/inventory/weapon-knife.png';
 
 // Rarity tier for anything wearable: higher tier = pricier, harder to loot
@@ -50,12 +62,24 @@ export const storefrontTiers = new Set<ItemTier>(['common', 'rare', 'elite']);
 
 export const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; tier: ItemTier; slot: string; bonusStat: string; bonusAmount: number; value: number; price: number }> = [
   { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, tier: 'common', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 23, price: 50 },
+  { id: 'black-cap', name: 'CZARNA CZAPKA', asset: inventoryHeadBlackCapAsset, tier: 'common', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 28, price: 60 },
+  { id: 'beanie', name: 'CZARNA CZAPKA ZIMOWA', asset: inventoryHeadBeanieAsset, tier: 'common', slot: 'head', bonusStat: 'endurance', bonusAmount: 2, value: 32, price: 70 },
+  { id: 'head-bandana', name: 'BANDANA NA GŁOWĘ', asset: inventoryHeadBandanaAsset, tier: 'rare', slot: 'head', bonusStat: 'luck', bonusAmount: 4, value: 48, price: 110 },
   { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, tier: 'common', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 18, price: 40 },
+  { id: 'gray-hoodie', name: 'SZARA BLUZA', asset: inventoryTopGrayHoodieAsset, tier: 'common', slot: 'torso', bonusStat: 'endurance', bonusAmount: 3, value: 44, price: 100 },
+  { id: 'red-shirt', name: 'CZERWONA KOSZULKA', asset: inventoryTopRedShirtAsset, tier: 'rare', slot: 'torso', bonusStat: 'strength', bonusAmount: 4, value: 58, price: 140 },
   { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, tier: 'common', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 18, price: 40 },
+  { id: 'black-pants', name: 'CZARNE SPODNIE', asset: inventoryBottomBlackAsset, tier: 'common', slot: 'legs', bonusStat: 'endurance', bonusAmount: 3, value: 38, price: 90 },
+  { id: 'tan-pants', name: 'SPODNIE TAKTYCZNE', asset: inventoryBottomTanAsset, tier: 'rare', slot: 'legs', bonusStat: 'strength', bonusAmount: 4, value: 62, price: 150 },
   { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, tier: 'rare', slot: 'hands', bonusStat: 'strength', bonusAmount: 4, value: 54, price: 120 },
+  { id: 'slide-sandals', name: 'KLAPKI', asset: inventoryFeetSlidesAsset, tier: 'common', slot: 'feet', bonusStat: 'reflex', bonusAmount: 1, value: 20, price: 35 },
   { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, tier: 'rare', slot: 'feet', bonusStat: 'reflex', bonusAmount: 4, value: 59, price: 130 },
+  { id: 'tan-boots', name: 'BRĄZOWE BUTY', asset: inventoryFeetTanBootsAsset, tier: 'rare', slot: 'feet', bonusStat: 'reflex', bonusAmount: 5, value: 72, price: 180 },
+  { id: 'red-sneakers', name: 'CZERWONE SNEAKERSY', asset: inventoryFeetRedSneakersAsset, tier: 'elite', slot: 'feet', bonusStat: 'reflex', bonusAmount: 7, value: 98, price: 240 },
   { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, tier: 'elite', slot: 'torso', bonusStat: 'endurance', bonusAmount: 7, value: 117, price: 260 },
   { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, tier: 'elite', slot: 'back', bonusStat: 'strength', bonusAmount: 7, value: 126, price: 280 },
+  { id: 'green-backpack', name: 'PLECAK ZIELONY', asset: inventoryBagGreenAsset, tier: 'rare', slot: 'back', bonusStat: 'strength', bonusAmount: 4, value: 80, price: 170 },
+  { id: 'camo-backpack', name: 'PLECAK MORO', asset: inventoryBagCamoAsset, tier: 'elite', slot: 'back', bonusStat: 'strength', bonusAmount: 6, value: 110, price: 250 },
   { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, tier: 'limited', slot: 'neck', bonusStat: 'luck', bonusAmount: 11, value: 248, price: 550 },
   { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, tier: 'unique', slot: 'weapon', bonusStat: 'strength', bonusAmount: 16, value: 405, price: 900 },
 ];
@@ -144,7 +168,7 @@ const legalGenericGoods: LegalGood[] = [
   { id: 'towel', name: 'Ręcznik', price: 50, render: { kind: 'icon', icon: Droplet } },
   { id: 'toothpaste-set', name: 'Pasta i szczoteczka', price: 40, render: { kind: 'icon', icon: Sparkles } },
   { id: 'soap-bar', name: 'Mydło', price: 25, render: { kind: 'icon', icon: Droplets } },
-  { id: 'slides', name: 'Klapki', price: 70, render: { kind: 'icon', icon: FootprintsIcon } },
+  { id: 'generic-slides', name: 'Klapki', price: 70, render: { kind: 'icon', icon: FootprintsIcon } },
   { id: 'notebook-set', name: 'Notes i długopis', price: 35, render: { kind: 'icon', icon: ScrollText } },
 ];
 // Equip-catalog goods, zwykły/rzadki/elitarny only (see storefrontTiers):

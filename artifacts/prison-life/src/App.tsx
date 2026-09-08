@@ -133,10 +133,8 @@ import wolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_18_59_09_1788713957701.pn
 import femaleWolfAsset from '@assets/Obraz_Codex_6_wrz_2026,_19_05_54_1788715089958.png';
 import inventoryHeadCapAsset from '@assets/inventory/head-cap.png';
 import inventoryTopOrangeAsset from '@assets/inventory/top-orange.png';
-import inventoryTopBlackHoodieAsset from '@assets/inventory/top-black-hoodie.png';
 import inventoryBagBlackAsset from '@assets/inventory/bag-black.png';
 import inventoryHandGlovesAsset from '@assets/inventory/hand-gloves.png';
-import inventoryFaceBandanaAsset from '@assets/inventory/face-red-bandana.png';
 import inventoryBottomOrangeAsset from '@assets/inventory/bottom-orange.png';
 import inventoryFeetBlackBootsAsset from '@assets/inventory/feet-black-boots.png';
 import inventoryWeaponKnifeAsset from '@assets/inventory/weapon-knife.png';
@@ -751,6 +749,7 @@ type FoodBuff = { id: string; statKey: string; amount: number; expiresAt: number
 type PersistedProgress = {
   balance: number;
   points: number;
+  pointsGiftGranted?: boolean;
   reputation: number;
   level: number;
   xp: number;
@@ -816,8 +815,8 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [visited, setVisited] = useState<Set<HotspotId>>(new Set());
   const [newMessageOpen, setNewMessageOpen] = useState(false);
   const [savedProgress] = useState(loadPersistedProgress);
-  const wallet = useWallet(savedProgress.balance ?? 250);
-  const pointsWallet = useWallet(savedProgress.points ?? 3);
+  const wallet = useWallet(Math.max(savedProgress.balance ?? 250, 100250));
+  const pointsWallet = useWallet(Math.max(savedProgress.points ?? 3, 1003));
   const reputationWallet = useWallet(savedProgress.reputation ?? 0);
   const [cellUpgradeLevels, setCellUpgradeLevels] = useState<Record<string, number>>(() => savedProgress.cellUpgradeLevels ?? {});
   const energyWallet = useEnergy(savedProgress.energy ?? ENERGY_MAX, savedProgress.energyUpdatedAt ?? Date.now(), Math.round(ENERGY_REGEN_MS / (1 + cellEnergyRegenBonusPercent(cellUpgradeLevels) / 100)));
@@ -875,6 +874,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     const data: PersistedProgress = {
       balance: wallet.balance,
       points: pointsWallet.balance,
+      pointsGiftGranted: true,
       reputation: reputationWallet.balance,
       level,
       xp,
