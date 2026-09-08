@@ -128,15 +128,28 @@ import cellBackground from './assets/cell/cell-background.webp';
 import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
 import trainingMockup from '@assets/Obraz_Codex_6_wrz_2026,_20_10_24_1788718237783.png';
-import hudBackground from '@assets/topbar/hud-background.png';
-import hudAvatarFrame from '@assets/topbar/hud-avatar-frame.png';
-import hudPlayerInfoFrame from '@assets/topbar/hud-player-info.png';
-import hudMoneyFrame from '@assets/topbar/hud-money.png';
-import hudPointsFrame from '@assets/topbar/hud-points.png';
-import hudEnergyFrame from '@assets/topbar/hud-energy.png';
+import hudIndustrialBackground from '@assets/topbar/hud-industrial-background.png';
+import hudSidebarBackground from '@assets/topbar/hud-sidebar-bg.png';
+import hudPlayerBoxFrame from '@assets/topbar/hud-player-box-bg.png';
+import hudMoneyCardFrame from '@assets/topbar/hud-money-card-bg.png';
+import hudPointsCardFrame from '@assets/topbar/hud-points-card-bg.png';
+import hudEnergyCardFrame from '@assets/topbar/hud-energy-card-bg.png';
+import playerAvatarAsset from '@assets/topbar/avatar-kosa.png';
+import hudWordmark from '@assets/topbar/prison-life-wordmark.png';
+import hudNavButton from '@assets/topbar/hud-nav-button.png';
+import hudNavButtonHover from '@assets/topbar/hud-nav-button-hover.png';
 import hudMailIcon from '@assets/topbar/hud-mail.png';
 import hudSettingsIcon from '@assets/topbar/hud-settings.png';
-import hudXpTrack from '@assets/topbar/hud-xp-track.png';
+import navCellIcon from '@assets/topbar/icons/icon-cela.png';
+import navTrainingIcon from '@assets/topbar/icons/icon-trening.png';
+import navFightIcon from '@assets/topbar/icons/icon-walka.png';
+import navCanteenIcon from '@assets/topbar/icons/icon-stolowka.png';
+import navShopIcon from '@assets/topbar/icons/icon-sklep.png';
+import navMarketIcon from '@assets/topbar/icons/icon-czarny-rynek.png';
+import navWorkIcon from '@assets/topbar/icons/icon-zlecenia.png';
+import navGangIcon from '@assets/topbar/icons/icon-gang.png';
+import navHospitalIcon from '@assets/topbar/icons/icon-szpital.png';
+import navRankingIcon from '@assets/topbar/icons/icon-ranking.png';
 
 const queryClient = new QueryClient();
 
@@ -807,28 +820,33 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   };
 
   return <main className="game-shell-page">
-    <header className="game-header hud-topbar" style={{ backgroundImage: `url(${hudBackground})` }}>
-      <div className="game-header-brand"><Brand onNavigate={onNavigate} /><span className="game-season">SEZON 01 / BLOK A</span></div>
+    <header className="game-header hud-topbar" style={{ backgroundImage: `url(${hudIndustrialBackground})` }}>
+      <div className="game-header-brand hud-rail-brand" style={{ backgroundImage: `url(${hudSidebarBackground})` }}>
+        <button className="hud-wordmark-button" type="button" onClick={() => navigateSection('cell')} aria-label="Prison Life — przejdź do celi">
+          <img src={hudWordmark} alt="Prison Life" />
+        </button>
+      </div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
-      <div className="hud-avatar-frame" style={{ ['--hud-avatar-frame-bg' as string]: `url(${hudAvatarFrame})` } as CSSProperties}><img src={prisonerAsset} alt="" /></div>
-      <div className="hud-player-info" style={{ backgroundImage: `url(${hudPlayerInfoFrame})` }} data-testid="hud-player-info">
-        <strong className="hud-player-name">{gameData.nickname}</strong>
-        <b className="hud-player-level-value">{gameData.level}</b>
-        <div className="hud-xp-bar" style={{ backgroundImage: `url(${hudXpTrack})` }}>
-          <i style={{ width: `${(gameData.xp / gameData.xpMax) * 100}%` }} />
-          <small>{gameData.xp} / {gameData.xpMax}</small>
+      <div className="hud-player-info" style={{ backgroundImage: `url(${hudPlayerBoxFrame})` }} data-testid="hud-player-info">
+        <div className="hud-avatar-frame"><img src={playerAvatarAsset} alt={gameData.nickname} /></div>
+        <div className="hud-player-copy">
+          <strong>{gameData.nickname}</strong>
+          <span>POZIOM <b>{gameData.level}</b></span>
+          <span>GANG <b>{type.name}</b></span>
         </div>
       </div>
-      <div className="hud-chip hud-chip-money" style={{ backgroundImage: `url(${hudMoneyFrame})` }} data-testid="hud-money"><b className="hud-chip-value">{gameData.gold.toLocaleString('pl-PL')} $</b></div>
-      <div className="hud-chip hud-chip-points" style={{ backgroundImage: `url(${hudPointsFrame})` }} data-testid="hud-points">
+      <div className="hud-chip hud-chip-money" style={{ backgroundImage: `url(${hudMoneyCardFrame})` }} data-testid="hud-money">
+        <span className="hud-chip-label">GOTÓWKA</span>
+        <b className="hud-chip-value">{gameData.gold.toLocaleString('pl-PL')} $</b>
+      </div>
+      <div className="hud-chip hud-chip-points" style={{ backgroundImage: `url(${hudPointsCardFrame})` }} data-testid="hud-points">
         <b className="hud-chip-value">{gameData.points}</b>
         <button className="hud-plus-btn" onClick={() => showNotice('Zakup punktów będzie dostępny wkrótce.')} aria-label="Kup punkty" />
       </div>
-      <div className="hud-chip hud-chip-energy" style={{ backgroundImage: `url(${hudEnergyFrame})` }} data-testid="hud-energy">
+      <div className="hud-chip hud-chip-energy" style={{ backgroundImage: `url(${hudEnergyCardFrame})` }} data-testid="hud-energy">
         <b className="hud-chip-value">{gameData.energy} / 100</b>
         <div className="hud-energy-bar"><i style={{ width: `${gameData.energy}%` }} /></div>
       </div>
-      <div className="hud-chip hud-chip-health" data-testid="hud-health"><Heart size={17} /><b className="hud-chip-value">{gameData.hp} / 100</b></div>
       <div className="game-header-actions">
         <button aria-label="Powiadomienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudMailIcon})` }} onClick={() => showNotice('Nie masz nowych powiadomień.')}><span className="hud-icon-badge">3</span></button>
         <button aria-label="Ustawienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudSettingsIcon})` }} onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')} />
@@ -836,7 +854,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       </div>
     </header>
     <div className="game-layout">
-      <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
+      <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />} <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />} <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
         {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
@@ -2202,6 +2220,18 @@ const gameSecondaryNavigation: Array<{ id: GameSection; label: string; icon: typ
 ];
 
 const allGameNavigation = [...gameNavigation, ...gameSecondaryNavigation];
+const gameNavAssets: Partial<Record<GameSection, string>> = {
+  cell: navCellIcon,
+  training: navTrainingIcon,
+  fight: navFightIcon,
+  canteen: navCanteenIcon,
+  shop: navShopIcon,
+  market: navMarketIcon,
+  work: navWorkIcon,
+  gang: navGangIcon,
+  settings: navHospitalIcon,
+  ranking: navRankingIcon,
+};
 
 const cellSlots: CellSlot[] = [
   { id: 'bed', ...cellLayout.interactive_slots.bed, label: 'ŁÓŻKO', description: 'Odpocznij i odzyskaj siły', icon: BedDouble },
