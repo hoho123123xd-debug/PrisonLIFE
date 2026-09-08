@@ -142,10 +142,10 @@ import cellLayout from './assets/cell/cell-layout.json';
 import trainingMockup from '@assets/Obraz_Codex_6_wrz_2026,_20_10_24_1788718237783.png';
 import hudIndustrialBackground from '@assets/topbar/hud-industrial-background.png';
 import hudSidebarBackground from '@assets/topbar/hud-sidebar-bg.png';
-import hudPlayerBoxFrame from '@assets/topbar/hud-player-box-bg.png';
-import hudMoneyCardFrame from '@assets/topbar/hud-money-card-bg.png';
-import hudPointsCardFrame from '@assets/topbar/hud-points-card-bg.png';
-import hudEnergyCardFrame from '@assets/topbar/hud-energy-card-bg.png';
+import hudAvatarFrame from '@assets/topbar/hud-avatar-frame.png';
+import hudMoneyIcon from '@assets/topbar/hud-money.png';
+import hudPointsIcon from '@assets/topbar/hud-points.png';
+import hudEnergyIcon from '@assets/topbar/hud-energy.png';
 import playerAvatarAsset from '@assets/topbar/avatar-kosa.png';
 import hudWordmark from '@assets/topbar/prison-life-wordmark.png';
 import hudNavButton from '@assets/topbar/hud-nav-button.png';
@@ -941,33 +941,40 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
         </button>
       </div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
-      <div className="hud-player-info" style={{ backgroundImage: `url(${hudPlayerBoxFrame})` }} data-testid="hud-player-info">
-        <div className="hud-avatar-frame"><img src={playerAvatarAsset} alt={gameData.nickname} /></div>
+      <div className="hud-player-info hud-continuous-player" data-testid="hud-player-info">
+        <div className="hud-avatar-frame" style={{ backgroundImage: `url(${hudAvatarFrame})` }}><img src={playerAvatarAsset} alt={gameData.nickname} /></div>
         <div className="hud-player-copy">
            <div className="hud-player-heading"><strong>{gameData.nickname}</strong><i>AKTYWNY</i></div>
            <div className="hud-player-meta"><span>POZIOM <b>{gameData.level}</b></span><span>GANG <b>{type.name}</b></span></div>
            <div className="hud-player-xp"><span>XP</span><div><i style={{ width: `${Math.min(100, (gameData.xp / Math.max(1, gameData.xpMax)) * 100)}%` }} /></div><small>{gameData.xp} / {gameData.xpMax}</small></div>
         </div>
       </div>
-       <div className="hud-resource-dock" aria-label="Zasoby postaci">
-         <div className="hud-chip hud-chip-money" style={{ backgroundImage: `url(${hudMoneyCardFrame})` }} data-testid="hud-money">
-           <span className="hud-chip-label">GOTÓWKA</span>
-           <b className="hud-chip-value">{gameData.gold.toLocaleString('pl-PL')} $</b>
+       <div className="hud-continuous-resources" aria-label="Zasoby postaci">
+         <div className="hud-continuous-resource hud-continuous-resource-money" data-testid="hud-money">
+           <span className="hud-continuous-resource-icon" style={{ backgroundImage: `url(${hudMoneyIcon})` }} aria-hidden="true" />
+           <span className="hud-continuous-resource-label">GOTÓWKA</span>
+           <b className="hud-continuous-resource-value">{gameData.gold.toLocaleString('pl-PL')} $</b>
+           <button className="hud-continuous-plus" onClick={() => showNotice('Doładowanie gotówki będzie dostępne wkrótce.')} aria-label="Dodaj gotówkę">+</button>
          </div>
-         <div className="hud-chip hud-chip-points" style={{ backgroundImage: `url(${hudPointsCardFrame})` }} data-testid="hud-points">
-           <span className="hud-chip-label">PUNKTY</span>
-           <b className="hud-chip-value">{gameData.points}</b>
-           <button className="hud-plus-btn" onClick={() => showNotice('Zakup punktów będzie dostępny wkrótce.')} aria-label="Kup punkty" />
+         <div className="hud-continuous-resource hud-continuous-resource-points" data-testid="hud-points">
+           <span className="hud-continuous-resource-icon" style={{ backgroundImage: `url(${hudPointsIcon})` }} aria-hidden="true" />
+           <span className="hud-continuous-resource-label">PUNKTY</span>
+           <b className="hud-continuous-resource-value">{gameData.points}</b>
+           <button className="hud-continuous-plus" onClick={() => showNotice('Zakup punktów będzie dostępny wkrótce.')} aria-label="Kup punkty">+</button>
          </div>
-         <div className="hud-chip hud-chip-energy" style={{ backgroundImage: `url(${hudEnergyCardFrame})` }} data-testid="hud-energy">
-           <b className="hud-chip-value">{gameData.energy} / 100</b>
-           <div className="hud-energy-bar"><i style={{ width: `${gameData.energy}%` }} /></div>
+         <div className="hud-continuous-resource hud-continuous-resource-energy" data-testid="hud-energy">
+           <span className="hud-continuous-resource-icon" style={{ backgroundImage: `url(${hudEnergyIcon})` }} aria-hidden="true" />
+           <span className="hud-continuous-resource-label">ENERGIA</span>
+           <b className="hud-continuous-resource-value">{gameData.energy} / 100</b>
+           <div className="hud-continuous-energy-meter"><i style={{ width: `${gameData.energy}%` }} /></div>
+           <button className="hud-continuous-plus" onClick={() => showNotice('Energia regeneruje się automatycznie.')} aria-label="Odnów energię">+</button>
          </div>
       </div>
       <div className="game-header-actions">
+        <span className="hud-location" aria-label="Lokalizacja">BLOK<br />C</span>
         <button aria-label="Powiadomienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudMailIcon})` }} onClick={() => showNotice('Nie masz nowych powiadomień.')}><span className="hud-icon-badge">3</span></button>
         <button aria-label="Ustawienia" className="hud-icon-btn" style={{ backgroundImage: `url(${hudSettingsIcon})` }} onClick={() => showNotice('Ustawienia konta będą dostępne wkrótce.')} />
-         <button className="game-logout" onClick={() => onNavigate('home')}><LogOut size={16} /><span className="game-logout-label">WYLOGUJ SIĘ</span><ArrowRight size={15} /></button>
+         <button className="game-logout" onClick={() => onNavigate('home')} aria-label="Wyloguj"><LogOut size={16} /><span className="game-logout-label">WYLOGUJ SIĘ</span><ArrowRight size={15} /></button>
       </div>
     </header>
     <div className="game-layout">
