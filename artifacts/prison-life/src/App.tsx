@@ -707,7 +707,7 @@ function rollOfferIfStale(saved: OfferState | undefined, pool: { id: string }[])
   return { ids: pickRandomOfferIds(pool, OFFER_SIZE), refreshedAt: Date.now() };
 }
 
-type GameSection = 'cell' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'canteen' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
+type GameSection = 'cell' | 'character' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'canteen' | 'cafeteria' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
   const [activeSection, setActiveSection] = useState<GameSection>(() => {
     const route = window.location.hash.replace('#', '');
@@ -795,7 +795,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     setActiveSection(section);
     setMobileMenuOpen(false);
     window.history.pushState({}, '', `#game/${section}`);
-     if (section !== 'cell' && section !== 'cell-development' && section !== 'fight' && section !== 'work' && section !== 'market' && section !== 'shop' && section !== 'canteen' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
+     if (section !== 'cell' && section !== 'character' && section !== 'cell-development' && section !== 'fight' && section !== 'work' && section !== 'market' && section !== 'shop' && section !== 'canteen' && section !== 'cafeteria' && section !== 'quests' && section !== 'gang') showNotice(`${allGameNavigation.find((item) => item.id === section)?.label}: widok przygotowany do podłączenia.`);
   };
   const activateHotspot = (id: HotspotId) => {
     setVisited((current) => new Set(current).add(id));
@@ -854,9 +854,9 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       </div>
     </header>
     <div className="game-layout">
-      <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />} <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />} <span>{label}</span></button>)}</aside>
+      <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />} <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' || activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' || activeSection === 'cafeteria' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -915,6 +915,7 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
   const Icon = item.icon;
   const copy: Record<GameSection, string> = {
     cell: 'Wróć do swojej celi i sprawdź, co dzieje się na bloku.',
+    character: 'Sprawdź wygląd, ekwipunek i statystyki swojej postaci.',
     messages: 'Twoja skrzynka wiadomości jest gotowa na pierwsze rozmowy.',
     fight: 'Przygotuj się do walki. System pojedynków zostanie podłączony w następnym etapie.',
     training: 'Wybierz trening, aby rozwijać siłę, kondycję i pozostałe statystyki.',
@@ -922,6 +923,7 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     market: 'Czarny rynek jest zamknięty. Wróć później po świeżą dostawę.',
     shop: 'Sklep jest zamknięty. Wróć później po legalny towar.',
     canteen: 'Stołówka jest zamknięta. Wróć później na posiłek.',
+    cafeteria: 'Kantyna jest zamknięta. Wróć później na posiłek.',
     quests: 'Twoje misje czekają na podjęcie. Wybierz zlecenie i zbuduj swoją pozycję na bloku.',
     'trash-block': 'Blok śmieci otworzy dostęp do zadań i informacji z najniższego poziomu więzienia.',
     gang: 'Dołącz do gangu i zbuduj swoją pozycję w oddziale.',
@@ -2198,16 +2200,14 @@ function WorkView({ creator, wallet, onNotice }: { creator: CreatorState; wallet
 }
 
 const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shield }> = [
-  { id: 'cell', label: 'TWOJA POSTAĆ', icon: Shield },
-  { id: 'messages', label: 'WIADOMOŚCI', icon: MessageSquare },
-  { id: 'fight', label: 'WALKA', icon: Swords },
+  { id: 'cell', label: 'CELA', icon: Shield },
+  { id: 'character', label: 'POSTAĆ', icon: Shield },
   { id: 'training', label: 'TRENING', icon: Dumbbell },
-  { id: 'work', label: 'PRACA', icon: BriefcaseBusiness },
-  { id: 'shop', label: 'SKLEP', icon: Package },
-  { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
+  { id: 'fight', label: 'WALKA', icon: Swords },
   { id: 'canteen', label: 'STOŁÓWKA', icon: Utensils },
-  { id: 'quests', label: 'MISJE', icon: ScrollText },
-  { id: 'trash-block', label: 'BLOK ŚMIECI', icon: Archive },
+  { id: 'cafeteria', label: 'KANTYNA', icon: Utensils },
+  { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
+  { id: 'quests', label: 'ZLECENIA', icon: ScrollText },
   { id: 'gang', label: 'GANG', icon: Users },
   { id: 'ranking', label: 'RANKING', icon: Trophy },
 ];
@@ -2222,14 +2222,14 @@ const gameSecondaryNavigation: Array<{ id: GameSection; label: string; icon: typ
 const allGameNavigation = [...gameNavigation, ...gameSecondaryNavigation];
 const gameNavAssets: Partial<Record<GameSection, string>> = {
   cell: navCellIcon,
+  character: navCellIcon,
   training: navTrainingIcon,
   fight: navFightIcon,
   canteen: navCanteenIcon,
-  shop: navShopIcon,
+  cafeteria: navCanteenIcon,
   market: navMarketIcon,
-  work: navWorkIcon,
+  quests: navWorkIcon,
   gang: navGangIcon,
-  settings: navHospitalIcon,
   ranking: navRankingIcon,
 };
 
