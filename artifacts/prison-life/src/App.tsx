@@ -648,6 +648,69 @@ function useWallet(initialBalance: number): Wallet {
   return { balance: balanceRef.current, addMoney, removeMoney, canAfford };
 }
 
+// Energy: regenerates +1 every 5 minutes and fully resets to 100 at local
+// midnight, whether or not the app was open when midnight passed (the reset
+// check runs against the last-updated timestamp, not a running timer).
+// addEnergy is exposed so a future consumable (e.g. an energy drink from the
+// Sklep) can top it up the same way work/training/fights spend it.
+const ENERGY_MAX = 100;
+const ENERGY_REGEN_MS = 5 * 60 * 1000;
+function startOfLocalDay(ts: number) {
+  const date = new Date(ts);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+}
+type Energy = { energy: number; updatedAt: number; addEnergy: (amount: number) => void; removeEnergy: (amount: number) => boolean; canAfford: (amount: number) => boolean };
+// regenIntervalMs is read from a ref refreshed every render, so a cell
+// upgrade (faster regen) takes effect immediately without re-mounting the
+// hook or losing the accumulated energy/updatedAt state.
+function useEnergy(initialEnergy: number, initialUpdatedAt: number, regenIntervalMs: number): Energy {
+  const energyRef = useRef(initialEnergy);
+  const updatedAtRef = useRef(initialUpdatedAt);
+  const regenMsRef = useRef(regenIntervalMs);
+  regenMsRef.current = regenIntervalMs;
+  const [, render] = useState(0);
+
+  const applyRegen = () => {
+    const now = Date.now();
+    if (updatedAtRef.current < startOfLocalDay(now)) {
+      const changed = energyRef.current !== ENERGY_MAX;
+      energyRef.current = ENERGY_MAX;
+      updatedAtRef.current = now;
+      return changed;
+    }
+    if (energyRef.current >= ENERGY_MAX) return false;
+    const gained = Math.floor((now - updatedAtRef.current) / regenMsRef.current);
+    if (gained <= 0) return false;
+    energyRef.current = Math.min(ENERGY_MAX, energyRef.current + gained);
+    updatedAtRef.current = energyRef.current >= ENERGY_MAX ? now : updatedAtRef.current + gained * regenMsRef.current;
+    return true;
+  };
+
+  useEffect(() => {
+    if (applyRegen()) render((tick) => tick + 1);
+    const id = window.setInterval(() => { if (applyRegen()) render((tick) => tick + 1); }, 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const addEnergy = (amount: number) => {
+    if (amount <= 0) return;
+    energyRef.current = Math.min(ENERGY_MAX, energyRef.current + amount);
+    updatedAtRef.current = Date.now();
+    render((tick) => tick + 1);
+  };
+  const removeEnergy = (amount: number) => {
+    if (amount <= 0) return true;
+    if (energyRef.current < amount) return false;
+    energyRef.current -= amount;
+    updatedAtRef.current = Date.now();
+    render((tick) => tick + 1);
+    return true;
+  };
+  const canAfford = (amount: number) => energyRef.current >= amount;
+  return { energy: energyRef.current, updatedAt: updatedAtRef.current, addEnergy, removeEnergy, canAfford };
+}
+
 // Guards a repeatable action (buy/sell/upgrade) against being fired more
 // than once from a fast double-click/double-drop before React can disable
 // the control that triggered it.
@@ -672,6 +735,13 @@ type FoodBuff = { id: string; statKey: string; amount: number; expiresAt: number
 type PersistedProgress = {
   balance: number;
   points: number;
+  reputation: number;
+  level: number;
+  xp: number;
+  xpMax: number;
+  energy: number;
+  energyUpdatedAt: number;
+  cellUpgradeLevels: Record<string, number>;
   stats: Record<string, number>;
   equipped: Record<string, string | null>;
   ownedItemIds: string[];
@@ -707,11 +777,11 @@ function rollOfferIfStale(saved: OfferState | undefined, pool: { id: string }[])
   return { ids: pickRandomOfferIds(pool, OFFER_SIZE), refreshedAt: Date.now() };
 }
 
-type GameSection = 'cell' | 'character' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'canteen' | 'cafeteria' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'settings';
+type GameSection = 'cell' | 'character' | 'messages' | 'fight' | 'training' | 'work' | 'market' | 'shop' | 'canteen' | 'cafeteria' | 'quests' | 'trash-block' | 'gang' | 'ranking' | 'cell-development' | 'achievements' | 'statistics' | 'hospital' | 'settings';
 function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate: (screen: Screen) => void }) {
   const [activeSection, setActiveSection] = useState<GameSection>(() => {
     const route = window.location.hash.replace('#', '');
-    return (route.startsWith('game/') ? route.split('/')[1] : 'cell') as GameSection;
+    return (route.startsWith('game/') ? route.split('/')[1] : 'character') as GameSection;
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notice, setNotice] = useState('');
@@ -723,6 +793,29 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const [savedProgress] = useState(loadPersistedProgress);
   const wallet = useWallet(savedProgress.balance ?? 250);
   const pointsWallet = useWallet(savedProgress.points ?? 3);
+  const reputationWallet = useWallet(savedProgress.reputation ?? 0);
+  const [cellUpgradeLevels, setCellUpgradeLevels] = useState<Record<string, number>>(() => savedProgress.cellUpgradeLevels ?? {});
+  const energyWallet = useEnergy(savedProgress.energy ?? ENERGY_MAX, savedProgress.energyUpdatedAt ?? Date.now(), Math.round(ENERGY_REGEN_MS / (1 + cellEnergyRegenBonusPercent(cellUpgradeLevels) / 100)));
+  const [level, setLevel] = useState(savedProgress.level ?? 1);
+  const [xp, setXp] = useState(savedProgress.xp ?? 120);
+  const [xpMax, setXpMax] = useState(savedProgress.xpMax ?? 500);
+  // Grants XP and cascades through as many level-ups as the amount covers,
+  // so a big reward (e.g. skipping a long mission) can jump several levels
+  // in one go instead of only ever advancing by one.
+  const gainXp = (amount: number) => {
+    if (amount <= 0) return;
+    let nextXp = xp + amount;
+    let nextLevel = level;
+    let nextXpMax = xpMax;
+    while (nextXp >= nextXpMax) {
+      nextXp -= nextXpMax;
+      nextLevel += 1;
+      nextXpMax = Math.round(nextXpMax * 1.25);
+    }
+    setXp(nextXp);
+    setLevel(nextLevel);
+    setXpMax(nextXpMax);
+  };
   const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
   const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterDefaultOwnedItemIds));
@@ -755,6 +848,13 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     const data: PersistedProgress = {
       balance: wallet.balance,
       points: pointsWallet.balance,
+      reputation: reputationWallet.balance,
+      level,
+      xp,
+      xpMax,
+      energy: energyWallet.energy,
+      energyUpdatedAt: energyWallet.updatedAt,
+      cellUpgradeLevels,
       stats: Object.fromEntries(characterStats.map((stat) => [stat.key, stat.value])),
       equipped,
       ownedItemIds: Array.from(ownedItemIds),
@@ -763,18 +863,18 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       foodBuffs,
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-  }, [wallet.balance, pointsWallet.balance, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
+  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, energyWallet.energy, energyWallet.updatedAt, cellUpgradeLevels, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
-    level: 1,
-    xp: 120,
-    xpMax: 500,
+    level,
+    xp,
+    xpMax,
     gold: wallet.balance,
     points: pointsWallet.balance,
-    energy: 100,
+    energy: energyWallet.energy,
     hp: 100,
-    reputation: 0,
+    reputation: reputationWallet.balance,
     rank: 'NOWY',
   };
 
@@ -822,7 +922,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   return <main className="game-shell-page">
     <header className="game-header hud-topbar" style={{ backgroundImage: `url(${hudIndustrialBackground})` }}>
       <div className="game-header-brand hud-rail-brand" style={{ backgroundImage: `url(${hudSidebarBackground})` }}>
-        <button className="hud-wordmark-button" type="button" onClick={() => navigateSection('cell')} aria-label="Prison Life — przejdź do celi">
+        <button className="hud-wordmark-button" type="button" onClick={() => navigateSection('character')} aria-label="Prison Life — przejdź do postaci">
           <img src={hudWordmark} alt="Prison Life" />
         </button>
       </div>
@@ -856,7 +956,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`} style={{ backgroundImage: `url(${hudSidebarBackground})` }}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} style={{ ['--hud-nav-bg' as string]: `url(${hudNavButton})`, ['--hud-nav-hover' as string]: `url(${hudNavButtonHover})` } as CSSProperties} key={id} onClick={() => navigateSection(id)}>{gameNavAssets[id] ? <img className="game-nav-asset" src={gameNavAssets[id]} alt="" aria-hidden="true" /> : <Icon size={18} />}<i className="game-nav-divider" aria-hidden="true" /><span>{label}</span></button>)}</aside>
         <div className={`game-content ${activeSection === 'character' ? 'game-content-character' : activeSection === 'cell' || activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' || activeSection === 'cafeteria' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'character' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell' || activeSection === 'cell-development' ? <CellDevelopmentView levels={cellUpgradeLevels} setLevels={setCellUpgradeLevels} wallet={wallet} onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView stats={characterStats} setStats={setCharacterStats} energy={energyWallet} bonusPercent={cellTrainingBonusPercent(cellUpgradeLevels)} onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} energy={energyWallet} pointsWallet={pointsWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('character')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} hourlyRate={Math.round(workHourlyRate * (1 + cellWorkBonusPercent(cellUpgradeLevels) / 100))} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView wallet={wallet} pointsWallet={pointsWallet} energy={energyWallet} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' || activeSection === 'cafeteria' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('character')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -931,9 +1031,10 @@ function GamePlaceholder({ section, onReturn }: { section: GameSection; onReturn
     'cell-development': 'Rozbuduj swoją celę, odblokuj nowe wyposażenie i stwórz własną przewagę za kratami.',
     achievements: 'Zdobywaj osiągnięcia za rozwój postaci i kolejne dni za kratami.',
     statistics: 'Sprawdzaj swoje wyniki, postępy i najważniejsze liczby z pobytu.',
+    hospital: 'Szpital zaopiekuje się Tobą po ciężkim starciu. Wróć później po opiekę.',
     settings: 'Dostosuj ustawienia konta i preferencje gry.',
   };
-  return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO CELI</button></section>;
+  return <section className="game-placeholder" data-testid={`game-placeholder-${section}`}><div className="placeholder-stamp">BLOK A / SYSTEM</div><Icon size={48} /><span className="eyebrow">SEKCJA GRY</span><h1>{item.label}</h1><p>{copy[section]}</p><button className="btn btn-primary" onClick={onReturn}><Shield size={15} /> WRÓĆ DO POSTACI</button></section>;
 }
 
 const characterSceneAsset = characterScenePhoto;
@@ -950,17 +1051,66 @@ const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof S
 ];
 const characterInventoryTabs = ['WSZYSTKIE', 'UBRANIA', 'DODATKI', 'BROŃ', 'INNE'] as const;
 const characterInventoryPageSize = 20;
-const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; rarity: string; slot: string; bonusStat: string; bonusAmount: number; value: number; price: number }> = [
-  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, rarity: 'orange', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 25, price: 55 },
-  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, rarity: 'violet', slot: 'neck', bonusStat: 'luck', bonusAmount: 3, value: 40, price: 85 },
-  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, rarity: 'orange', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 20, price: 45 },
-  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, rarity: 'blue', slot: 'torso', bonusStat: 'endurance', bonusAmount: 4, value: 55, price: 120 },
-  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, rarity: 'blue', slot: 'back', bonusStat: 'strength', bonusAmount: 3, value: 60, price: 130 },
-  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, rarity: 'gray', slot: 'hands', bonusStat: 'strength', bonusAmount: 5, value: 45, price: 95 },
-  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, rarity: 'orange', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 20, price: 45 },
-  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, rarity: 'blue', slot: 'feet', bonusStat: 'reflex', bonusAmount: 3, value: 50, price: 110 },
-  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, rarity: 'violet', slot: 'weapon', bonusStat: 'strength', bonusAmount: 5, value: 70, price: 150 },
+// Rarity tier for anything wearable (clothes/weapons/accessories): higher
+// tier = pricier, harder to loot (see dropWeight, used by pickRandomLootItem
+// below) and a bigger stat bonus. This catalog is due for a bigger content
+// pass (more items per tier) - the tier machinery itself doesn't care how
+// many items end up in each bucket.
+type ItemTier = 'common' | 'rare' | 'elite' | 'limited' | 'unique';
+const itemTierConfig: Record<ItemTier, { label: string; color: string; dropWeight: number }> = {
+  common: { label: 'ZWYKŁY', color: '#9aa39c', dropWeight: 100 },
+  rare: { label: 'RZADKI', color: '#4f8fd6', dropWeight: 42 },
+  elite: { label: 'ELITARNY', color: '#a366e0', dropWeight: 15 },
+  limited: { label: 'EDYCJA LIMITOWANA', color: '#e0a83d', dropWeight: 5 },
+  unique: { label: 'UNIKAT', color: '#e0473d', dropWeight: 1 },
+};
+// Sklep and Czarny Rynek both only ever stock the three "everyday" tiers -
+// edycja limitowana and unikat stay out of ordinary storefronts the same
+// way they stay out of ordinary loot (see pickRandomLootItem below).
+const storefrontTiers = new Set<ItemTier>(['common', 'rare', 'elite']);
+const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; tier: ItemTier; slot: string; bonusStat: string; bonusAmount: number; value: number; price: number }> = [
+  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, tier: 'common', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 23, price: 50 },
+  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, tier: 'common', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 18, price: 40 },
+  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, tier: 'common', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 18, price: 40 },
+  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, tier: 'rare', slot: 'hands', bonusStat: 'strength', bonusAmount: 4, value: 54, price: 120 },
+  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, tier: 'rare', slot: 'feet', bonusStat: 'reflex', bonusAmount: 4, value: 59, price: 130 },
+  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, tier: 'elite', slot: 'torso', bonusStat: 'endurance', bonusAmount: 7, value: 117, price: 260 },
+  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, tier: 'elite', slot: 'back', bonusStat: 'strength', bonusAmount: 7, value: 126, price: 280 },
+  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, tier: 'limited', slot: 'neck', bonusStat: 'luck', bonusAmount: 11, value: 248, price: 550 },
+  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, tier: 'unique', slot: 'weapon', bonusStat: 'strength', bonusAmount: 16, value: 405, price: 900 },
 ];
+// Bonus loot on a win/success, shared by Walka and Misje: an item drop is
+// reasonably common, a bonus point is extremely rare (1 in 10 000) - both
+// draw from the same small equip catalog above, so retuning the catalog
+// (it's due for a pass) doesn't require touching this logic.
+const POINT_DROP_CHANCE = 1 / 10000;
+const ITEM_DROP_CHANCE = 0.3;
+// Elitarny is its own separate, lottery-rare roll on top of the regular
+// item drop, not just a low weight in the same pool - that keeps it "lotka"
+// rare (~1 in 16 700 per win, i.e. ITEM_DROP_CHANCE * ELITE_LOOT_CHANCE)
+// regardless of how the common/rare pool shrinks as the player collects
+// things. TODO once a level requirement is decided: gate elite items behind
+// it here (and unlock it as a guaranteed-ish reward on specific missions
+// that explicitly advertise an elite chance, once any exist).
+const ELITE_LOOT_CHANCE = 1 / 5000;
+// unikat is event-only (events aren't built yet) and edycja limitowana
+// needs its own separate source that isn't decided yet either - neither
+// belongs behind an ordinary mission/fight roll at all.
+function pickRandomLootItem(ownedItemIds: Set<string>) {
+  const eliteCandidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && item.tier === 'elite');
+  if (eliteCandidates.length > 0 && Math.random() < ELITE_LOOT_CHANCE) {
+    return eliteCandidates[Math.floor(Math.random() * eliteCandidates.length)];
+  }
+  const candidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id) && (item.tier === 'common' || item.tier === 'rare'));
+  if (candidates.length === 0) return null;
+  const totalWeight = candidates.reduce((sum, item) => sum + itemTierConfig[item.tier].dropWeight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const item of candidates) {
+    roll -= itemTierConfig[item.tier].dropWeight;
+    if (roll <= 0) return item;
+  }
+  return candidates[candidates.length - 1];
+}
 const characterStatLabelByKey: Record<string, string> = { health: 'zdrowia', luck: 'szczęścia', strength: 'siły', endurance: 'kondycji', intelligence: 'inteligencji', reflex: 'refleksu' };
 // Cost in cash to raise a stat by one point, given its current (pre-upgrade) value — rises with level.
 function statUpgradeCost(currentValue: number): number {
@@ -1140,7 +1290,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
           onDragOver={(event) => { event.preventDefault(); setDragOverInventory(true); }}
           onDragLeave={() => setDragOverInventory(false)}
           onDrop={handleInventoryDrop}
-        >{visibleInventoryItems.map(({ id, name, asset, rarity }) => <button
+        >{visibleInventoryItems.map(({ id, name, asset, tier }) => <button
           className="character-inventory-item"
           key={id}
           draggable
@@ -1151,7 +1301,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
           onContextMenu={(event) => { event.preventDefault(); setHoveredItem(null); setContextMenu({ id, x: event.clientX, y: event.clientY }); }}
           onClick={() => onNotice(`Podgląd przedmiotu: ${name.toLowerCase()}.`)}
         >
-          <span className={`character-inventory-rarity tone-${rarity}`} />
+          <span className={`character-inventory-rarity tone-${tier}`} style={{ background: itemTierConfig[tier].color }} />
           <img src={asset} alt={name} />
         </button>)}
         {Array.from({ length: Math.max(0, characterInventoryPageSize - visibleInventoryItems.length) }).map((_, index) => <span className="character-inventory-item empty" key={`empty-${index}`} aria-hidden="true" />)}</div>
@@ -1199,6 +1349,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
       if (!item) return null;
       return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
         <strong>{item.name}</strong>
+        <em className={`character-item-tooltip-tier tone-${item.tier}`} style={{ color: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</em>
         <span>+{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
       </div>;
     })()}
@@ -1278,7 +1429,7 @@ function GangView({ onNotice }: { onNotice: (message: string) => void }) {
 // selection of offers drawn from a pool, refreshable early for points.
 // GameShell owns the offer-picking/persistence; these components only
 // render whatever offer list they're handed and know how to buy one item.
-type LegalGood = { id: string; name: string; price: number; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
+type LegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
 const legalGenericGoods: LegalGood[] = [
   { id: 'tshirt', name: 'Koszulka', price: 60, render: { kind: 'icon', icon: ShirtIcon } },
   { id: 'shorts', name: 'Spodenki', price: 80, render: { kind: 'icon', icon: Package } },
@@ -1290,24 +1441,29 @@ const legalGenericGoods: LegalGood[] = [
   { id: 'slides', name: 'Klapki', price: 70, render: { kind: 'icon', icon: FootprintsIcon } },
   { id: 'notebook-set', name: 'Notes i długopis', price: 35, render: { kind: 'icon', icon: ScrollText } },
 ];
-// Equip-catalog goods (weapon excluded — that stays a black-market matter):
+// Equip-catalog goods, zwykły/rzadki/elitarny only (see storefrontTiers):
 // buying one still lands straight in the character's equipment inventory.
-const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => item.slot !== 'weapon').map((item) => ({ id: item.id, name: item.name, price: item.price, render: { kind: 'image', src: item.asset } }));
+const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
 const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods];
 const legalEquipIds = new Set(legalEquipGoods.map((item) => item.id));
 
-type IllegalGood = { id: string; name: string; price: number; icon: typeof Shield };
-const illegalGoodsPool: IllegalGood[] = [
-  { id: 'prison-knife', name: 'Nóż więzienny', price: 450, icon: Swords },
-  { id: 'knuckles', name: 'Kastet', price: 380, icon: HandFist },
-  { id: 'amphetamine', name: 'Amfetamina (mała porcja)', price: 250, icon: Package },
-  { id: 'shiv', name: 'Sztylet', price: 600, icon: Crosshair },
-  { id: 'steroids', name: 'Sterydy', price: 350, icon: Dumbbell },
-  { id: 'weed', name: 'Marihuana', price: 180, icon: Leaf },
-  { id: 'burner-phone', name: 'Telefon', price: 1200, icon: Smartphone },
-  { id: 'tattoo-kit', name: 'Zestaw do tatuażu', price: 520, icon: Award },
-  { id: 'stolen-watch', name: 'Zegarek (skradziony)', price: 410, icon: Watch },
+type IllegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
+const illegalFlavorGoods: IllegalGood[] = [
+  { id: 'prison-knife', name: 'Nóż więzienny', price: 450, render: { kind: 'icon', icon: Swords } },
+  { id: 'knuckles', name: 'Kastet', price: 380, render: { kind: 'icon', icon: HandFist } },
+  { id: 'amphetamine', name: 'Amfetamina (mała porcja)', price: 250, render: { kind: 'icon', icon: Package } },
+  { id: 'shiv', name: 'Sztylet', price: 600, render: { kind: 'icon', icon: Crosshair } },
+  { id: 'steroids', name: 'Sterydy', price: 350, render: { kind: 'icon', icon: Dumbbell } },
+  { id: 'weed', name: 'Marihuana', price: 180, render: { kind: 'icon', icon: Leaf } },
+  { id: 'burner-phone', name: 'Telefon', price: 1200, render: { kind: 'icon', icon: Smartphone } },
+  { id: 'tattoo-kit', name: 'Zestaw do tatuażu', price: 520, render: { kind: 'icon', icon: Award } },
+  { id: 'stolen-watch', name: 'Zegarek (skradziony)', price: 410, render: { kind: 'icon', icon: Watch } },
 ];
+// Same equip catalog as the Sklep (zwykły/rzadki/elitarny only), so anything
+// buyable legally is also buyable here — at the usual black-market markup.
+const illegalEquipGoods: IllegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
+const illegalGoodsPool: IllegalGood[] = [...illegalFlavorGoods, ...illegalEquipGoods];
+const illegalEquipIds = new Set(illegalEquipGoods.map((item) => item.id));
 
 // Which gang currently controls the black market — a static snapshot for
 // now (no live gang-war simulation yet), applied as a real surcharge on
@@ -1371,6 +1527,7 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
       </div>
       <div className="storefront-grid">
         {offers.map((item) => { const isEquip = legalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
+          {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
           <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
           <div className="storefront-card-footer">
             {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{item.price} $</b>}
@@ -1386,9 +1543,11 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
   </section>;
 }
 
-function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onNotice }: {
+function MarketView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, pointsBalance, onRefresh, onNotice }: {
   wallet: Wallet;
   offers: IllegalGood[];
+  ownedItemIds: Set<string>;
+  setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>;
   refreshCost: number;
   pointsBalance: number;
   onRefresh: () => void;
@@ -1397,6 +1556,11 @@ function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onN
   const runLocked = useActionLock();
 
   const buyItem = (item: IllegalGood) => runLocked(`market-buy-${item.id}`, () => {
+    const isEquip = illegalEquipIds.has(item.id);
+    if (isEquip && ownedItemIds.has(item.id)) {
+      onNotice(`${item.name}: już posiadasz ten przedmiot.`);
+      return;
+    }
     const total = Math.round(item.price * (1 + blackMarketTaxCut / 100));
     if (!wallet.canAfford(total)) {
       onNotice(`Brak środków. Potrzebujesz jeszcze ${total - wallet.balance} $.`);
@@ -1406,7 +1570,8 @@ function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onN
       onNotice('Zakup nieudany — brak środków.');
       return;
     }
-    onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.`);
+    if (isEquip) setOwnedItemIds((current) => new Set(current).add(item.id));
+    onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
   });
 
   return <section className="storefront-view storefront-market" data-testid="market-view">
@@ -1429,12 +1594,13 @@ function MarketView({ wallet, offers, refreshCost, pointsBalance, onRefresh, onN
           </div>
         </div>
         <div className="storefront-grid storefront-grid-named">
-          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
-            <div className="storefront-card-art"><item.icon size={52} strokeWidth={1.15} /></div>
+          {offers.map((item) => { const total = Math.round(item.price * (1 + blackMarketTaxCut / 100)); const isEquip = illegalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card storefront-card-named" data-testid={`market-card-${item.id}`}>
+            {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
+            <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
             <strong className="storefront-card-name">{item.name}</strong>
             <div className="storefront-card-footer">
-              <b>{total} $</b>
-              <button onClick={() => buyItem(item)} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
+              {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{total} $</b>}
+              <button onClick={() => buyItem(item)} disabled={owned} aria-label={`Kup: ${item.name}`} data-testid={`market-buy-${item.id}`}><ShoppingCart size={14} /></button>
             </div>
           </article>; })}
         </div>
@@ -1730,40 +1896,120 @@ type MissionCard = {
   energy: number;
   chance: number;
   reward: string;
+  rewardXp: number;
+  durationMinutes: number;
   extra: string;
   icon: typeof Archive;
 };
 
 const missionCards: MissionCard[] = [
-  { id: 'handoff', title: 'PRZEKAŻ', description: 'Dostarcz wiadomość do wskazanej osoby z bloku B. Nikt nie może się dowiedzieć.', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 82, reward: '+120 EXP', extra: '$ / punkty / losowo', icon: Mail },
-  { id: 'smuggle-card', title: 'PRZEMYT', description: 'Przenieś małą paczkę z magazynu do celi 214. Uważaj na kontrolę.', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 64, reward: '+250 EXP', extra: '$ / punkty / losowo', icon: Archive },
-  { id: 'settlement', title: 'ROZLICZENIE', description: 'Daj nauczkę wskazanemu więźniowi z bloku C. Ma to wyglądać na przypadek.', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 48, reward: '+400 EXP', extra: '$ / punkty / losowo', icon: Users },
-  { id: 'evidence', title: 'ZDOBĄDŹ DOWODY', description: 'Zdobądź dokumenty ze strzeżonego biura. Wysokie ryzyko, duża nagroda.', risk: 'SPECJALNA', riskTone: 'special', energy: 40, chance: 32, reward: '+750 EXP', extra: '$ / punkty / losowo', icon: ScrollText },
+  { id: 'handoff', title: 'PRZEKAŻ', description: 'Dostarcz wiadomość do wskazanej osoby z bloku B. Nikt nie może się dowiedzieć.', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 82, reward: '+120 EXP', rewardXp: 120, durationMinutes: 8, extra: '$ / punkty / losowo', icon: Mail },
+  { id: 'smuggle-card', title: 'PRZEMYT', description: 'Przenieś małą paczkę z magazynu do celi 214. Uważaj na kontrolę.', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 64, reward: '+250 EXP', rewardXp: 250, durationMinutes: 18, extra: '$ / punkty / losowo', icon: Archive },
+  { id: 'settlement', title: 'ROZLICZENIE', description: 'Daj nauczkę wskazanemu więźniowi z bloku C. Ma to wyglądać na przypadek.', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 48, reward: '+400 EXP', rewardXp: 400, durationMinutes: 30, extra: '$ / punkty / losowo', icon: Users },
+  { id: 'evidence', title: 'ZDOBĄDŹ DOWODY', description: 'Zdobądź dokumenty ze strzeżonego biura. Wysokie ryzyko, duża nagroda.', risk: 'SPECJALNA', riskTone: 'special', energy: 40, chance: 32, reward: '+750 EXP', rewardXp: 750, durationMinutes: 50, extra: '$ / punkty / losowo', icon: ScrollText },
 ];
 
-function MissionsCardsView({ onNotice }: { onNotice: (message: string) => void }) {
-  const [startedId, setStartedId] = useState<string | null>(null);
+// Skipping a mission's wait costs points based on how much time is left:
+// one point per started 5-minute block, so anything under 5 minutes left
+// costs just 1 point, and skipping a long mission right away costs more.
+const MISSION_SKIP_BLOCK_MS = 5 * 60 * 1000;
+function missionSkipCost(remainingMs: number) {
+  return Math.max(1, Math.ceil(remainingMs / MISSION_SKIP_BLOCK_MS));
+}
+
+const MISSION_BONUS_MONEY_CHANCE = 0.35;
+
+function MissionCardTile({ mission, wallet, pointsWallet, energy, ownedItemIds, setOwnedItemIds, onGainXp, onNotice }: { mission: MissionCard; wallet: Wallet; pointsWallet: Wallet; energy: Energy; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+  const [status, setStatus] = useState<'idle' | 'in-progress'>('idle');
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState(0);
+  const resolvedRef = useRef(false);
+
+  const resolve = () => {
+    if (resolvedRef.current) return;
+    resolvedRef.current = true;
+    setStatus('idle');
+    setEndsAt(null);
+    const success = Math.random() * 100 < mission.chance;
+    if (success) {
+      onGainXp(mission.rewardXp);
+      const extras: string[] = [];
+      if (Math.random() < MISSION_BONUS_MONEY_CHANCE) {
+        const bonusMoney = Math.max(10, Math.round(mission.rewardXp * 0.15));
+        wallet.addMoney(bonusMoney);
+        extras.push(`${bonusMoney} $`);
+      }
+      if (Math.random() < ITEM_DROP_CHANCE) {
+        const loot = pickRandomLootItem(ownedItemIds);
+        if (loot) { setOwnedItemIds((current) => new Set(current).add(loot.id)); extras.push(loot.name); }
+      }
+      if (Math.random() < POINT_DROP_CHANCE) { pointsWallet.addMoney(1); extras.push('1 pkt'); }
+      onNotice(`Misja "${mission.title.toLowerCase()}" zakończona sukcesem: +${mission.rewardXp} EXP${extras.length ? ' oraz ' + extras.join(', ') : ''}.`);
+    } else {
+      onNotice(`Misja "${mission.title.toLowerCase()}" zakończona niepowodzeniem. Spróbuj ponownie.`);
+    }
+  };
+
+  useEffect(() => {
+    if (status !== 'in-progress' || endsAt === null) return;
+    const tick = () => {
+      const remaining = endsAt - Date.now();
+      if (remaining <= 0) {
+        setRemainingMs(0);
+        resolve();
+      } else {
+        setRemainingMs(remaining);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, endsAt]);
+
+  const start = () => {
+    if (!energy.removeEnergy(mission.energy)) { onNotice(`Potrzebujesz ${mission.energy} energii, aby rozpocząć tę misję.`); return; }
+    resolvedRef.current = false;
+    setEndsAt(Date.now() + mission.durationMinutes * 60 * 1000);
+    setRemainingMs(mission.durationMinutes * 60 * 1000);
+    setStatus('in-progress');
+    onNotice(`Rozpoczynasz misję: ${mission.title.toLowerCase()}.`);
+  };
+
+  const skip = () => {
+    const cost = missionSkipCost(remainingMs);
+    if (!pointsWallet.canAfford(cost)) { onNotice(`Potrzebujesz ${cost} pkt, aby przyspieszyć tę misję.`); return; }
+    pointsWallet.removeMoney(cost);
+    resolve();
+  };
+
+  const MissionIcon = mission.icon;
+  const disabled = status === 'idle' && !energy.canAfford(mission.energy);
+  return <article className={`mission-card-large mission-card-large-${mission.riskTone}`} data-testid={`mission-card-${mission.id}`}>
+    <div className="mission-card-large-top"><MissionIcon size={36} /><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></div>
+    <h2>{mission.title}</h2>
+    <p>{mission.description}</p>
+    <div className="mission-card-large-facts">
+      <div><Zap size={16} /><span>KOSZT ENERGII</span><b>{mission.energy}</b></div>
+      <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b></div>
+    </div>
+    <div className="mission-card-large-reward"><small>NAGRODA (EXP)</small><strong><Award size={18} /> {mission.reward}</strong></div>
+    <div className="mission-card-large-extra"><small>MOŻLIWE DODATKOWO</small><span><CircleDollarSign size={17} /> <Archive size={17} /> ?</span></div>
+    {status === 'in-progress' ? <div className="mission-card-large-active">
+      <div className="mission-card-large-countdown"><Timer size={16} /> {formatWorkRemaining(remainingMs)}</div>
+      <button className="mission-card-large-skip" onClick={skip} data-testid={`mission-skip-${mission.id}`}><Zap size={15} /> PRZYSPIESZ ZA {missionSkipCost(remainingMs)} PKT</button>
+    </div> : <button onClick={start} disabled={disabled} data-testid={`mission-start-${mission.id}`}><ArrowRight size={17} /> {disabled ? 'BRAK ENERGII' : 'ROZPOCZNIJ MISJĘ'}</button>}
+  </article>;
+}
+
+function MissionsCardsView({ wallet, pointsWallet, energy, ownedItemIds, setOwnedItemIds, onGainXp, onNotice }: { wallet: Wallet; pointsWallet: Wallet; energy: Energy; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   return <section className="missions-cards-view" style={{ '--missions-cards-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-cards-view">
     <header className="missions-cards-heading">
       <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WYBIERZ MISJĘ I PODEJMIJ RYZYKO. KAŻDA DECYZJA MA KONSEKWENCJE.</p></div>
       <div className="missions-cards-slogan">TU NIE MA<br />PRZYPADKÓW</div>
     </header>
     <div className="missions-cards-grid">
-      {missionCards.map((mission) => {
-        const MissionIcon = mission.icon;
-        return <article className={`mission-card-large mission-card-large-${mission.riskTone}`} key={mission.id}>
-          <div className="mission-card-large-top"><MissionIcon size={36} /><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></div>
-          <h2>{mission.title}</h2>
-          <p>{mission.description}</p>
-          <div className="mission-card-large-facts">
-            <div><Zap size={16} /><span>KOSZT ENERGII</span><b>{mission.energy}</b></div>
-            <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b></div>
-          </div>
-          <div className="mission-card-large-reward"><small>NAGRODA (EXP)</small><strong><Award size={18} /> {mission.reward}</strong></div>
-          <div className="mission-card-large-extra"><small>MOŻLIWE DODATKOWO</small><span><CircleDollarSign size={17} /> <Archive size={17} /> ?</span></div>
-          <button onClick={() => { setStartedId(mission.id); onNotice(`Rozpoczynasz misję: ${mission.title.toLowerCase()}.`); }}><ArrowRight size={17} /> {startedId === mission.id ? 'MISJA W TOKU' : 'ROZPOCZNIJ MISJĘ'}</button>
-        </article>;
-      })}
+      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} wallet={wallet} pointsWallet={pointsWallet} energy={energy} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} onGainXp={onGainXp} onNotice={onNotice} />)}
     </div>
     <footer className="missions-cards-footer">
       <div className="missions-card-timer"><Archive size={26} /><span><small>NOWE MISJE ZA:</small><strong>01:58:27</strong></span></div>
@@ -1779,25 +2025,102 @@ type TrainingExercise = {
   description: string;
   energy: number;
   duration: number;
+  statKey: string;
+  statGain: number;
   reward: string;
   icon: typeof Dumbbell;
 };
 
 const trainingExercises: TrainingExercise[] = [
-  { id: 'pushups', label: 'POMPKI', description: 'Rozwijaj siłę. Proste, ale skuteczne.', energy: 10, duration: 15, reward: 'Siła (XP)', icon: Dumbbell },
-  { id: 'squats', label: 'PRZYSIADY', description: 'Lepsza kondycja to większa wytrzymałość.', energy: 10, duration: 15, reward: 'Kondycja (XP)', icon: Heart },
-  { id: 'weights', label: 'CIĘŻARY', description: 'Prawdziwa siła rodzi się z wysiłku.', energy: 20, duration: 30, reward: 'Siła (więcej XP)', icon: Dumbbell },
-  { id: 'combat', label: 'TRENING WALKI', description: 'Technika, refleks, kontrola.', energy: 25, duration: 30, reward: 'Siła (max XP)', icon: Crosshair },
+  { id: 'pushups', label: 'POMPKI', description: 'Rozwijaj siłę. Proste, ale skuteczne.', energy: 10, duration: 15, statKey: 'strength', statGain: 2, reward: 'Siła (+2)', icon: Dumbbell },
+  { id: 'squats', label: 'PRZYSIADY', description: 'Lepsza kondycja to większa wytrzymałość.', energy: 10, duration: 15, statKey: 'endurance', statGain: 2, reward: 'Kondycja (+2)', icon: Heart },
+  { id: 'weights', label: 'CIĘŻARY', description: 'Prawdziwa siła rodzi się z wysiłku.', energy: 20, duration: 30, statKey: 'strength', statGain: 3, reward: 'Siła (+3)', icon: Dumbbell },
+  { id: 'combat', label: 'TRENING WALKI', description: 'Technika, refleks, kontrola.', energy: 25, duration: 30, statKey: 'reflex', statGain: 3, reward: 'Refleks (+3)', icon: Crosshair },
 ];
 
-const trainingStats = [
-  { label: 'SIŁA', level: 'POZIOM 5', value: '320 / 500', progress: '64%', icon: Dumbbell },
-  { label: 'KONDYCJA', level: 'POZIOM 4', value: '180 / 400', progress: '45%', icon: Heart },
-  { label: 'ZRĘCZNOŚĆ', level: 'POZIOM 3', value: '120 / 300', progress: '40%', icon: Crosshair },
-];
+type TrainingHistoryEntry = { id: string; label: string; xpText: string; time: string };
 
-function TrainingView({ onNotice }: { onNotice: (message: string) => void }) {
-  const [startedExercise, setStartedExercise] = useState<string | null>(null);
+function TrainingExerciseTile({ exercise, stats, setStats, energy, bonusPercent, onNotice, onCompleted }: {
+  exercise: TrainingExercise;
+  stats: typeof characterStatsList;
+  setStats: Dispatch<SetStateAction<typeof characterStatsList>>;
+  energy: Energy;
+  bonusPercent: number;
+  onNotice: (message: string) => void;
+  onCompleted: (exercise: TrainingExercise, gain: number) => void;
+}) {
+  const [status, setStatus] = useState<'idle' | 'in-progress'>('idle');
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState(0);
+  const resolvedRef = useRef(false);
+  const statInfo = stats.find((stat) => stat.key === exercise.statKey)!;
+  const effectiveGain = Math.max(exercise.statGain, Math.round(exercise.statGain * (1 + bonusPercent / 100)));
+
+  const resolve = () => {
+    if (resolvedRef.current) return;
+    resolvedRef.current = true;
+    setStatus('idle');
+    setEndsAt(null);
+    setStats((current) => current.map((stat) => stat.key === exercise.statKey ? { ...stat, value: Math.min(stat.max, stat.value + effectiveGain) } : stat));
+    onNotice(`Trening ukończony: ${exercise.label.toLowerCase()}. +${effectiveGain} ${statInfo.label.toLowerCase()}.`);
+    onCompleted(exercise, effectiveGain);
+  };
+
+  useEffect(() => {
+    if (status !== 'in-progress' || endsAt === null) return;
+    const tick = () => {
+      const remaining = endsAt - Date.now();
+      if (remaining <= 0) {
+        setRemainingMs(0);
+        resolve();
+      } else {
+        setRemainingMs(remaining);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, endsAt]);
+
+  const start = () => {
+    if (statInfo.value >= statInfo.max) { onNotice(`${statInfo.label} jest już na maksymalnym poziomie.`); return; }
+    if (!energy.removeEnergy(exercise.energy)) { onNotice(`Potrzebujesz ${exercise.energy} energii, aby rozpocząć ten trening.`); return; }
+    resolvedRef.current = false;
+    setEndsAt(Date.now() + exercise.duration * 60 * 1000);
+    setRemainingMs(exercise.duration * 60 * 1000);
+    setStatus('in-progress');
+    onNotice(`Rozpoczynasz trening: ${exercise.label.toLowerCase()}.`);
+  };
+
+  const Icon = exercise.icon;
+  const disabled = status === 'idle' && !energy.canAfford(exercise.energy);
+  return <article className={`training-exercise-card ${status === 'in-progress' ? 'started' : ''}`} data-testid={`training-card-${exercise.id}`}>
+    <div className={`training-exercise-art training-art-${exercise.id}`} style={{ backgroundImage: `url("${trainingMockup}")` }} />
+    <div className="training-exercise-copy">
+      <h3>{exercise.label}</h3>
+      <p>{exercise.description}</p>
+      <div className="training-exercise-meta"><span><Zap size={13} /> {exercise.energy} energii</span><span><Timer size={13} /> {exercise.duration} minut</span><span><Icon size={13} /> {statInfo.label} (+{effectiveGain})</span></div>
+      {status === 'in-progress'
+        ? <button className="training-exercise-timer" disabled data-testid={`training-timer-${exercise.id}`}><Timer size={14} /> {formatWorkRemaining(remainingMs)}</button>
+        : <button onClick={start} disabled={disabled} data-testid={`training-start-${exercise.id}`}>{disabled ? 'BRAK ENERGII' : 'ROZPOCZNIJ'}</button>}
+    </div>
+  </article>;
+}
+
+function TrainingView({ stats, setStats, energy, bonusPercent, onNotice }: { stats: typeof characterStatsList; setStats: Dispatch<SetStateAction<typeof characterStatsList>>; energy: Energy; bonusPercent: number; onNotice: (message: string) => void }) {
+  const [completedToday, setCompletedToday] = useState<Set<string>>(new Set());
+  const [history, setHistory] = useState<TrainingHistoryEntry[]>([
+    { id: 'seed-1', label: 'Pompki', xpText: '+12 XP (Siła)', time: 'Dziś, 06:30' },
+    { id: 'seed-2', label: 'Przysiady', xpText: '+10 XP (Kondycja)', time: 'Wczoraj, 18:45' },
+  ]);
+  const handleCompleted = (exercise: TrainingExercise, gain: number) => {
+    const statLabel = characterStatsList.find((stat) => stat.key === exercise.statKey)!.label;
+    setCompletedToday((current) => new Set(current).add(exercise.id));
+    setHistory((current) => [{ id: `${exercise.id}-${Date.now()}`, label: exercise.label, xpText: `+${gain} XP (${statLabel})`, time: 'Teraz' }, ...current].slice(0, 5));
+  };
+  const trainingStatKeys = ['strength', 'endurance', 'reflex'];
+  const trainingStats = trainingStatKeys.map((key) => stats.find((stat) => stat.key === key)!);
 
   return <section className="training-view" data-testid="training-view">
     <header className="training-page-header">
@@ -1816,24 +2139,21 @@ function TrainingView({ onNotice }: { onNotice: (message: string) => void }) {
 
         <section className="training-available">
           <div className="training-section-heading"><div><h2>DOSTĘPNE TRENINGI</h2><span>WYBIERZ ĆWICZENIE I ROZWIJAJ SWOJE UMIEJĘTNOŚCI.</span></div></div>
-          <div className="training-exercise-grid">{trainingExercises.map((exercise) => {
-            const Icon = exercise.icon;
-            const started = startedExercise === exercise.id;
-            return <article className={`training-exercise-card ${started ? 'started' : ''}`} key={exercise.id}>
-              <div className={`training-exercise-art training-art-${exercise.id}`} style={{ backgroundImage: `url("${trainingMockup}")` }} />
-              <div className="training-exercise-copy"><h3>{exercise.label}</h3><p>{exercise.description}</p><div className="training-exercise-meta"><span><Zap size={13} /> {exercise.energy} energii</span><span><Timer size={13} /> {exercise.duration} minut</span><span><Icon size={13} /> {exercise.reward}</span></div><button onClick={() => { setStartedExercise(exercise.id); onNotice(`Rozpoczynasz trening: ${exercise.label.toLowerCase()}.`); }}>{started ? 'W TRAKCIE' : 'ROZPOCZNIJ'}</button></div>
-            </article>;
-          })}</div>
+          <div className="training-exercise-grid">{trainingExercises.map((exercise) => <TrainingExerciseTile key={exercise.id} exercise={exercise} stats={stats} setStats={setStats} energy={energy} bonusPercent={bonusPercent} onNotice={onNotice} onCompleted={handleCompleted} />)}</div>
         </section>
 
         <div className="training-bottom-grid">
           <section className="training-progress-panel">
             <div className="training-section-heading"><div><h2>POSTĘP DZIŚ</h2><span>WYKONAJ WSZYSTKIE DZIŚ TRENINGI, ABY OTRZYMAĆ BONUS.</span></div></div>
-            <div className="training-progress-track"><div className="training-progress-line" /><i className="complete"><CheckCircle2 size={13} /></i><i className="complete"><CheckCircle2 size={13} /></i><i><span>3</span></i><i><span>4</span></i><div className="training-reward"><Trophy size={18} /><span><strong>NAGRODA</strong><small>+10% wszystkich treningów<br />(przez 24h)</small></span></div></div>
+            <div className="training-progress-track">
+              <div className="training-progress-line" />
+              {trainingExercises.map((exercise, index) => <i key={exercise.id} className={completedToday.has(exercise.id) ? 'complete' : ''}>{completedToday.has(exercise.id) ? <CheckCircle2 size={13} /> : <span>{index + 1}</span>}</i>)}
+              <div className="training-reward"><Trophy size={18} /><span><strong>NAGRODA</strong><small>+10% wszystkich treningów<br />(przez 24h)</small></span></div>
+            </div>
           </section>
           <section className="training-history-panel">
             <div className="training-section-heading"><div><h2>HISTORIA TRENINGÓW</h2><span>OSTATNIE AKTYWNOŚCI</span></div><button onClick={() => onNotice('Wyświetlasz pełną historię treningów.')}>ZOBACZ WIĘCEJ <ChevronRight size={12} /></button></div>
-            <div className="training-history-list"><div><CheckCircle2 size={15} /><strong>Pompki</strong><small>Dziś, 06:30</small><b>+12 XP (Siła)</b></div><div><CheckCircle2 size={15} /><strong>Przysiady</strong><small>Wczoraj, 18:45</small><b>+10 XP (Kondycja)</b></div></div>
+            <div className="training-history-list">{history.map((entry) => <div key={entry.id}><CheckCircle2 size={15} /><strong>{entry.label}</strong><small>{entry.time}</small><b>{entry.xpText}</b></div>)}</div>
           </section>
         </div>
       </div>
@@ -1841,10 +2161,10 @@ function TrainingView({ onNotice }: { onNotice: (message: string) => void }) {
       <aside className="training-side-column">
         <section className="training-side-panel training-stat-panel">
           <div className="training-side-heading"><h2>TWOJE STATYSTYKI</h2><button onClick={() => onNotice('Pełne statystyki postaci będą dostępne w zakładce STATYSTYKI.')}>ZOBACZ WSZYSTKIE <ChevronRight size={11} /></button></div>
-          {trainingStats.map(({ label, level, value, progress, icon: Icon }) => <div className="training-stat-row" key={label}><Icon size={18} /><div><strong>{label}</strong><small>{level}</small><div className="training-stat-bar"><i style={{ width: progress }} /></div></div><span>{value}</span></div>)}
-          <div className="training-energy-row"><Zap size={23} /><div><strong>ENERGIA</strong><div className="training-stat-bar"><i style={{ width: '75%' }} /></div></div><span>75 / 100<small>+1 za 24 min</small></span></div>
+          {trainingStats.map(({ label, value, max, icon: Icon }) => <div className="training-stat-row" key={label}><Icon size={18} /><div><strong>{label}</strong><div className="training-stat-bar"><i style={{ width: `${(value / max) * 100}%` }} /></div></div><span>{value} / {max}</span></div>)}
+          <div className="training-energy-row"><Zap size={23} /><div><strong>ENERGIA</strong><div className="training-stat-bar"><i style={{ width: `${energy.energy}%` }} /></div></div><span>{energy.energy} / {ENERGY_MAX}</span></div>
         </section>
-        <section className="training-side-panel training-efficiency-panel"><div className="training-side-heading"><h2>EFEKTYWNOŚĆ TRENINGU</h2></div><div><span>Podstawowa efektywność</span><b>100%</b></div><div><span>Bonus z celi (Kącik treningowy)</span><b>+15%</b></div><div><span>Bonus gangu (BRak)</span><b>0%</b></div><div className="training-efficiency-total"><span>Suma efektywności</span><b>115%</b></div></section>
+        <section className="training-side-panel training-efficiency-panel"><div className="training-side-heading"><h2>EFEKTYWNOŚĆ TRENINGU</h2></div><div><span>Podstawowa efektywność</span><b>100%</b></div><div><span>Bonus z celi (Kącik treningowy)</span><b>+{bonusPercent}%</b></div><div><span>Bonus gangu (Brak)</span><b>0%</b></div><div className="training-efficiency-total"><span>Suma efektywności</span><b>{100 + bonusPercent}%</b></div></section>
         <section className="training-side-panel training-tip-panel"><Lightbulb size={25} /><div><h2>WSKAZÓWKA</h2><p>Regularny trening nie tylko zwiększa statystyki, ale też poprawia Twoje samopoczucie i morale.</p></div></section>
         <div className="training-side-art" style={{ backgroundImage: `url("${trainingMockup}")` }}><span>LEPSZY<br /><strong>NIŻ WCZORAJ.</strong></span></div>
       </aside>
@@ -1856,39 +2176,91 @@ type CellUpgradeId = 'bed' | 'locker' | 'table' | 'shelf' | 'tv' | 'sink' | 'tra
 type CellUpgrade = {
   id: CellUpgradeId;
   label: string;
-  level: number;
-  cost: number;
+  defaultLevel: number;
+  baseCost: number;
   icon: typeof BedDouble;
-  currentBonus: string;
-  nextBonus: string;
+  bonusPerLevel: number;
+  bonusUnit: string;
   thumbClass: string;
 };
 
+const CELL_UPGRADE_MAX_LEVEL = 20;
+
 const cellUpgradeItems: CellUpgrade[] = [
-  { id: 'bed', label: 'ŁÓŻKO', level: 3, cost: 450, icon: BedDouble, currentBonus: '+15% regeneracji energii', nextBonus: '+20% regeneracji energii', thumbClass: 'thumb-bed' },
-  { id: 'locker', label: 'SZAFKA', level: 2, cost: 350, icon: Archive, currentBonus: '+10 miejsca w ekwipunku', nextBonus: '+15 miejsca w ekwipunku', thumbClass: 'thumb-locker' },
-  { id: 'table', label: 'STÓŁ', level: 1, cost: 300, icon: Table, currentBonus: '+5% zarobków z pracy', nextBonus: '+10% zarobków z pracy', thumbClass: 'thumb-table' },
-  { id: 'shelf', label: 'PÓŁKA', level: 2, cost: 320, icon: Archive, currentBonus: '+5% nauki techniki', nextBonus: '+10% nauki techniki', thumbClass: 'thumb-shelf' },
-  { id: 'tv', label: 'TELEWIZOR', level: 1, cost: 280, icon: Tv, currentBonus: '+10% morale', nextBonus: '+15% morale', thumbClass: 'thumb-tv' },
-  { id: 'sink', label: 'UMYWALKA', level: 1, cost: 300, icon: Droplets, currentBonus: '+5% szybsza regeneracja', nextBonus: '+10% szybsza regeneracja', thumbClass: 'thumb-sink' },
-  { id: 'training', label: 'KĄCIK TRENINGOWY', level: 1, cost: 400, icon: Dumbbell, currentBonus: '+5% efektywności treningu', nextBonus: '+10% efektywności treningu', thumbClass: 'thumb-training' },
-  { id: 'extras', label: 'DODATKI', level: 0, cost: 250, icon: Archive, currentBonus: 'Odblokuj dekoracje celi', nextBonus: '+5% komfortu i bezpieczeństwa', thumbClass: 'thumb-extras' },
+  { id: 'bed', label: 'ŁÓŻKO', defaultLevel: 3, baseCost: 450, icon: BedDouble, bonusPerLevel: 5, bonusUnit: '% regeneracji energii', thumbClass: 'thumb-bed' },
+  { id: 'locker', label: 'SZAFKA', defaultLevel: 2, baseCost: 350, icon: Archive, bonusPerLevel: 5, bonusUnit: ' miejsca w ekwipunku', thumbClass: 'thumb-locker' },
+  { id: 'table', label: 'STÓŁ', defaultLevel: 1, baseCost: 300, icon: Table, bonusPerLevel: 3, bonusUnit: '% zarobków z pracy', thumbClass: 'thumb-table' },
+  { id: 'shelf', label: 'PÓŁKA', defaultLevel: 2, baseCost: 320, icon: Archive, bonusPerLevel: 3, bonusUnit: '% nauki techniki', thumbClass: 'thumb-shelf' },
+  { id: 'tv', label: 'TELEWIZOR', defaultLevel: 1, baseCost: 280, icon: Tv, bonusPerLevel: 4, bonusUnit: '% morale', thumbClass: 'thumb-tv' },
+  { id: 'sink', label: 'UMYWALKA', defaultLevel: 1, baseCost: 300, icon: Droplets, bonusPerLevel: 3, bonusUnit: '% szybszej regeneracji', thumbClass: 'thumb-sink' },
+  { id: 'training', label: 'KĄCIK TRENINGOWY', defaultLevel: 1, baseCost: 400, icon: Dumbbell, bonusPerLevel: 4, bonusUnit: '% efektywności treningu', thumbClass: 'thumb-training' },
+  { id: 'extras', label: 'DODATKI', defaultLevel: 0, baseCost: 250, icon: Archive, bonusPerLevel: 3, bonusUnit: '% komfortu i bezpieczeństwa', thumbClass: 'thumb-extras' },
 ];
 
-const cellUpgradeMarkers: Array<{ id: CellUpgradeId; label: string; level: string; left: string; top: string }> = [
-  { id: 'shelf', label: 'PÓŁKA', level: 'Poziom 2', left: '8%', top: '33%' },
-  { id: 'tv', label: 'TELEWIZOR', level: 'Poziom 1', left: '91%', top: '17%' },
-  { id: 'locker', label: 'SZAFKA', level: 'Poziom 2', left: '64%', top: '35%' },
-  { id: 'sink', label: 'UMYWALKA', level: 'Poziom 1', left: '83%', top: '61%' },
-  { id: 'bed', label: 'ŁÓŻKO', level: 'Poziom 3', left: '11%', top: '76%' },
-  { id: 'training', label: 'KĄCIK TRENINGOWY', level: 'Poziom 1', left: '41%', top: '87%' },
-  { id: 'table', label: 'STÓŁ', level: 'Poziom 1', left: '82%', top: '82%' },
+// Upgrade cost grows geometrically with level; the bonus text is derived
+// from bonusPerLevel so all 20 levels stay consistent without hand-writing
+// 20 flavor strings per item.
+function cellUpgradeCost(item: CellUpgrade, level: number) {
+  return Math.round(item.baseCost * Math.pow(1.15, level));
+}
+function describeCellBonus(item: CellUpgrade, level: number) {
+  if (level <= 0) return item.id === 'extras' ? 'Odblokuj dekoracje celi' : 'Brak bonusu';
+  return `+${level * item.bonusPerLevel}${item.bonusUnit}`;
+}
+function cellLevelOf(levels: Record<string, number>, id: CellUpgradeId) {
+  return levels[id] ?? cellUpgradeItems.find((item) => item.id === id)!.defaultLevel;
+}
+// The only three upgrades wired into another real system so far: bed/sink
+// speed up energy regen, table boosts work pay, and the training corner
+// boosts stat gains. The rest (locker, shelf, tv, extras) still level up
+// and show a real bonus number, but nothing reads it yet.
+function cellEnergyRegenBonusPercent(levels: Record<string, number>) {
+  return cellLevelOf(levels, 'bed') * 5 + cellLevelOf(levels, 'sink') * 3;
+}
+function cellWorkBonusPercent(levels: Record<string, number>) {
+  return cellLevelOf(levels, 'table') * 3;
+}
+function cellTrainingBonusPercent(levels: Record<string, number>) {
+  return cellLevelOf(levels, 'training') * 4;
+}
+
+const cellUpgradeMarkers: Array<{ id: CellUpgradeId; label: string; left: string; top: string }> = [
+  { id: 'shelf', label: 'PÓŁKA', left: '8%', top: '33%' },
+  { id: 'tv', label: 'TELEWIZOR', left: '91%', top: '17%' },
+  { id: 'locker', label: 'SZAFKA', left: '64%', top: '35%' },
+  { id: 'sink', label: 'UMYWALKA', left: '83%', top: '61%' },
+  { id: 'bed', label: 'ŁÓŻKO', left: '11%', top: '76%' },
+  { id: 'training', label: 'KĄCIK TRENINGOWY', left: '41%', top: '87%' },
+  { id: 'table', label: 'STÓŁ', left: '82%', top: '82%' },
 ];
 
-function CellDevelopmentView({ onNotice }: { onNotice: (message: string) => void }) {
+function CellDevelopmentView({ levels, setLevels, wallet, onNotice }: {
+  levels: Record<string, number>;
+  setLevels: Dispatch<SetStateAction<Record<string, number>>>;
+  wallet: Wallet;
+  onNotice: (message: string) => void;
+}) {
   const [selectedId, setSelectedId] = useState<CellUpgradeId>('bed');
   const selected = cellUpgradeItems.find((item) => item.id === selectedId)!;
   const SelectedIcon = selected.icon;
+  const selectedLevel = cellLevelOf(levels, selectedId);
+  const atMax = selectedLevel >= CELL_UPGRADE_MAX_LEVEL;
+  const upgradeCost = atMax ? 0 : cellUpgradeCost(selected, selectedLevel);
+  const runLocked = useActionLock();
+
+  const upgrade = () => runLocked(`cell-upgrade-${selectedId}`, () => {
+    if (atMax) { onNotice(`${selected.label} jest już na maksymalnym poziomie.`); return; }
+    if (!wallet.removeMoney(upgradeCost)) { onNotice(`Potrzebujesz ${upgradeCost} $, aby ulepszyć: ${selected.label.toLowerCase()}.`); return; }
+    setLevels((current) => ({ ...current, [selectedId]: cellLevelOf(current, selectedId) + 1 }));
+    onNotice(`Ulepszono: ${selected.label.toLowerCase()} do poziomu ${selectedLevel + 1}.`);
+  });
+
+  const energyRegenBonus = cellEnergyRegenBonusPercent(levels);
+  const inventoryBonus = cellLevelOf(levels, 'locker') * 5;
+  const workBonus = cellWorkBonusPercent(levels);
+  const trainingBonus = cellTrainingBonusPercent(levels);
+  const moraleBonus = cellLevelOf(levels, 'tv') * 4;
+  const safetyBonus = cellLevelOf(levels, 'extras') * 3;
 
   return <section className="cell-development-view" data-testid="cell-development-view">
     <header className="cell-development-header">
@@ -1898,7 +2270,7 @@ function CellDevelopmentView({ onNotice }: { onNotice: (message: string) => void
         <p>ULEPSZAJ WYPOSAŻENIE I BUDUJ SWOJĄ PRZEWAGĘ</p>
       </div>
       <blockquote>„CELA TO NIE TYLKO MIEJSCE.<br />TO TWÓJ FUNDAMENT.”</blockquote>
-      <div className="cell-development-resources"><span>TWOJE ŚRODKI</span><strong><CircleDollarSign size={20} /> 250</strong></div>
+      <div className="cell-development-resources"><span>TWOJE ŚRODKI</span><strong><CircleDollarSign size={20} /> {wallet.balance}</strong></div>
     </header>
 
     <div className="cell-development-grid">
@@ -1906,48 +2278,50 @@ function CellDevelopmentView({ onNotice }: { onNotice: (message: string) => void
         <div className="cell-development-panel-title">ELEMENTY CELI</div>
         <div className="cell-development-item-list">{cellUpgradeItems.map((item) => {
           const Icon = item.icon;
-          return <button className={`cell-development-item ${selectedId === item.id ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)}><Icon size={20} /><span><strong>{item.label}</strong><small>Poziom {item.level}/20</small></span><ChevronRight size={15} /></button>;
+          return <button className={`cell-development-item ${selectedId === item.id ? 'active' : ''}`} key={item.id} onClick={() => setSelectedId(item.id)} data-testid={`cell-item-${item.id}`}><Icon size={20} /><span><strong>{item.label}</strong><small>Poziom {cellLevelOf(levels, item.id)}/{CELL_UPGRADE_MAX_LEVEL}</small></span><ChevronRight size={15} /></button>;
         })}</div>
       </aside>
 
       <div className="cell-development-center">
         <div className="cell-development-scene">
           <div className="scene-artwork" style={{ backgroundImage: `url("${cellBackground}")` }} aria-label="Widok celi do rozwoju" role="img" />
-          {cellUpgradeMarkers.map((marker) => <button className={`cell-development-marker ${selectedId === marker.id ? 'active' : ''}`} key={marker.id} style={{ left: marker.left, top: marker.top }} onClick={() => setSelectedId(marker.id)}><span className="cell-development-marker-dot"><Plus size={16} /></span><span className="cell-development-marker-label"><strong>{marker.label}</strong><small>{marker.level}</small></span></button>)}
+          {cellUpgradeMarkers.map((marker) => <button className={`cell-development-marker ${selectedId === marker.id ? 'active' : ''}`} key={marker.id} style={{ left: marker.left, top: marker.top }} onClick={() => setSelectedId(marker.id)}><span className="cell-development-marker-dot"><Plus size={16} /></span><span className="cell-development-marker-label"><strong>{marker.label}</strong><small>Poziom {cellLevelOf(levels, marker.id)}</small></span></button>)}
           <span className="cell-development-scene-hint">ⓘ KLIKNIJ NA ELEMENT, ABY ZOBACZYĆ SZCZEGÓŁY</span>
           <button className="cell-development-preview-button" onClick={() => onNotice('Podgląd zmian jest dostępny dla wybranego elementu.')}><Eye size={14} /> PODGLĄD ZMIAN</button>
         </div>
         <section className="cell-level-preview">
           <div className="cell-development-panel-title">PODGLĄD POZIOMÓW</div>
-          <div className="cell-level-cards">{Array.from({ length: 20 }, (_, index) => index + 1).map((level) => <button className={`cell-level-card ${selected.level === level ? 'active' : ''}`} key={level} onClick={() => onNotice(`Podglądasz ${selected.label.toLowerCase()} na poziomie ${level}.`)}><span className={`cell-level-thumb ${selected.thumbClass}`} style={{ backgroundImage: `url("${cellBackground}")` }} /><small>Poziom {level}</small></button>)}</div>
+          <div className="cell-level-cards">{Array.from({ length: CELL_UPGRADE_MAX_LEVEL }, (_, index) => index + 1).map((level) => <button className={`cell-level-card ${selectedLevel === level ? 'active' : ''} ${level <= selectedLevel ? 'unlocked' : ''}`} key={level} onClick={() => onNotice(`Podglądasz ${selected.label.toLowerCase()} na poziomie ${level}.`)}><span className={`cell-level-thumb ${selected.thumbClass}`} style={{ backgroundImage: `url("${cellBackground}")` }} /><small>Poziom {level}</small></button>)}</div>
         </section>
       </div>
 
       <aside className="cell-development-details">
         <section className="cell-development-detail-panel">
-          <div className="cell-development-selected-heading"><SelectedIcon size={28} /><div><h2>{selected.label}</h2><span>Poziom {selected.level}/20</span></div></div>
+          <div className="cell-development-selected-heading"><SelectedIcon size={28} /><div><h2>{selected.label}</h2><span>Poziom {selectedLevel}/{CELL_UPGRADE_MAX_LEVEL}</span></div></div>
           <p>Lepsze wyposażenie poprawia warunki życia na każdy kolejny dzień.</p>
           <div className="cell-development-detail-label">AKTUALNY POZIOM</div>
-          <strong className="cell-development-level">Poziom {selected.level}</strong>
-          <div className="cell-development-progress"><i style={{ width: `${(selected.level / 20) * 100}%` }} /></div>
-          <div className="cell-development-bonus current">{selected.currentBonus}</div>
-          <div className="cell-development-detail-label">NASTĘPNY POZIOM</div>
-          <strong className="cell-development-level">Poziom {selected.level + 1}</strong>
-          <div className="cell-development-bonus">{selected.nextBonus}</div>
-          <div className="cell-development-bonus">+ nowy wygląd {selected.label.toLowerCase()}</div>
-          <div className="cell-development-detail-label">KOSZT ULEPSZENIA</div>
-          <strong className="cell-development-cost"><CircleDollarSign size={20} /> {selected.cost}</strong>
-          <button className="cell-development-upgrade" onClick={() => onNotice(`Ulepszenie ${selected.label.toLowerCase()} zostanie odblokowane po zebraniu ${selected.cost} $.`)}>ULEPSZ <ArrowUp size={16} /></button>
+          <strong className="cell-development-level">Poziom {selectedLevel}</strong>
+          <div className="cell-development-progress"><i style={{ width: `${(selectedLevel / CELL_UPGRADE_MAX_LEVEL) * 100}%` }} /></div>
+          <div className="cell-development-bonus current">{describeCellBonus(selected, selectedLevel)}</div>
+          {atMax ? <div className="cell-development-detail-label">POZIOM MAKSYMALNY</div> : <>
+            <div className="cell-development-detail-label">NASTĘPNY POZIOM</div>
+            <strong className="cell-development-level">Poziom {selectedLevel + 1}</strong>
+            <div className="cell-development-bonus">{describeCellBonus(selected, selectedLevel + 1)}</div>
+            <div className="cell-development-bonus">+ nowy wygląd {selected.label.toLowerCase()}</div>
+            <div className="cell-development-detail-label">KOSZT ULEPSZENIA</div>
+            <strong className="cell-development-cost"><CircleDollarSign size={20} /> {upgradeCost}</strong>
+          </>}
+          <button className="cell-development-upgrade" onClick={upgrade} disabled={atMax} data-testid="cell-upgrade-button">{atMax ? 'MAKSYMALNY POZIOM' : <>ULEPSZ <ArrowUp size={16} /></>}</button>
         </section>
         <section className="cell-development-stats">
           <div className="cell-development-panel-title">STATYSTYKI CELI</div>
           {[
-            ['Regeneracja energii', '+15%', Zap],
-            ['Pojemność ekwipunku', '+10', Backpack],
-            ['Efektywność pracy', '+5%', BriefcaseBusiness],
-            ['Efektywność treningu', '+5%', Dumbbell],
-            ['Morale', '+10%', Heart],
-            ['Bezpieczeństwo', '+0%', Shield],
+            ['Regeneracja energii', `+${energyRegenBonus}%`, Zap],
+            ['Pojemność ekwipunku', `+${inventoryBonus}`, Backpack],
+            ['Efektywność pracy', `+${workBonus}%`, BriefcaseBusiness],
+            ['Efektywność treningu', `+${trainingBonus}%`, Dumbbell],
+            ['Morale', `+${moraleBonus}%`, Heart],
+            ['Bezpieczeństwo', `+${safetyBonus}%`, Shield],
           ].map(([label, value, Icon]) => <div className="cell-development-stat" key={label as string}><Icon size={15} /><span>{label as string}</span><strong>{value as string}</strong></div>)}
         </section>
       </aside>
@@ -1987,14 +2361,54 @@ const fightOpponents: FightOpponent[] = [
   { id: 'kosa', name: 'KOSA', level: 3, asset: prisonerAsset, description: 'Doświadczony i opanowany. Nie popełnia niepotrzebnych błędów, gra na swoich zasadach.', quote: 'Za kratami liczy się tylko wynik.', stats: { health: 110, luck: 11, strength: 12, endurance: 11, intelligence: 10, reflex: 9 }, rewardMoney: [60, 100], rewardItemA: [1, 2], rewardItemB: 1 },
 ];
 
-function FightView({ creator, gameData, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; onNotice: (message: string) => void; onReturn: () => void }) {
+// Combat is resolved instantly (no animation yet): each side's relevant
+// stats collapse into a single "power" score, and the win chance is that
+// score's share of the combined total - so a stronger opponent is more
+// likely, but never guaranteed, to win.
+function computeFightPower(stats: Record<FightStatKey, number>) {
+  return stats.strength * 1.2 + stats.endurance + stats.reflex + stats.luck * 0.6 + stats.intelligence * 0.4;
+}
+function randomInRange([min, max]: [number, number]) {
+  return Math.round(min + Math.random() * (max - min));
+}
+
+type FightResult = { won: boolean; opponent: FightOpponent; respectChange: number; moneyChange: number; itemWon: string | null; pointsWon: number };
+
+const FIGHT_ENERGY_COST = 15;
+
+function FightView({ creator, gameData, wallet, energy, pointsWallet, ownedItemIds, setOwnedItemIds, onAddRespect, onNotice, onReturn }: { creator: CreatorState; gameData: { nickname: string; level: number }; wallet: Wallet; energy: Energy; pointsWallet: Wallet; ownedItemIds: Set<string>; setOwnedItemIds: Dispatch<SetStateAction<Set<string>>>; onAddRespect: (amount: number) => void; onNotice: (message: string) => void; onReturn: () => void }) {
   const [selectedId, setSelectedId] = useState<FightOpponentId>(fightOpponents[0].id);
+  const [fightResult, setFightResult] = useState<FightResult | null>(null);
   const opponent = fightOpponents.find((item) => item.id === selectedId)!;
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const playerAsset = getPrisonerAsset(type, creator.gender);
   const playerStats: Record<FightStatKey, number> = { health: characterStatsList[0].value, luck: characterStatsList[1].value, strength: characterStatsList[2].value, endurance: characterStatsList[3].value, intelligence: characterStatsList[4].value, reflex: characterStatsList[5].value };
 
-  const handleAttack = () => onNotice(`Rozpoczynasz walkę z: ${opponent.name}.`);
+  const handleAttack = () => {
+    if (!energy.removeEnergy(FIGHT_ENERGY_COST)) { onNotice(`Potrzebujesz ${FIGHT_ENERGY_COST} energii, aby zaatakować.`); return; }
+    const playerPower = computeFightPower(playerStats);
+    const opponentPower = computeFightPower(opponent.stats);
+    const won = Math.random() < playerPower / (playerPower + opponentPower);
+    // Beating a higher-level opponent earns more respect than beating a weaker one.
+    const respectChange = won ? Math.max(1, Math.round(5 + (opponent.level - gameData.level) * 2)) : 0;
+    let moneyChange: number;
+    let itemWon: string | null = null;
+    let pointsWon = 0;
+    if (won) {
+      moneyChange = randomInRange(opponent.rewardMoney);
+      wallet.addMoney(moneyChange);
+      onAddRespect(respectChange);
+      if (Math.random() < ITEM_DROP_CHANCE) {
+        const loot = pickRandomLootItem(ownedItemIds);
+        if (loot) { setOwnedItemIds((current) => new Set(current).add(loot.id)); itemWon = loot.name; }
+      }
+      if (Math.random() < POINT_DROP_CHANCE) { pointsWallet.addMoney(1); pointsWon = 1; }
+    } else {
+      moneyChange = -Math.round(wallet.balance * 0.1);
+      wallet.removeMoney(-moneyChange);
+    }
+    setFightResult({ won, opponent, respectChange, moneyChange, itemWon, pointsWon });
+  };
 
   return <section className="fight-select-view" data-testid="fight-view">
     <header className="fight-select-header">
@@ -2060,9 +2474,25 @@ function FightView({ creator, gameData, onNotice, onReturn }: { creator: Creator
             <div className="fight-reward-tile fight-reward-chance"><span>?</span><small>SZANSA</small></div>
           </div>
         </div>
-        <button className="fight-attack-button" onClick={handleAttack} data-testid="fight-attack-button"><Swords size={18} /> ATAKUJ</button>
+        <div className="fight-energy-cost"><Zap size={13} /> KOSZT ENERGII: {FIGHT_ENERGY_COST}</div>
+        <button className="fight-attack-button" onClick={handleAttack} disabled={fightResult !== null || !energy.canAfford(FIGHT_ENERGY_COST)} data-testid="fight-attack-button"><Swords size={18} /> {energy.canAfford(FIGHT_ENERGY_COST) ? 'ATAKUJ' : 'BRAK ENERGII'}</button>
       </aside>
     </div>
+
+    {fightResult && <div className="fight-result-overlay" role="dialog" aria-modal="true" data-testid="fight-result-modal">
+      <div className={`fight-result-modal ${fightResult.won ? 'won' : 'lost'}`}>
+        {fightResult.won ? <Trophy size={40} /> : <Shield size={40} />}
+        <h2>{fightResult.won ? 'ZWYCIĘSTWO!' : 'PORAŻKA'}</h2>
+        <p>{fightResult.won ? `Pokonałeś: ${fightResult.opponent.name}.` : `${fightResult.opponent.name} okazał się silniejszy.`}</p>
+        <div className="fight-result-rewards">
+          {fightResult.won && <span className="fight-result-stat respect"><Star size={16} /> +{fightResult.respectChange} SZACUNKU</span>}
+          <span className={`fight-result-stat money ${fightResult.moneyChange >= 0 ? 'positive' : 'negative'}`}><Coins size={16} /> {fightResult.moneyChange >= 0 ? '+' : ''}{fightResult.moneyChange} $</span>
+          {fightResult.itemWon && <span className="fight-result-stat loot"><Package size={16} /> {fightResult.itemWon}</span>}
+          {fightResult.pointsWon > 0 && <span className="fight-result-stat points"><Gem size={16} /> +{fightResult.pointsWon} PKT</span>}
+        </div>
+        <button className="fight-result-close" onClick={() => setFightResult(null)} data-testid="fight-result-close">OK</button>
+      </div>
+    </div>}
   </section>;
 }
 
@@ -2080,7 +2510,7 @@ function formatWorkRemaining(ms: number) {
 
 type WorkStatus = 'idle' | 'in-progress' | 'done';
 
-function WorkView({ creator, wallet, onNotice }: { creator: CreatorState; wallet: Wallet; onNotice: (message: string) => void }) {
+function WorkView({ creator, wallet, hourlyRate, onNotice }: { creator: CreatorState; wallet: Wallet; hourlyRate: number; onNotice: (message: string) => void }) {
   const [hours, setHours] = useState(8);
   const [status, setStatus] = useState<WorkStatus>('idle');
   const [totalMs, setTotalMs] = useState(0);
@@ -2088,7 +2518,7 @@ function WorkView({ creator, wallet, onNotice }: { creator: CreatorState; wallet
   const [remainingMs, setRemainingMs] = useState(0);
   const paidOutRef = useRef(false);
 
-  const reward = hours * workHourlyRate;
+  const reward = hours * hourlyRate;
 
   useEffect(() => {
     if (status !== 'in-progress' || endsAt === null) return;
@@ -2151,7 +2581,7 @@ function WorkView({ creator, wallet, onNotice }: { creator: CreatorState; wallet
             <h2>SPRZĄTANIE ODDZIAŁU</h2>
             <p>Zwykła praca więźnia. Im dłużej pracujesz, tym większe wynagrodzenie.</p>
             <div className="work-info-row"><Droplets size={14} /><span>Rodzaj pracy</span><b>Sprzątanie oddziału</b></div>
-            <div className="work-info-row"><CircleDollarSign size={14} /><span>Stawka</span><b>${workHourlyRate} za godzinę</b></div>
+            <div className="work-info-row"><CircleDollarSign size={14} /><span>Stawka</span><b>${hourlyRate} za godzinę</b></div>
             <div className="work-info-row"><Timer size={14} /><span>Dostępny czas</span><b>od {workMinHours} do {workMaxHours} godzin</b></div>
           </div>
           <div className="work-panel-slider">
@@ -2209,7 +2639,7 @@ const gameNavigation: Array<{ id: GameSection; label: string; icon: typeof Shiel
   { id: 'market', label: 'CZARNY RYNEK', icon: ShoppingCart },
   { id: 'quests', label: 'ZLECENIA', icon: ScrollText },
   { id: 'gang', label: 'GANG', icon: Users },
-  { id: 'settings', label: 'SZPITAL', icon: Crosshair },
+  { id: 'hospital', label: 'SZPITAL', icon: Crosshair },
   { id: 'ranking', label: 'RANKING', icon: Trophy },
 ];
 
@@ -2231,7 +2661,7 @@ const gameNavAssets: Partial<Record<GameSection, string>> = {
   market: navMarketIcon,
   quests: navWorkIcon,
   gang: navGangIcon,
-  settings: navHospitalIcon,
+  hospital: navHospitalIcon,
   ranking: navRankingIcon,
 };
 
