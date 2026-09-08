@@ -1,0 +1,401 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Barlow:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&display=swap');
+
+:root {
+  --hud-orange: #f07b32;
+  --hud-orange-soft: #ffad55;
+  --hud-cream: #eee9dd;
+  --hud-muted: #9da59d;
+  --hud-panel: rgba(10, 16, 18, .86);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #020405;
+  color: var(--hud-cream);
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+button {
+  font: inherit;
+}
+
+.hud-mockup-root {
+  width: 100%;
+  min-height: 100%;
+  background: #020405;
+}
+
+.hud-baseline {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: 150px;
+  display: grid;
+  grid-template-columns: minmax(220px, 24%) minmax(270px, 31%) minmax(360px, 1fr) auto;
+  align-items: stretch;
+  gap: clamp(6px, .7vw, 12px);
+  padding: 9px clamp(8px, 1vw, 18px) 9px 0;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(229, 104, 33, .84);
+  background:
+    radial-gradient(ellipse at 64% 0%, rgba(193, 86, 35, .27), transparent 30%),
+    linear-gradient(90deg, rgba(0, 0, 0, .1), rgba(1, 7, 9, .68) 55%, rgba(0, 0, 0, .88)),
+    url('/__mockup/images/prison-hud/hud-industrial-background.png') center / 100% 100% no-repeat;
+  box-shadow: 0 9px 22px rgba(0, 0, 0, .55), inset 0 -1px rgba(255, 182, 106, .16);
+}
+
+.hud-baseline::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: .7;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 27%, rgba(9, 19, 21, .18) 27% 67%, transparent 67%),
+    radial-gradient(circle at 45% 20%, rgba(205, 167, 119, .2), transparent 8%),
+    linear-gradient(0deg, rgba(0, 0, 0, .62), transparent 48%, rgba(255, 218, 163, .08));
+}
+
+.hud-brand {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 clamp(10px, 1.2vw, 22px);
+  border-right: 1px solid rgba(221, 229, 218, .28);
+  background: linear-gradient(90deg, rgba(2, 5, 7, .12), rgba(2, 5, 7, .54));
+}
+
+.hud-brand img {
+  display: block;
+  width: min(100%, 265px);
+  max-height: 116px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .82));
+}
+
+.hud-player {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: clamp(62px, 5.4vw, 84px) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(8px, .8vw, 14px);
+  padding: 8px clamp(10px, 1vw, 16px);
+  background:
+    linear-gradient(90deg, rgba(8, 14, 16, .26), rgba(8, 14, 16, .66)),
+    url('/__mockup/images/prison-hud/hud-player-info.png') center / 100% 100% no-repeat;
+}
+
+.hud-avatar {
+  align-self: stretch;
+  min-height: 88px;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+  border: 1px solid rgba(222, 122, 55, .66);
+  background: rgba(5, 9, 11, .6);
+}
+
+.hud-avatar img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hud-player-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hud-player-top,
+.hud-player-meta,
+.hud-xp-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.hud-player-top {
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hud-player-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #f3eee2;
+  font: 700 clamp(17px, 1.45vw, 24px)/1 'Oswald', sans-serif;
+  letter-spacing: .04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-player-rank {
+  flex: 0 0 auto;
+  color: var(--hud-orange-soft);
+  font: 700 clamp(9px, .65vw, 11px)/1 'Oswald', sans-serif;
+  letter-spacing: .05em;
+}
+
+.hud-player-meta {
+  gap: 12px;
+  color: #bbc1b9;
+  font: 700 clamp(9px, .65vw, 12px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.hud-player-meta b {
+  color: var(--hud-orange-soft);
+  font-weight: 700;
+}
+
+.hud-xp-row {
+  gap: 7px;
+}
+
+.hud-xp-row > span,
+.hud-xp-row > small {
+  flex: 0 0 auto;
+  color: #939e94;
+  font: 700 clamp(8px, .55vw, 10px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: .08em;
+}
+
+.hud-xp-track {
+  min-width: 0;
+  flex: 1 1 auto;
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(206, 213, 195, .35);
+  background:
+    url('/__mockup/images/prison-hud/hud-xp-track.png') center / 100% 100% no-repeat,
+    #11191c;
+}
+
+.hud-xp-track i {
+  display: block;
+  width: 58%;
+  height: 100%;
+  background: linear-gradient(90deg, #d24d20, #f28e36);
+  box-shadow: 0 0 9px rgba(241, 126, 45, .62);
+}
+
+.hud-resources {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(115px, 1fr) minmax(115px, 1fr) minmax(170px, 1.35fr);
+  gap: clamp(5px, .45vw, 9px);
+  align-items: stretch;
+}
+
+.hud-resource {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background-position: center;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.hud-resource-money { background-image: url('/__mockup/images/prison-hud/hud-money.png'); }
+.hud-resource-points { background-image: url('/__mockup/images/prison-hud/hud-points.png'); }
+.hud-resource-energy { background-image: url('/__mockup/images/prison-hud/hud-energy.png'); }
+
+.hud-resource-label {
+  position: absolute;
+  top: 22%;
+  left: 40%;
+  color: #b6bdb6;
+  font: 700 clamp(8px, .6vw, 11px)/1 'Barlow Condensed', sans-serif;
+  letter-spacing: .12em;
+}
+
+.hud-resource-value {
+  position: absolute;
+  top: 49%;
+  left: 40%;
+  right: 7%;
+  overflow: hidden;
+  color: #f2eee4;
+  font: 700 clamp(13px, 1vw, 18px)/1 'Oswald', sans-serif;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud-resource-points .hud-resource-value {
+  left: 38%;
+  right: 21%;
+}
+
+.hud-resource-energy .hud-resource-value {
+  top: 20%;
+  left: 54%;
+  right: 5%;
+  text-align: left;
+  font-size: clamp(11px, .8vw, 15px);
+}
+
+.hud-energy-meter {
+  position: absolute;
+  top: 58%;
+  left: 29%;
+  right: 6%;
+  height: 17%;
+  overflow: hidden;
+  border: 1px solid rgba(18, 23, 24, .95);
+  background: rgba(11, 17, 19, .85);
+}
+
+.hud-energy-meter i {
+  display: block;
+  width: 80%;
+  height: 100%;
+  background: linear-gradient(90deg, #d45421, #f2933a);
+}
+
+.hud-resource-plus {
+  position: absolute;
+  top: 31%;
+  right: 7%;
+  bottom: 25%;
+  width: 16%;
+  border: 0;
+  border-radius: 3px;
+  color: #141719;
+  background: #f2a63b;
+  box-shadow: 0 0 8px rgba(249, 144, 49, .28);
+  cursor: pointer;
+  font: 900 clamp(15px, 1.2vw, 22px)/1 'Barlow', sans-serif;
+}
+
+.hud-actions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(5px, .45vw, 9px);
+  padding-left: clamp(2px, .3vw, 7px);
+}
+
+.hud-location {
+  align-self: stretch;
+  min-width: 74px;
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+  border-left: 1px solid rgba(217, 226, 215, .2);
+  border-right: 1px solid rgba(217, 226, 215, .2);
+  color: rgba(235, 228, 208, .68);
+  background: rgba(7, 12, 14, .28);
+  font: 700 10px/1.05 'Oswald', sans-serif;
+  letter-spacing: .1em;
+  text-align: center;
+}
+
+.hud-icon {
+  position: relative;
+  width: clamp(39px, 3.2vw, 52px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(222, 229, 218, .32);
+  background-color: rgba(7, 12, 14, .46);
+  background-position: center;
+  background-size: 100% 100%;
+  cursor: pointer;
+}
+
+.hud-icon:hover {
+  border-color: var(--hud-orange-soft);
+  filter: brightness(1.18);
+}
+
+.hud-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #d74137;
+  font: 700 11px/1 'Barlow', sans-serif;
+}
+
+.hud-logout {
+  width: clamp(42px, 3.4vw, 54px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(222, 229, 218, .32);
+  color: #ebe7dc;
+  background: rgba(7, 12, 14, .66);
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.hud-logout:hover {
+  color: var(--hud-orange-soft);
+  border-color: var(--hud-orange-soft);
+}
+
+@media (max-width: 1050px) {
+  .hud-baseline {
+    grid-template-columns: minmax(180px, 24%) minmax(220px, 1fr) minmax(285px, 1.1fr) auto;
+  }
+  .hud-location { display: none; }
+}
+
+@media (max-width: 760px) {
+  .hud-baseline {
+    min-height: 112px;
+    grid-template-columns: minmax(125px, 27%) minmax(175px, 1fr) auto;
+    gap: 5px;
+    padding-block: 6px;
+  }
+  .hud-brand { padding-inline: 7px; }
+  .hud-player { padding-inline: 7px; }
+  .hud-player-name { font-size: 16px; }
+  .hud-resources {
+    grid-column: 2 / -1;
+    grid-row: 2;
+    min-height: 42px;
+  }
+  .hud-actions {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .hud-resource-label { display: none; }
+  .hud-resource-value { font-size: 11px; }
+  .hud-resource-energy { display: none; }
+  .hud-resources { grid-template-columns: repeat(2, minmax(75px, 1fr)); }
+}
+
+@media (max-width: 500px) {
+  .hud-baseline {
+    min-height: 78px;
+    grid-template-columns: 112px minmax(0, 1fr) auto;
+  }
+  .hud-brand img { max-height: 60px; }
+  .hud-player { grid-template-columns: 42px minmax(0, 1fr); padding-inline: 4px; }
+  .hud-avatar { min-height: 56px; }
+  .hud-player-meta,
+  .hud-xp-row { display: none; }
+  .hud-player-name { font-size: 13px; }
+  .hud-player-rank { display: none; }
+  .hud-resources { display: none; }
+  .hud-icon { width: 34px; }
+  .hud-logout { width: 34px; font-size: 18px; }
+}
