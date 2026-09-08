@@ -1030,16 +1030,29 @@ const characterEquipmentSlots: Array<{ id: string; label: string; icon: typeof S
 ];
 const characterInventoryTabs = ['WSZYSTKIE', 'UBRANIA', 'DODATKI', 'BROŃ', 'INNE'] as const;
 const characterInventoryPageSize = 20;
-const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; rarity: string; slot: string; bonusStat: string; bonusAmount: number; value: number; price: number }> = [
-  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, rarity: 'orange', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 25, price: 55 },
-  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, rarity: 'violet', slot: 'neck', bonusStat: 'luck', bonusAmount: 3, value: 40, price: 85 },
-  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, rarity: 'orange', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 20, price: 45 },
-  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, rarity: 'blue', slot: 'torso', bonusStat: 'endurance', bonusAmount: 4, value: 55, price: 120 },
-  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, rarity: 'blue', slot: 'back', bonusStat: 'strength', bonusAmount: 3, value: 60, price: 130 },
-  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, rarity: 'gray', slot: 'hands', bonusStat: 'strength', bonusAmount: 5, value: 45, price: 95 },
-  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, rarity: 'orange', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 20, price: 45 },
-  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, rarity: 'blue', slot: 'feet', bonusStat: 'reflex', bonusAmount: 3, value: 50, price: 110 },
-  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, rarity: 'violet', slot: 'weapon', bonusStat: 'strength', bonusAmount: 5, value: 70, price: 150 },
+// Rarity tier for anything wearable (clothes/weapons/accessories): higher
+// tier = pricier, harder to loot (see dropWeight, used by pickRandomLootItem
+// below) and a bigger stat bonus. This catalog is due for a bigger content
+// pass (more items per tier) - the tier machinery itself doesn't care how
+// many items end up in each bucket.
+type ItemTier = 'common' | 'rare' | 'elite' | 'limited' | 'unique';
+const itemTierConfig: Record<ItemTier, { label: string; color: string; dropWeight: number }> = {
+  common: { label: 'ZWYKŁY', color: '#9aa39c', dropWeight: 100 },
+  rare: { label: 'RZADKI', color: '#4f8fd6', dropWeight: 42 },
+  elite: { label: 'ELITARNY', color: '#a366e0', dropWeight: 15 },
+  limited: { label: 'EDYCJA LIMITOWANA', color: '#e0a83d', dropWeight: 5 },
+  unique: { label: 'UNIKAT', color: '#e0473d', dropWeight: 1 },
+};
+const characterInventoryItemsData: Array<{ id: string; name: string; asset: string; tier: ItemTier; slot: string; bonusStat: string; bonusAmount: number; value: number; price: number }> = [
+  { id: 'cap', name: 'CZAPKA PRISON', asset: inventoryHeadCapAsset, tier: 'common', slot: 'head', bonusStat: 'reflex', bonusAmount: 2, value: 23, price: 50 },
+  { id: 'orange-shirt', name: 'KOSZULA A-7421', asset: inventoryTopOrangeAsset, tier: 'common', slot: 'torso', bonusStat: 'health', bonusAmount: 2, value: 18, price: 40 },
+  { id: 'orange-pants', name: 'SPODNIE A-7421', asset: inventoryBottomOrangeAsset, tier: 'common', slot: 'legs', bonusStat: 'endurance', bonusAmount: 2, value: 18, price: 40 },
+  { id: 'gloves', name: 'RĘKAWICE', asset: inventoryHandGlovesAsset, tier: 'rare', slot: 'hands', bonusStat: 'strength', bonusAmount: 4, value: 54, price: 120 },
+  { id: 'black-boots', name: 'CZARNE TRAPERY', asset: inventoryFeetBlackBootsAsset, tier: 'rare', slot: 'feet', bonusStat: 'reflex', bonusAmount: 4, value: 59, price: 130 },
+  { id: 'black-hoodie', name: 'CZARNA BLUZA', asset: inventoryTopBlackHoodieAsset, tier: 'elite', slot: 'torso', bonusStat: 'endurance', bonusAmount: 7, value: 117, price: 260 },
+  { id: 'black-backpack', name: 'PLECAK TAKTYCZNY', asset: inventoryBagBlackAsset, tier: 'elite', slot: 'back', bonusStat: 'strength', bonusAmount: 7, value: 126, price: 280 },
+  { id: 'bandana', name: 'CZERWONA BANDANA', asset: inventoryFaceBandanaAsset, tier: 'limited', slot: 'neck', bonusStat: 'luck', bonusAmount: 11, value: 248, price: 550 },
+  { id: 'knife', name: 'NÓŻ', asset: inventoryWeaponKnifeAsset, tier: 'unique', slot: 'weapon', bonusStat: 'strength', bonusAmount: 16, value: 405, price: 900 },
 ];
 // Bonus loot on a win/success, shared by Walka and Misje: an item drop is
 // reasonably common, a bonus point is extremely rare (1 in 10 000) - both
@@ -1050,7 +1063,13 @@ const ITEM_DROP_CHANCE = 0.3;
 function pickRandomLootItem(ownedItemIds: Set<string>) {
   const candidates = characterInventoryItemsData.filter((item) => !ownedItemIds.has(item.id));
   if (candidates.length === 0) return null;
-  return candidates[Math.floor(Math.random() * candidates.length)];
+  const totalWeight = candidates.reduce((sum, item) => sum + itemTierConfig[item.tier].dropWeight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const item of candidates) {
+    roll -= itemTierConfig[item.tier].dropWeight;
+    if (roll <= 0) return item;
+  }
+  return candidates[candidates.length - 1];
 }
 const characterStatLabelByKey: Record<string, string> = { health: 'zdrowia', luck: 'szczęścia', strength: 'siły', endurance: 'kondycji', intelligence: 'inteligencji', reflex: 'refleksu' };
 // Cost in cash to raise a stat by one point, given its current (pre-upgrade) value — rises with level.
@@ -1231,7 +1250,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
           onDragOver={(event) => { event.preventDefault(); setDragOverInventory(true); }}
           onDragLeave={() => setDragOverInventory(false)}
           onDrop={handleInventoryDrop}
-        >{visibleInventoryItems.map(({ id, name, asset, rarity }) => <button
+        >{visibleInventoryItems.map(({ id, name, asset, tier }) => <button
           className="character-inventory-item"
           key={id}
           draggable
@@ -1242,7 +1261,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
           onContextMenu={(event) => { event.preventDefault(); setHoveredItem(null); setContextMenu({ id, x: event.clientX, y: event.clientY }); }}
           onClick={() => onNotice(`Podgląd przedmiotu: ${name.toLowerCase()}.`)}
         >
-          <span className={`character-inventory-rarity tone-${rarity}`} />
+          <span className={`character-inventory-rarity tone-${tier}`} style={{ background: itemTierConfig[tier].color }} />
           <img src={asset} alt={name} />
         </button>)}
         {Array.from({ length: Math.max(0, characterInventoryPageSize - visibleInventoryItems.length) }).map((_, index) => <span className="character-inventory-item empty" key={`empty-${index}`} aria-hidden="true" />)}</div>
@@ -1290,6 +1309,7 @@ function CharacterView({ creator, gameData, wallet, stats, setStats, equipped, s
       if (!item) return null;
       return <div className="character-item-tooltip" style={{ left: hoveredItem.x, top: hoveredItem.y }}>
         <strong>{item.name}</strong>
+        <em className={`character-item-tooltip-tier tone-${item.tier}`} style={{ color: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</em>
         <span>+{item.bonusAmount} do {characterStatLabelByKey[item.bonusStat]}</span>
       </div>;
     })()}
@@ -1369,7 +1389,7 @@ function GangView({ onNotice }: { onNotice: (message: string) => void }) {
 // selection of offers drawn from a pool, refreshable early for points.
 // GameShell owns the offer-picking/persistence; these components only
 // render whatever offer list they're handed and know how to buy one item.
-type LegalGood = { id: string; name: string; price: number; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
+type LegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
 const legalGenericGoods: LegalGood[] = [
   { id: 'tshirt', name: 'Koszulka', price: 60, render: { kind: 'icon', icon: ShirtIcon } },
   { id: 'shorts', name: 'Spodenki', price: 80, render: { kind: 'icon', icon: Package } },
@@ -1383,7 +1403,7 @@ const legalGenericGoods: LegalGood[] = [
 ];
 // Equip-catalog goods (weapon excluded — that stays a black-market matter):
 // buying one still lands straight in the character's equipment inventory.
-const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => item.slot !== 'weapon').map((item) => ({ id: item.id, name: item.name, price: item.price, render: { kind: 'image', src: item.asset } }));
+const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => item.slot !== 'weapon').map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
 const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods];
 const legalEquipIds = new Set(legalEquipGoods.map((item) => item.id));
 
@@ -1462,6 +1482,7 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
       </div>
       <div className="storefront-grid">
         {offers.map((item) => { const isEquip = legalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
+          {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
           <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
           <div className="storefront-card-footer">
             {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{item.price} $</b>}
