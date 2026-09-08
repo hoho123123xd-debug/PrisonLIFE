@@ -660,6 +660,9 @@ type PersistedProgress = {
   balance: number;
   points: number;
   reputation: number;
+  level: number;
+  xp: number;
+  xpMax: number;
   stats: Record<string, number>;
   equipped: Record<string, string | null>;
   ownedItemIds: string[];
@@ -712,6 +715,26 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
   const wallet = useWallet(savedProgress.balance ?? 250);
   const pointsWallet = useWallet(savedProgress.points ?? 3);
   const reputationWallet = useWallet(savedProgress.reputation ?? 0);
+  const [level, setLevel] = useState(savedProgress.level ?? 1);
+  const [xp, setXp] = useState(savedProgress.xp ?? 120);
+  const [xpMax, setXpMax] = useState(savedProgress.xpMax ?? 500);
+  // Grants XP and cascades through as many level-ups as the amount covers,
+  // so a big reward (e.g. skipping a long mission) can jump several levels
+  // in one go instead of only ever advancing by one.
+  const gainXp = (amount: number) => {
+    if (amount <= 0) return;
+    let nextXp = xp + amount;
+    let nextLevel = level;
+    let nextXpMax = xpMax;
+    while (nextXp >= nextXpMax) {
+      nextXp -= nextXpMax;
+      nextLevel += 1;
+      nextXpMax = Math.round(nextXpMax * 1.25);
+    }
+    setXp(nextXp);
+    setLevel(nextLevel);
+    setXpMax(nextXpMax);
+  };
   const [characterStats, setCharacterStats] = useState(() => characterStatsList.map((stat) => ({ ...stat, value: savedProgress.stats?.[stat.key] ?? stat.value })));
   const [equipped, setEquipped] = useState<Record<string, string | null>>(() => savedProgress.equipped ?? characterDefaultEquipped);
   const [ownedItemIds, setOwnedItemIds] = useState<Set<string>>(() => new Set(savedProgress.ownedItemIds ?? characterDefaultOwnedItemIds));
@@ -745,6 +768,9 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       balance: wallet.balance,
       points: pointsWallet.balance,
       reputation: reputationWallet.balance,
+      level,
+      xp,
+      xpMax,
       stats: Object.fromEntries(characterStats.map((stat) => [stat.key, stat.value])),
       equipped,
       ownedItemIds: Array.from(ownedItemIds),
@@ -753,13 +779,13 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
       foodBuffs,
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
-  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
+  }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, characterStats, equipped, ownedItemIds, shopOffer, marketOffer, foodBuffs]);
   const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
-    level: 1,
-    xp: 120,
-    xpMax: 500,
+    level,
+    xp,
+    xpMax,
     gold: wallet.balance,
     points: pointsWallet.balance,
     energy: 100,
@@ -841,7 +867,7 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     <div className="game-layout">
       <aside className={`game-sidebar game-sidebar-with-development ${mobileMenuOpen ? 'mobile-sidebar-open' : ''}`}><div className="sidebar-heading">NAWIGACJA</div>{gameNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span>{id === 'messages' && <b className="sidebar-badge">3</b>}</button>)}<div className="sidebar-section-label">ROZWÓJ <i /></div>{gameSecondaryNavigation.map(({ id, label, icon: Icon }) => <button className={activeSection === id ? 'active' : ''} key={id} onClick={() => navigateSection(id)}><Icon size={18} /> <span>{label}</span></button>)}</aside>
        <div className={`game-content ${activeSection === 'cell' ? 'game-content-character' : activeSection === 'cell-development' ? 'game-content-development' : activeSection === 'training' ? 'game-content-training' : activeSection === 'fight' ? 'game-content-fight' : activeSection === 'work' ? 'game-content-work' : activeSection === 'quests' ? 'game-content-missions' : activeSection === 'market' ? 'game-content-market' : activeSection === 'shop' ? 'game-content-market' : activeSection === 'canteen' ? 'game-content-market' : activeSection === 'gang' ? 'game-content-gang' : ''}`}>
-        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
+        {activeSection === 'cell' ? <CharacterView creator={creator} gameData={gameData} wallet={wallet} stats={characterStats} setStats={setCharacterStats} equipped={equipped} setEquipped={setEquipped} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} foodStatBonuses={foodStatBonuses} onNotice={showNotice} /> : activeSection === 'cell-development' ? <CellDevelopmentView onNotice={showNotice} /> : activeSection === 'training' ? <TrainingView onNotice={showNotice} /> : activeSection === 'fight' ? <FightView creator={creator} gameData={gameData} wallet={wallet} onAddRespect={reputationWallet.addMoney} onNotice={showNotice} onReturn={() => navigateSection('cell')} /> : activeSection === 'work' ? <WorkView creator={creator} wallet={wallet} onNotice={showNotice} /> : activeSection === 'quests' ? <MissionsCardsView pointsWallet={pointsWallet} onGainXp={gainXp} onNotice={showNotice} /> : activeSection === 'market' ? <MarketView wallet={wallet} offers={marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item))} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshMarketOffer} onNotice={showNotice} /> : activeSection === 'shop' ? <ShopView wallet={wallet} offers={shopOffer.ids.map((id) => legalGoodsPool.find((item) => item.id === id)).filter((item): item is LegalGood => Boolean(item))} ownedItemIds={ownedItemIds} setOwnedItemIds={setOwnedItemIds} refreshCost={OFFER_REFRESH_COST} pointsBalance={pointsWallet.balance} onRefresh={refreshShopOffer} onNotice={showNotice} /> : activeSection === 'canteen' ? <CanteenView wallet={wallet} onEat={eatMeal} onNotice={showNotice} /> : activeSection === 'gang' ? <GangView onNotice={showNotice} /> : <GamePlaceholder section={activeSection} onReturn={() => navigateSection('cell')} />}
       </div>
     </div>
     <footer className="game-footer"><span>© 2026 Prison Life. Wszystkie prawa zastrzeżone.</span><div><button onClick={() => showNotice('Regulamin będzie dostępny przy otwarciu serwera.')}>Regulamin</button><button onClick={() => showNotice('Polityka prywatności będzie dostępna przy otwarciu serwera.')}>Polityka prywatności</button><button onClick={() => showNotice('Pomoc będzie dostępna przy otwarciu serwera.')}>Pomoc</button></div></footer>
@@ -1713,40 +1739,105 @@ type MissionCard = {
   energy: number;
   chance: number;
   reward: string;
+  rewardXp: number;
+  durationMinutes: number;
   extra: string;
   icon: typeof Archive;
 };
 
 const missionCards: MissionCard[] = [
-  { id: 'handoff', title: 'PRZEKAŻ', description: 'Dostarcz wiadomość do wskazanej osoby z bloku B. Nikt nie może się dowiedzieć.', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 82, reward: '+120 EXP', extra: '$ / punkty / losowo', icon: Mail },
-  { id: 'smuggle-card', title: 'PRZEMYT', description: 'Przenieś małą paczkę z magazynu do celi 214. Uważaj na kontrolę.', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 64, reward: '+250 EXP', extra: '$ / punkty / losowo', icon: Archive },
-  { id: 'settlement', title: 'ROZLICZENIE', description: 'Daj nauczkę wskazanemu więźniowi z bloku C. Ma to wyglądać na przypadek.', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 48, reward: '+400 EXP', extra: '$ / punkty / losowo', icon: Users },
-  { id: 'evidence', title: 'ZDOBĄDŹ DOWODY', description: 'Zdobądź dokumenty ze strzeżonego biura. Wysokie ryzyko, duża nagroda.', risk: 'SPECJALNA', riskTone: 'special', energy: 40, chance: 32, reward: '+750 EXP', extra: '$ / punkty / losowo', icon: ScrollText },
+  { id: 'handoff', title: 'PRZEKAŻ', description: 'Dostarcz wiadomość do wskazanej osoby z bloku B. Nikt nie może się dowiedzieć.', risk: 'ŁATWA', riskTone: 'easy', energy: 10, chance: 82, reward: '+120 EXP', rewardXp: 120, durationMinutes: 8, extra: '$ / punkty / losowo', icon: Mail },
+  { id: 'smuggle-card', title: 'PRZEMYT', description: 'Przenieś małą paczkę z magazynu do celi 214. Uważaj na kontrolę.', risk: 'ŚREDNIA', riskTone: 'medium', energy: 20, chance: 64, reward: '+250 EXP', rewardXp: 250, durationMinutes: 18, extra: '$ / punkty / losowo', icon: Archive },
+  { id: 'settlement', title: 'ROZLICZENIE', description: 'Daj nauczkę wskazanemu więźniowi z bloku C. Ma to wyglądać na przypadek.', risk: 'TRUDNA', riskTone: 'hard', energy: 30, chance: 48, reward: '+400 EXP', rewardXp: 400, durationMinutes: 30, extra: '$ / punkty / losowo', icon: Users },
+  { id: 'evidence', title: 'ZDOBĄDŹ DOWODY', description: 'Zdobądź dokumenty ze strzeżonego biura. Wysokie ryzyko, duża nagroda.', risk: 'SPECJALNA', riskTone: 'special', energy: 40, chance: 32, reward: '+750 EXP', rewardXp: 750, durationMinutes: 50, extra: '$ / punkty / losowo', icon: ScrollText },
 ];
 
-function MissionsCardsView({ onNotice }: { onNotice: (message: string) => void }) {
-  const [startedId, setStartedId] = useState<string | null>(null);
+// Skipping a mission's wait costs points based on how much time is left:
+// one point per started 5-minute block, so anything under 5 minutes left
+// costs just 1 point, and skipping a long mission right away costs more.
+const MISSION_SKIP_BLOCK_MS = 5 * 60 * 1000;
+function missionSkipCost(remainingMs: number) {
+  return Math.max(1, Math.ceil(remainingMs / MISSION_SKIP_BLOCK_MS));
+}
+
+function MissionCardTile({ mission, pointsWallet, onGainXp, onNotice }: { mission: MissionCard; pointsWallet: Wallet; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
+  const [status, setStatus] = useState<'idle' | 'in-progress'>('idle');
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [remainingMs, setRemainingMs] = useState(0);
+  const resolvedRef = useRef(false);
+
+  const resolve = () => {
+    if (resolvedRef.current) return;
+    resolvedRef.current = true;
+    setStatus('idle');
+    setEndsAt(null);
+    const success = Math.random() * 100 < mission.chance;
+    if (success) {
+      onGainXp(mission.rewardXp);
+      onNotice(`Misja "${mission.title.toLowerCase()}" zakończona sukcesem: +${mission.rewardXp} EXP.`);
+    } else {
+      onNotice(`Misja "${mission.title.toLowerCase()}" zakończona niepowodzeniem. Spróbuj ponownie.`);
+    }
+  };
+
+  useEffect(() => {
+    if (status !== 'in-progress' || endsAt === null) return;
+    const tick = () => {
+      const remaining = endsAt - Date.now();
+      if (remaining <= 0) {
+        setRemainingMs(0);
+        resolve();
+      } else {
+        setRemainingMs(remaining);
+      }
+    };
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, endsAt]);
+
+  const start = () => {
+    resolvedRef.current = false;
+    setEndsAt(Date.now() + mission.durationMinutes * 60 * 1000);
+    setRemainingMs(mission.durationMinutes * 60 * 1000);
+    setStatus('in-progress');
+    onNotice(`Rozpoczynasz misję: ${mission.title.toLowerCase()}.`);
+  };
+
+  const skip = () => {
+    const cost = missionSkipCost(remainingMs);
+    if (!pointsWallet.canAfford(cost)) { onNotice(`Potrzebujesz ${cost} pkt, aby przyspieszyć tę misję.`); return; }
+    pointsWallet.removeMoney(cost);
+    resolve();
+  };
+
+  const MissionIcon = mission.icon;
+  return <article className={`mission-card-large mission-card-large-${mission.riskTone}`} data-testid={`mission-card-${mission.id}`}>
+    <div className="mission-card-large-top"><MissionIcon size={36} /><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></div>
+    <h2>{mission.title}</h2>
+    <p>{mission.description}</p>
+    <div className="mission-card-large-facts">
+      <div><Zap size={16} /><span>KOSZT ENERGII</span><b>{mission.energy}</b></div>
+      <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b></div>
+    </div>
+    <div className="mission-card-large-reward"><small>NAGRODA (EXP)</small><strong><Award size={18} /> {mission.reward}</strong></div>
+    <div className="mission-card-large-extra"><small>MOŻLIWE DODATKOWO</small><span><CircleDollarSign size={17} /> <Archive size={17} /> ?</span></div>
+    {status === 'in-progress' ? <div className="mission-card-large-active">
+      <div className="mission-card-large-countdown"><Timer size={16} /> {formatWorkRemaining(remainingMs)}</div>
+      <button className="mission-card-large-skip" onClick={skip} data-testid={`mission-skip-${mission.id}`}><Zap size={15} /> PRZYSPIESZ ZA {missionSkipCost(remainingMs)} PKT</button>
+    </div> : <button onClick={start} data-testid={`mission-start-${mission.id}`}><ArrowRight size={17} /> ROZPOCZNIJ MISJĘ</button>}
+  </article>;
+}
+
+function MissionsCardsView({ pointsWallet, onGainXp, onNotice }: { pointsWallet: Wallet; onGainXp: (amount: number) => void; onNotice: (message: string) => void }) {
   return <section className="missions-cards-view" style={{ '--missions-cards-art': `url("${cellReference}")` } as CSSProperties} data-testid="missions-cards-view">
     <header className="missions-cards-heading">
       <div><span className="eyebrow">MISJE</span><h1>MISJE</h1><p>WYBIERZ MISJĘ I PODEJMIJ RYZYKO. KAŻDA DECYZJA MA KONSEKWENCJE.</p></div>
       <div className="missions-cards-slogan">TU NIE MA<br />PRZYPADKÓW</div>
     </header>
     <div className="missions-cards-grid">
-      {missionCards.map((mission) => {
-        const MissionIcon = mission.icon;
-        return <article className={`mission-card-large mission-card-large-${mission.riskTone}`} key={mission.id}>
-          <div className="mission-card-large-top"><MissionIcon size={36} /><em className={`mission-reference-risk risk-${mission.riskTone}`}>{mission.risk}</em></div>
-          <h2>{mission.title}</h2>
-          <p>{mission.description}</p>
-          <div className="mission-card-large-facts">
-            <div><Zap size={16} /><span>KOSZT ENERGII</span><b>{mission.energy}</b></div>
-            <div><Crosshair size={16} /><span>SZANSA POWODZENIA</span><b className={`mission-chance chance-${mission.riskTone}`}>{mission.chance}%</b></div>
-          </div>
-          <div className="mission-card-large-reward"><small>NAGRODA (EXP)</small><strong><Award size={18} /> {mission.reward}</strong></div>
-          <div className="mission-card-large-extra"><small>MOŻLIWE DODATKOWO</small><span><CircleDollarSign size={17} /> <Archive size={17} /> ?</span></div>
-          <button onClick={() => { setStartedId(mission.id); onNotice(`Rozpoczynasz misję: ${mission.title.toLowerCase()}.`); }}><ArrowRight size={17} /> {startedId === mission.id ? 'MISJA W TOKU' : 'ROZPOCZNIJ MISJĘ'}</button>
-        </article>;
-      })}
+      {missionCards.map((mission) => <MissionCardTile key={mission.id} mission={mission} pointsWallet={pointsWallet} onGainXp={onGainXp} onNotice={onNotice} />)}
     </div>
     <footer className="missions-cards-footer">
       <div className="missions-card-timer"><Archive size={26} /><span><small>NOWE MISJE ZA:</small><strong>01:58:27</strong></span></div>
