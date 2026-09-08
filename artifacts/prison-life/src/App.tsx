@@ -136,6 +136,7 @@ import inventoryFeetBlackBootsAsset from '@assets/inventory/feet-black-boots.png
 import inventoryFeetTanBootsAsset from '@assets/inventory/feet-tan-boots-clean.png';
 import inventoryFeetRedSneakersAsset from '@assets/inventory/feet-red-sneakers-clean.png';
 import inventoryWeaponKnifeAsset from '@assets/inventory/weapon-knife.png';
+import catalogProductsAsset from '@assets/ChatGPT_Image_8_wrz_2026,_04_55_48_1788836152259.png';
 import cellBackground from './assets/cell/cell-background.webp';
 import cellReference from './assets/cell/cell-reference.png';
 import cellLayout from './assets/cell/cell-layout.json';
@@ -1455,7 +1456,8 @@ function GangView({ onNotice }: { onNotice: (message: string) => void }) {
 // selection of offers drawn from a pool, refreshable early for points.
 // GameShell owns the offer-picking/persistence; these components only
 // render whatever offer list they're handed and know how to buy one item.
-type LegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
+type CatalogCrop = { x: number; y: number; width: number; height: number };
+type LegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } | { kind: 'crop'; src: string; crop: CatalogCrop } };
 const legalGenericGoods: LegalGood[] = [
   { id: 'tshirt', name: 'Koszulka', price: 60, render: { kind: 'icon', icon: ShirtIcon } },
   { id: 'shorts', name: 'Spodenki', price: 80, render: { kind: 'icon', icon: Package } },
@@ -1470,7 +1472,26 @@ const legalGenericGoods: LegalGood[] = [
 // Equip-catalog goods, zwykły/rzadki/elitarny only (see storefrontTiers):
 // buying one still lands straight in the character's equipment inventory.
 const legalEquipGoods: LegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
-const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods];
+const catalogRows = [
+  { label: 'KOSZULKA', y: 8, height: 94, count: 14, tier: 'common' as ItemTier, price: 70 },
+  { label: 'BLUZA', y: 101, height: 94, count: 12, tier: 'rare' as ItemTier, price: 160 },
+  { label: 'SPODNIE', y: 198, height: 94, count: 12, tier: 'common' as ItemTier, price: 110 },
+  { label: 'BUTY', y: 293, height: 76, count: 14, tier: 'rare' as ItemTier, price: 180 },
+  { label: 'DODATEK', y: 369, height: 70, count: 10, tier: 'common' as ItemTier, price: 85 },
+  { label: 'PLECAK', y: 437, height: 94, count: 8, tier: 'elite' as ItemTier, price: 240 },
+  { label: 'WYPOSAŻENIE', y: 530, height: 145, count: 10, tier: 'rare' as ItemTier, price: 130 },
+];
+const catalogGoods: LegalGood[] = catalogRows.flatMap((row, rowIndex) => Array.from({ length: row.count }, (_, index) => {
+  const width = Math.floor(1024 / row.count);
+  return {
+    id: `catalog-${rowIndex + 1}-${index + 1}`,
+    name: `${row.label} ${String(index + 1).padStart(2, '0')}`,
+    price: row.price + index * 5,
+    tier: row.tier,
+    render: { kind: 'crop' as const, src: catalogProductsAsset, crop: { x: index * width, y: row.y, width, height: row.height } },
+  };
+}));
+const legalGoodsPool: LegalGood[] = [...legalGenericGoods, ...legalEquipGoods, ...catalogGoods];
 const legalEquipIds = new Set(legalEquipGoods.map((item) => item.id));
 
 type IllegalGood = { id: string; name: string; price: number; tier?: ItemTier; render: { kind: 'icon'; icon: typeof Shield } | { kind: 'image'; src: string } };
@@ -1554,7 +1575,7 @@ function ShopView({ wallet, offers, ownedItemIds, setOwnedItemIds, refreshCost, 
       <div className="storefront-grid">
         {offers.map((item) => { const isEquip = legalEquipIds.has(item.id); const owned = isEquip && ownedItemIds.has(item.id); return <article key={item.id} className="storefront-card" title={item.name} data-testid={`shop-card-${item.id}`}>
           {item.tier && <span className="storefront-card-tier" style={{ color: itemTierConfig[item.tier].color, borderColor: itemTierConfig[item.tier].color }}>{itemTierConfig[item.tier].label}</span>}
-          <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
+          <div className="storefront-card-art">{item.render.kind === 'image' ? <img src={item.render.src} alt={item.name} /> : item.render.kind === 'crop' ? <div className="storefront-card-art-crop" aria-label={item.name} style={{ backgroundImage: `url(${item.render.src})`, backgroundSize: `${(1024 / item.render.crop.width) * 100}% ${(683 / item.render.crop.height) * 100}%`, backgroundPosition: `${(item.render.crop.x / (1024 - item.render.crop.width)) * 100}% ${(item.render.crop.y / (683 - item.render.crop.height)) * 100}%` }} /> : <item.render.icon size={52} strokeWidth={1.15} />}</div>
           <div className="storefront-card-footer">
             {owned ? <span className="storefront-card-owned"><Check size={13} /> POSIADASZ</span> : <b>{item.price} $</b>}
             <button onClick={() => buyItem(item)} disabled={owned} aria-label={`Kup: ${item.name}`} data-testid={`shop-buy-${item.id}`}><ShoppingCart size={14} /></button>
