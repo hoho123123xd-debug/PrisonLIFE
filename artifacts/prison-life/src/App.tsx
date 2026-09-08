@@ -146,6 +146,8 @@ import trainingMockup from '@assets/Obraz_Codex_6_wrz_2026,_20_10_24_17887182377
 import hudIndustrialBackground from '@assets/topbar/hud-industrial-background.png';
 import hudSidebarBackground from '@assets/topbar/hud-sidebar-bg.png';
 import hudPlayerBoxFrame from '@assets/topbar/hud-player-box-bg.png';
+import hudAvatarFrameBg from '@assets/topbar/hud-avatar-frame-bg.png';
+import hudXpBarBg from '@assets/topbar/hud-xp-bar-bg.png';
 import hudMoneyCardFrame from '@assets/topbar/hud-money-card-bg.png';
 import hudPointsCardFrame from '@assets/topbar/hud-points-card-bg.png';
 import hudEnergyCardFrame from '@assets/topbar/hud-energy-card-bg.png';
@@ -897,7 +899,6 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
     };
     window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(data));
   }, [wallet.balance, pointsWallet.balance, reputationWallet.balance, level, xp, xpMax, energyWallet.energy, energyWallet.updatedAt, cellUpgradeLevels, characterStats, equipped, ownedItems, shopOffer, marketOffer, foodBuffs]);
-  const type = prisonerTypes.find((item) => item.id === creator.prisonerType)!;
   const gameData = {
     nickname: creator.nickname.trim() || 'KOSA',
     level,
@@ -960,12 +961,13 @@ function GameShell({ creator, onNavigate }: { creator: CreatorState; onNavigate:
         </button>
       </div>
       <button className="game-mobile-menu-toggle" onClick={() => setMobileMenuOpen((open) => !open)} aria-label="Otwórz menu gry"><Menu size={21} /></button>
+      <div className="hud-avatar-frame" style={{ ['--hud-avatar-frame-bg' as string]: `url(${hudAvatarFrameBg})` } as CSSProperties}><img src={playerAvatarAsset} alt={gameData.nickname} /></div>
       <div className="hud-player-info" style={{ backgroundImage: `url(${hudPlayerBoxFrame})` }} data-testid="hud-player-info">
-        <div className="hud-avatar-frame"><img src={playerAvatarAsset} alt={gameData.nickname} /></div>
-        <div className="hud-player-copy">
-          <strong>{gameData.nickname}</strong>
-          <span>POZIOM <b>{gameData.level}</b></span>
-          <span>GANG <b>{type.name}</b></span>
+        <span className="hud-player-name">{gameData.nickname}</span>
+        <span className="hud-player-level-value">{gameData.level}</span>
+        <div className="hud-xp-bar" style={{ backgroundImage: `url(${hudXpBarBg})` }}>
+          <i style={{ width: `${Math.max(0, Math.min(100, (gameData.xp / gameData.xpMax) * 100))}%` }} />
+          <small>{gameData.xp} / {gameData.xpMax} XP</small>
         </div>
       </div>
       <div className="hud-chip hud-chip-money" style={{ backgroundImage: `url(${hudMoneyCardFrame})` }} data-testid="hud-money">
