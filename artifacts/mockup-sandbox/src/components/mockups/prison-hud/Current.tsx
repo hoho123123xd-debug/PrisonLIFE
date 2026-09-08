@@ -5,7 +5,7 @@ const base = '/__mockup/images/prison-hud';
 export function Current() {
   return (
     <div className="hud-mockup-root">
-      <header className="hud-baseline" aria-label="Prison Life — pasek gracza">
+      <header className="hud-baseline hud-continuous" aria-label="Prison Life — pasek gracza">
         <div className="hud-brand">
           <img src={`${base}/prison-life-wordmark.png`} alt="Prison Life" />
         </div>
@@ -33,16 +33,19 @@ export function Current() {
 
         <section className="hud-resources" aria-label="Zasoby">
           <div className="hud-resource hud-resource-money">
+            <span className="hud-resource-icon hud-resource-icon-money" aria-hidden="true" />
             <span className="hud-resource-label">GOTÓWKA</span>
             <strong className="hud-resource-value">100 250 $</strong>
             <button className="hud-resource-plus" aria-label="Dodaj gotówkę">+</button>
           </div>
           <div className="hud-resource hud-resource-points">
+            <span className="hud-resource-icon hud-resource-icon-points" aria-hidden="true" />
             <span className="hud-resource-label">PUNKTY</span>
             <strong className="hud-resource-value">1003</strong>
             <button className="hud-resource-plus" aria-label="Kup punkty">+</button>
           </div>
           <div className="hud-resource hud-resource-energy">
+            <span className="hud-resource-icon hud-resource-icon-energy" aria-hidden="true" />
             <span className="hud-resource-label">ENERGIA</span>
             <strong className="hud-resource-value">100 / 100</strong>
             <div className="hud-energy-meter"><i /></div>
