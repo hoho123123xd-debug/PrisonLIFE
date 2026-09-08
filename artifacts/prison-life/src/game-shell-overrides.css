@@ -7316,6 +7316,21 @@
   overflow: hidden;
   color: #cfd6cd;
 }
+.storefront-shop {
+  overflow-y: auto;
+  scrollbar-color: rgba(230, 123, 47, .55) rgba(0, 0, 0, .25);
+  scrollbar-width: thin;
+}
+.storefront-shop .storefront-offer-panel {
+  flex: 0 0 auto;
+  overflow: visible;
+}
+.storefront-shop .storefront-grid {
+  flex: 0 0 auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: none;
+  grid-auto-rows: minmax(148px, 1fr);
+}
 .storefront-hero {
   position: relative;
   flex: 0 0 auto;
