@@ -65,6 +65,20 @@ button {
     linear-gradient(0deg, rgba(0, 0, 0, .62), transparent 48%, rgba(255, 218, 163, .08));
 }
 
+.hud-baseline::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 16%;
+  bottom: 0;
+  left: 24%;
+  pointer-events: none;
+  opacity: .58;
+  background: url('/__mockup/images/prison-hud/hud-skyline-scene.png') center / cover no-repeat;
+  mix-blend-mode: screen;
+}
+
 .hud-brand {
   min-width: 0;
   display: grid;
