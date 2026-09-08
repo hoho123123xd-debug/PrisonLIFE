@@ -826,6 +826,15 @@
 .cell-development-upgrade:hover {
   background: #ff9340;
 }
+.cell-development-upgrade:disabled {
+  border-color: #3e4b48;
+  color: #8d9890;
+  background: #1a2422;
+  cursor: default;
+}
+.cell-level-card.unlocked {
+  border-color: rgba(230, 123, 47, .35);
+}
 .cell-development-stats {
   overflow: hidden;
 }
