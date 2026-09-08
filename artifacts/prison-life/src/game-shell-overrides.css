@@ -8040,7 +8040,7 @@
 }
 
 .game-shell-page .game-sidebar button {
-  width: clamp(226px, calc(20vw - 24px), 286px);
+  width: 100%;
   min-height: 54px;
   height: auto;
   margin: 4px 0;
