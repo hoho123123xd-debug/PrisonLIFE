@@ -1,3 +1,45 @@
+.prison-life-shell .pls-brand-logo {
+  display: block;
+  width: 228px;
+  height: 74px;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.52));
+}
+
+.prison-life-shell .pls-rail {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(10, 14, 15, 0.96), rgba(12, 17, 19, 0.84) 48%, rgba(5, 8, 9, 0.98)),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.026) 0 1px, transparent 1px 5px),
+    #0b1012;
+}
+
+.prison-life-shell .pls-rail::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  z-index: 0;
+  width: 42px;
+  pointer-events: none;
+  opacity: 0.92;
+  background:
+    url("/__mockup/images/prison-life-shell-chain-vertical.png") 5px 10px / 32px 68px repeat-y;
+  box-shadow: inset -1px 0 rgba(236, 92, 23, 0.3);
+}
+
+.prison-life-shell .pls-nav {
+  position: relative;
+  z-index: 1;
+  margin-top: 0;
+}
+
+.prison-life-shell .pls-rail-note {
+  z-index: 2;
+}
+
 .prison-life-shell .pls-nav-button--plate {
   min-height: 46px;
   grid-template-columns: 31px minmax(0, 1fr) 0;
@@ -73,4 +115,11 @@
   background-repeat: no-repeat;
   background-size: 100% 100%;
   filter: none;
+}
+
+@media (max-width: 720px) {
+  .prison-life-shell .pls-brand-logo {
+    width: 194px;
+    height: 60px;
+  }
 }

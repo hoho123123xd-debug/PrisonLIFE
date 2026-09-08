@@ -89,15 +89,11 @@ export function Industrial() {
     <main className="prison-life-shell">
       <header className="pls-topbar">
         <div className="pls-brand">
-          <div className="pls-brand-mark" aria-hidden="true">
-            <ShieldMark />
-          </div>
-          <div className="pls-brand-copy">
-            <h1 className="pls-brand-name">
-              PRISON <b>LIFE</b>
-            </h1>
-            <span className="pls-brand-line">SEZON 01 / BLOK A / NOCNA WARTA</span>
-          </div>
+          <img
+            className="pls-brand-logo"
+            src="/__mockup/images/prison-life-shell-logo.png"
+            alt="Prison Life — sezon 01, blok A, nocna warta"
+          />
         </div>
 
         <div className="pls-player" aria-label="Profil gracza">
@@ -153,10 +149,6 @@ export function Industrial() {
 
       <div className="pls-layout">
         <aside className={`pls-rail ${mobileMenuOpen ? "is-open" : ""}`}>
-          <div className="pls-rail-head">
-            <strong>NAWIGACJA</strong>
-            <span>10 / 10</span>
-          </div>
           <nav className="pls-nav" aria-label="Nawigacja gry">
             {navigation.map(({ label, iconSrc }) => (
               <button
