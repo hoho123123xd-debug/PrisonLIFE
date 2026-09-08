@@ -40,12 +40,14 @@ function Resource({
   value,
   icon: Icon,
   progress,
+  status,
   className = "",
 }: {
   label: string;
   value: string;
   icon: typeof Zap;
   progress?: number;
+  status?: string;
   className?: string;
 }) {
   return (
@@ -58,6 +60,7 @@ function Resource({
       {progress !== undefined && (
         <div className="pls-resource-track" aria-label={`${label}: ${value}`}>
           <i style={{ width: `${progress}%` }} />
+          {status && <span className="pls-resource-status">{status}</span>}
         </div>
       )}
     </div>
@@ -108,7 +111,7 @@ export function Industrial() {
         </div>
 
         <div className="pls-resources" aria-label="Zasoby">
-          <Resource label="ENERGIA" value="75 / 100" icon={Zap} progress={75} />
+          <Resource label="ENERGIA" value="75 / 100" icon={Zap} progress={75} status="+1 za 04:12" className="pls-resource--energy" />
           <Resource label="SIŁA" value="60 / 100" icon={Dumbbell} progress={60} className="pls-resource--strength" />
           <Resource label="ZDROWIE" value="100 / 100" icon={Heart} progress={100} className="pls-resource--health" />
           <div className="pls-wallet">

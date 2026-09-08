@@ -33,10 +33,24 @@
   box-shadow: none;
 }
 
+.prison-life-shell .pls-player::before,
+.prison-life-shell .pls-player::after,
+.prison-life-shell .pls-avatar::before,
+.prison-life-shell .pls-avatar::after,
+.prison-life-shell .pls-player-meta::before,
+.prison-life-shell .pls-player-meta::after {
+  display: none;
+  content: none;
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+
 .prison-life-shell .pls-avatar {
   width: 54px;
   height: 60px;
   border: 0;
+  outline: 0;
   background: transparent;
   box-shadow: none;
 }
@@ -100,6 +114,70 @@
   height: 100%;
   object-fit: contain;
   object-position: center;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  filter: none;
+}
+
+.prison-life-shell .pls-resource--energy {
+  position: relative;
+  overflow: hidden;
+  min-height: 53px;
+  padding: 6px 8px;
+  border: 0;
+  background: url("/__mockup/images/prison-life-reference/hud-energy-card-bg.png") center / 100% 100% no-repeat;
+  box-shadow: none;
+  clip-path: none;
+}
+
+.prison-life-shell .pls-resource--energy > svg,
+.prison-life-shell .pls-resource--energy .pls-resource-label {
+  display: none;
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-body {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  left: 32%;
+  z-index: 1;
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-value {
+  margin: 0;
+  color: #f2eee5;
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-track {
+  position: absolute;
+  right: 8%;
+  bottom: 8px;
+  left: 29%;
+  z-index: 1;
+  height: 5px;
+  border: 0;
+  background: rgba(17, 24, 27, 0.74);
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-track i {
+  background: linear-gradient(90deg, #bd461a, var(--pls-orange-hot));
+}
+
+.prison-life-shell .pls-resource--energy .pls-resource-status {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  color: #f0d7bd;
+  font-family: "Geist Mono", monospace;
+  font-size: 6px;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateY(-50%);
 }
 
 .prison-life-shell .pls-rail {
