@@ -169,6 +169,14 @@ import hudMail from '@assets/topbar/hud-mail.png';
 import hudSettings from '@assets/topbar/hud-settings.png';
 import hudPlus from '@assets/topbar/hud-plus.png';
 import hudWordmark from '@assets/topbar/prison-life-wordmark.png';
+import hudExtractedWordmark from '@assets/topbar/extracted/hud-wordmark.png';
+import hudTopbarFrame from '@assets/topbar/extracted/hud-topbar-frame.png';
+import hudTopbarBackground from '@assets/topbar/extracted/hud-topbar-background.png';
+import hudChainLeft from '@assets/topbar/extracted/hud-chain-left.png';
+import hudLampTop from '@assets/topbar/extracted/hud-lamp-top.png';
+import hudCornerLeft from '@assets/topbar/extracted/hud-corner-left.png';
+import hudCornerRight from '@assets/topbar/extracted/hud-corner-right.png';
+import hudExtractedAvatarFrame from '@assets/topbar/extracted/hud-avatar-frame-new.png';
 
 const queryClient = new QueryClient();
 
@@ -820,14 +828,28 @@ function GameHud({ gameData, onMenuToggle, onNotice, onLogout }: {
   const formatPoints = gameData.points.toLocaleString('pl-PL');
 
   return (
-    <header className="game-hud-header" style={{ '--hud-background': `url("${hudBackground}")`, '--hud-industrial-background': `url("${hudIndustrialBackground}")` } as CSSProperties} data-testid="game-hud-header">
+    <header className="game-hud-header" style={{
+      '--hud-background': `url("${hudBackground}")`,
+      '--hud-industrial-background': `url("${hudIndustrialBackground}")`,
+      '--hud-cutout-background': `url("${hudTopbarBackground}")`,
+      '--hud-cutout-frame': `url("${hudTopbarFrame}")`,
+      '--hud-cutout-chain': `url("${hudChainLeft}")`,
+      '--hud-cutout-lamp': `url("${hudLampTop}")`,
+      '--hud-cutout-corner-left': `url("${hudCornerLeft}")`,
+      '--hud-cutout-corner-right': `url("${hudCornerRight}")`,
+    } as CSSProperties} data-testid="game-hud-header">
+      <img className="hud-cutout-frame" src={hudTopbarFrame} alt="" aria-hidden="true" />
+      <img className="hud-cutout-chain" src={hudChainLeft} alt="" aria-hidden="true" />
+      <img className="hud-cutout-lamp" src={hudLampTop} alt="" aria-hidden="true" />
+      <img className="hud-cutout-corner hud-cutout-corner-left" src={hudCornerLeft} alt="" aria-hidden="true" />
+      <img className="hud-cutout-corner hud-cutout-corner-right" src={hudCornerRight} alt="" aria-hidden="true" />
       <button className="hud-logo" type="button" onClick={() => onNotice('Jesteś w bloku C. Wybierz moduł z menu, aby rozpocząć akcję.')} aria-label="Prison Life — blok C">
-        <img src={hudWordmark} alt="Prison Life" />
+        <img src={hudExtractedWordmark} alt="Prison Life" />
       </button>
 
       <section className="hud-player-module" style={{ '--hud-player-box': `url("${hudPlayerBoxBackground}")`, '--hud-player-info': `url("${hudPlayerInfo}")`, '--hud-avatar-frame': `url("${hudAvatarFrame}")` } as CSSProperties} aria-label="Profil więźnia">
         <div className="hud-avatar">
-          <img className="hud-avatar-frame-art" src={hudAvatarFrame} alt="" aria-hidden="true" />
+          <img className="hud-avatar-frame-art" src={hudExtractedAvatarFrame} alt="" aria-hidden="true" />
           <img className="hud-avatar-photo" src={hudAvatarKosa} alt="" />
           <span className="hud-level-badge">{gameData.level}</span>
         </div>

@@ -9405,7 +9405,7 @@
   align-items: stretch;
   overflow: hidden;
   border-bottom: 1px solid rgba(232, 129, 52, .54);
-  background: linear-gradient(90deg, rgba(2, 5, 7, .2), rgba(2, 5, 7, .04) 60%, rgba(4, 7, 8, .5)), var(--hud-industrial-background) center / cover, #0b1114;
+  background: linear-gradient(90deg, rgba(2, 5, 7, .18), rgba(2, 5, 7, .03) 60%, rgba(4, 7, 8, .5)), var(--hud-cutout-background), var(--hud-industrial-background) center / cover, #0b1114;
   box-shadow: 0 9px 20px rgba(0, 0, 0, .58), inset 0 -1px rgba(255, 177, 86, .26);
 }
 
@@ -9429,6 +9429,71 @@
 }
 
 .game-hud-header > * { position: relative; z-index: 1; }
+
+.game-hud-header > .hud-cutout-frame,
+.game-hud-header > .hud-cutout-chain,
+.game-hud-header > .hud-cutout-lamp,
+.game-hud-header > .hud-cutout-corner {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.game-hud-header > .hud-cutout-frame {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  opacity: .98;
+}
+
+.game-hud-header > .hud-cutout-chain {
+  top: -5px;
+  left: -2px;
+  z-index: 1;
+  width: clamp(105px, 15vw, 245px);
+  height: 100%;
+  object-fit: contain;
+  object-position: left top;
+}
+
+.game-hud-header > .hud-cutout-lamp {
+  z-index: 2;
+  top: -2px;
+  right: clamp(74px, 8vw, 125px);
+  width: clamp(48px, 5vw, 78px);
+  height: 72%;
+  object-fit: contain;
+  object-position: top center;
+}
+
+.game-hud-header > .hud-cutout-corner {
+  z-index: 2;
+  width: clamp(62px, 8vw, 125px);
+  height: 70%;
+  object-fit: contain;
+}
+
+.game-hud-header > .hud-cutout-corner-left {
+  top: 0;
+  left: 19%;
+  object-position: top left;
+}
+
+.game-hud-header > .hud-cutout-corner-right {
+  right: 0;
+  bottom: 0;
+  object-position: bottom right;
+}
+
+.game-hud-header > .hud-logo,
+.game-hud-header > .hud-player-module,
+.game-hud-header > .hud-resource-module,
+.game-hud-header > .hud-header-actions {
+  z-index: 3;
+}
 
 .hud-logo {
   min-width: 0;
