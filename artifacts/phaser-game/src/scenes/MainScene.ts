@@ -33,7 +33,7 @@ const TOPBAR_HEIGHT = 132;
 
 export class MainScene extends Phaser.Scene {
   private activeNav = 0;
-  private navRows: { plate: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text }[] = [];
+  private navRows: { plate: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; highlight: Phaser.GameObjects.Rectangle }[] = [];
 
   constructor() {
     super('MainScene');
@@ -85,12 +85,22 @@ export class MainScene extends Phaser.Scene {
 
     const startY = TOPBAR_HEIGHT + 26;
     const rowHeight = 52;
+    const plateW = SIDEBAR_WIDTH - 32;
+    const plateH = 44;
     NAV_ITEMS.forEach((item, i) => {
       const y = startY + i * rowHeight;
       const plate = this.add.image(16, y, 'nav-button').setOrigin(0);
-      plate.setDisplaySize(SIDEBAR_WIDTH - 32, 44);
+      plate.setDisplaySize(plateW, plateH);
       plate.setInteractive({ useHandCursor: true });
-      if (i === this.activeNav) plate.setTint(0xffe0b0);
+
+      // A separate bright stroked rectangle carries the hover/active state,
+      // since tinting the busy rust texture itself is too subtle to read as
+      // feedback - full opacity when active, dim on hover, invisible at rest.
+      const highlight = this.add
+        .rectangle(16, y, plateW, plateH, 0xe0873d, 0.18)
+        .setOrigin(0)
+        .setStrokeStyle(2, 0xe0873d, 1)
+        .setVisible(i === this.activeNav);
 
       if (item.icon && this.textures.exists(item.icon)) {
         const icon = this.add.image(40, y + 22, item.icon);
@@ -106,16 +116,24 @@ export class MainScene extends Phaser.Scene {
         })
         .setOrigin(0, 0.5);
 
+      plate.on('pointerover', () => {
+        if (i !== this.activeNav) highlight.setVisible(true).setAlpha(0.5);
+      });
+      plate.on('pointerout', () => {
+        if (i !== this.activeNav) highlight.setVisible(false);
+      });
       plate.on('pointerdown', () => this.setActiveNav(i));
-      this.navRows.push({ plate, label });
+
+      this.navRows.push({ plate, label, highlight });
     });
   }
 
   private setActiveNav(index: number) {
     this.activeNav = index;
     this.navRows.forEach((row, i) => {
-      row.plate.setTint(i === index ? 0xffe0b0 : 0xffffff);
-      row.label.setColor(i === index ? '#eee8de' : '#c9cec9');
+      const active = i === index;
+      row.highlight.setVisible(active).setAlpha(1);
+      row.label.setColor(active ? '#eee8de' : '#c9cec9');
     });
   }
 
