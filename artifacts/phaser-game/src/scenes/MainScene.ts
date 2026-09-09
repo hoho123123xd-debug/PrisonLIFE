@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { GameState } from '../game/state';
 
 type NavItem = { key: string; label: string; icon?: string };
 
@@ -16,24 +17,13 @@ const NAV_ITEMS: NavItem[] = [
   { key: 'settings', label: 'USTAWIENIA', icon: 'icon-settings' },
 ];
 
-const PLAYER = {
-  nickname: 'F1qu',
-  level: 18,
-  gang: 'BANG SZCZUR',
-  xp: 2450,
-  xpMax: 4200,
-  cash: 100250,
-  points: 1003,
-  energy: 100,
-  energyMax: 100,
-};
-
 const SIDEBAR_WIDTH = 280;
 const TOPBAR_HEIGHT = 132;
 
 export class MainScene extends Phaser.Scene {
   private activeNav = 0;
   private navRows: { plate: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; highlight: Phaser.GameObjects.Rectangle }[] = [];
+  private player = new GameState();
 
   constructor() {
     super('MainScene');
@@ -163,14 +153,14 @@ export class MainScene extends Phaser.Scene {
     panel.setDisplaySize(panelW, panelH);
 
     const textX = panelX + 70;
-    this.add.text(textX, 32, PLAYER.nickname, {
+    this.add.text(textX, 32, this.player.nickname, {
       fontFamily: 'Oswald, Arial, sans-serif',
       fontSize: '20px',
       fontStyle: 'bold',
       color: '#eee8de',
     });
     this.add.text(textX + 90, 34, '♔', { fontSize: '16px', color: '#e0873d' });
-    this.add.text(textX, 58, PLAYER.gang, {
+    this.add.text(textX, 58, this.player.gang, {
       fontFamily: 'Barlow Condensed, Arial, sans-serif',
       fontSize: '13px',
       fontStyle: 'bold',
@@ -180,12 +170,12 @@ export class MainScene extends Phaser.Scene {
     const xpTrackW = 230;
     const xpTrack = this.add.image(textX, 88, 'xp-track').setOrigin(0, 0.5);
     xpTrack.setDisplaySize(xpTrackW, 18);
-    const xpPct = Phaser.Math.Clamp(PLAYER.xp / PLAYER.xpMax, 0, 1);
+    const xpPct = Phaser.Math.Clamp(this.player.xp / this.player.xpMax, 0, 1);
     const xpFill = this.add.graphics();
     xpFill.fillStyle(0xe0873d, 1);
     xpFill.fillRect(textX - xpTrackW / 2 + 4, 88 - 6, (xpTrackW - 8) * xpPct, 12);
     this.add
-      .text(textX + xpTrackW + 8, 88, `${PLAYER.xp}/${PLAYER.xpMax}`, {
+      .text(textX + xpTrackW + 8, 88, `${this.player.xp}/${this.player.xpMax}`, {
         fontFamily: 'Barlow Condensed, Arial, sans-serif',
         fontSize: '11px',
         color: '#eee8de',
@@ -194,9 +184,9 @@ export class MainScene extends Phaser.Scene {
 
     // Resource chips: cash, points, energy.
     let chipX = panelX + panelW + 40;
-    chipX = this.buildChip(chipX, 'money-card', `${PLAYER.cash.toLocaleString('pl-PL')} $`, 366, 165, 0.48);
-    chipX = this.buildChip(chipX, 'points-card', `${PLAYER.points}`, 395, 138, 0.34);
-    chipX = this.buildChip(chipX, 'energy-card', `${PLAYER.energy}/${PLAYER.energyMax}`, 508, 167, 0.6);
+    chipX = this.buildChip(chipX, 'money-card', `${this.player.balance.toLocaleString('pl-PL')} $`, 366, 165, 0.48);
+    chipX = this.buildChip(chipX, 'points-card', `${this.player.points}`, 395, 138, 0.34);
+    chipX = this.buildChip(chipX, 'energy-card', `${this.player.energy}/${this.player.energyMax}`, 508, 167, 0.6);
 
     // Mail / settings / logout icons, far right.
     const rightIconsX = w - 130;
