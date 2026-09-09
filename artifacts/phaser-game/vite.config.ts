@@ -1,15 +1,38 @@
 import { defineConfig } from 'vite';
 
+const rawPort = process.env.PORT;
+
+if (!rawPort) {
+  throw new Error(
+    'PORT environment variable is required but was not provided.',
+  );
+}
+
+const port = Number(rawPort);
+
+if (Number.isNaN(port) || port <= 0) {
+  throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+const basePath = process.env.BASE_PATH;
+
+if (!basePath) {
+  throw new Error(
+    'BASE_PATH environment variable is required but was not provided.',
+  );
+}
+
 export default defineConfig({
+  base: basePath,
   server: {
-    port: 4174,
+    port,
     strictPort: true,
     host: '0.0.0.0',
     allowedHosts: true,
     fs: { strict: true },
   },
   preview: {
-    port: 4174,
+    port,
     host: '0.0.0.0',
     allowedHosts: true,
   },

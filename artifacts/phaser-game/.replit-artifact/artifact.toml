@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/game"
+title = "Prison Life - Game"
+description = "The Phaser-based Prison Life game UI (top HUD and sidebar navigation)."
+version = "1.0.0"
+id = "artifacts/phaser-game"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/game" ]
+localPort = 4174
+
+[services.development]
+run = "pnpm --filter @workspace/phaser-game run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/phaser-game", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/phaser-game/dist"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "4174"
+BASE_PATH = "/game"
