@@ -40,22 +40,23 @@ export class MainScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('topbar-bg', 'images/topbar-bg.png');
-    this.load.image('sidebar-bg', 'images/sidebar-bg.png');
-    this.load.image('nav-button', 'images/nav-button.png');
-    this.load.image('logo', 'images/logo.png');
-    this.load.image('player-box-bg', 'images/player-box-bg.png');
-    this.load.image('content-bg', 'images/content-bg.png');
-    this.load.image('avatar', 'images/avatar.png');
-    this.load.image('avatar-frame', 'images/avatar-frame.png');
-    this.load.image('xp-track', 'images/xp-track.png');
-    this.load.image('money-card', 'images/money-card.png');
-    this.load.image('points-card', 'images/points-card.png');
-    this.load.image('energy-card', 'images/energy-card.png');
-    this.load.image('icon-mail', 'images/icon-mail.png');
-    this.load.image('icon-settings', 'images/icon-settings.png');
+    const base = import.meta.env.BASE_URL;
+    this.load.image('topbar-bg', `${base}images/topbar-bg.png`);
+    this.load.image('sidebar-bg', `${base}images/sidebar-bg.png`);
+    this.load.image('nav-button', `${base}images/nav-button.png`);
+    this.load.image('logo', `${base}images/logo.png`);
+    this.load.image('player-box-bg', `${base}images/player-box-bg.png`);
+    this.load.image('content-bg', `${base}images/content-bg.png`);
+    this.load.image('avatar', `${base}images/avatar.png`);
+    this.load.image('avatar-frame', `${base}images/avatar-frame.png`);
+    this.load.image('xp-track', `${base}images/xp-track.png`);
+    this.load.image('money-card', `${base}images/money-card.png`);
+    this.load.image('points-card', `${base}images/points-card.png`);
+    this.load.image('energy-card', `${base}images/energy-card.png`);
+    this.load.image('icon-mail', `${base}images/icon-mail.png`);
+    this.load.image('icon-settings', `${base}images/icon-settings.png`);
     for (const icon of ['gang', 'zlecenia', 'trening', 'cela', 'ranking', 'sklep']) {
-      this.load.image(`icon-${icon}`, `images/icons/${icon}.png`);
+      this.load.image(`icon-${icon}`, `${base}images/icons/${icon}.png`);
     }
   }
 
