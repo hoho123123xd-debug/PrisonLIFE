@@ -1,150 +1,218 @@
 import Phaser from 'phaser';
 
-const NAV_ITEMS = ['STRONA GŁÓWNA', 'POSTAĆ', 'GANG', 'ZADANIA', 'WALKA', 'SKLEP', 'RANKING'];
+type NavItem = { key: string; label: string; icon?: string };
 
-const COLOR = {
-  bg: 0x06090a,
-  sidebarBg: 0x0b1114,
-  panelBg: 0x14181a,
-  panelBgHover: 0x1e2629,
-  accent: 0xe0873d,
-  accentDim: 0x6b4a26,
-  text: 0xeee8de,
-  textMuted: 0xc9cec9,
-  lampGlow: 0xf4b860,
+const NAV_ITEMS: NavItem[] = [
+  { key: 'home', label: 'STRONA GŁÓWNA' },
+  { key: 'character', label: 'POSTAĆ' },
+  { key: 'gang', label: 'GANG', icon: 'icon-gang' },
+  { key: 'quests', label: 'ZADANIA', icon: 'icon-zlecenia' },
+  { key: 'gym', label: 'SIŁOWNIA', icon: 'icon-trening' },
+  { key: 'work', label: 'PRACA' },
+  { key: 'cell', label: 'WIĘZIENIE', icon: 'icon-cela' },
+  { key: 'ranking', label: 'RANKING', icon: 'icon-ranking' },
+  { key: 'shop', label: 'SKLEP', icon: 'icon-sklep' },
+  { key: 'mail', label: 'WIADOMOŚCI', icon: 'icon-mail' },
+  { key: 'settings', label: 'USTAWIENIA', icon: 'icon-settings' },
+];
+
+const PLAYER = {
+  nickname: 'F1qu',
+  level: 18,
+  gang: 'BANG SZCZUR',
+  xp: 2450,
+  xpMax: 4200,
+  cash: 100250,
+  points: 1003,
+  energy: 100,
+  energyMax: 100,
 };
 
+const SIDEBAR_WIDTH = 280;
+const TOPBAR_HEIGHT = 132;
+
 export class MainScene extends Phaser.Scene {
-  private activeIndex = 0;
-  private navBoxes: Phaser.GameObjects.Rectangle[] = [];
-  private navLabels: Phaser.GameObjects.Text[] = [];
+  private activeNav = 0;
+  private navRows: { plate: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text }[] = [];
 
   constructor() {
     super('MainScene');
   }
 
+  preload() {
+    this.load.image('topbar-bg', 'images/topbar-bg.png');
+    this.load.image('sidebar-bg', 'images/sidebar-bg.png');
+    this.load.image('nav-button', 'images/nav-button.png');
+    this.load.image('logo', 'images/logo.png');
+    this.load.image('player-box-bg', 'images/player-box-bg.png');
+    this.load.image('content-bg', 'images/content-bg.png');
+    this.load.image('avatar', 'images/avatar.png');
+    this.load.image('avatar-frame', 'images/avatar-frame.png');
+    this.load.image('xp-track', 'images/xp-track.png');
+    this.load.image('money-card', 'images/money-card.png');
+    this.load.image('points-card', 'images/points-card.png');
+    this.load.image('energy-card', 'images/energy-card.png');
+    this.load.image('icon-mail', 'images/icon-mail.png');
+    this.load.image('icon-settings', 'images/icon-settings.png');
+    for (const icon of ['gang', 'zlecenia', 'trening', 'cela', 'ranking', 'sklep']) {
+      this.load.image(`icon-${icon}`, `images/icons/${icon}.png`);
+    }
+  }
+
   create() {
-    this.buildBackground();
-    this.buildSidebar();
-    this.buildLamp();
-    this.buildAmbientParticles();
+    const w = this.scale.width;
+    const h = this.scale.height;
+
+    this.buildContentBackground(w, h);
+    this.buildSidebar(h);
+    this.buildTopbar(w);
+
+    this.scale.on('resize', () => this.scene.restart());
   }
 
-  private buildBackground() {
-    this.add.rectangle(0, 0, 1280, 800, COLOR.bg).setOrigin(0);
-
-    // Subtle vertical gradient strip down the content area for depth.
-    const gradient = this.add.graphics();
-    gradient.fillGradientStyle(0x0d1213, 0x0d1213, 0x050706, 0x050706, 1);
-    gradient.fillRect(260, 0, 1020, 800);
-  }
-
-  private buildSidebar() {
-    const sidebarWidth = 260;
-    this.add.rectangle(0, 0, sidebarWidth, 800, COLOR.sidebarBg).setOrigin(0);
-    this.add.rectangle(sidebarWidth - 1, 0, 2, 800, COLOR.accent).setOrigin(0);
-
+  private buildContentBackground(w: number, h: number) {
+    this.add.rectangle(0, 0, w, h, 0x06090a).setOrigin(0);
+    const bg = this.add.image(SIDEBAR_WIDTH, TOPBAR_HEIGHT, 'content-bg').setOrigin(0);
+    bg.setDisplaySize(Math.max(1, w - SIDEBAR_WIDTH), Math.max(1, h - TOPBAR_HEIGHT));
     this.add
-      .text(sidebarWidth / 2, 36, 'PRISON LIFE', {
-        fontFamily: 'Arial Black, sans-serif',
-        fontSize: '22px',
-        color: '#eee8de',
-      })
-      .setOrigin(0.5);
+      .rectangle(SIDEBAR_WIDTH, TOPBAR_HEIGHT, w - SIDEBAR_WIDTH, h - TOPBAR_HEIGHT, 0x000000, 0.35)
+      .setOrigin(0);
+  }
 
-    NAV_ITEMS.forEach((label, i) => {
-      const y = 96 + i * 52;
-      const box = this.add
-        .rectangle(16, y, sidebarWidth - 32, 44, i === this.activeIndex ? COLOR.panelBg : COLOR.panelBg, 1)
-        .setOrigin(0)
-        .setStrokeStyle(1, i === this.activeIndex ? COLOR.accent : COLOR.accentDim)
-        .setInteractive({ useHandCursor: true });
+  private buildSidebar(h: number) {
+    const bg = this.add.image(0, TOPBAR_HEIGHT, 'sidebar-bg').setOrigin(0);
+    bg.setDisplaySize(SIDEBAR_WIDTH, Math.max(1, h - TOPBAR_HEIGHT));
 
-      const text = this.add
-        .text(16 + 16, y + 22, label, {
+    const startY = TOPBAR_HEIGHT + 26;
+    const rowHeight = 52;
+    NAV_ITEMS.forEach((item, i) => {
+      const y = startY + i * rowHeight;
+      const plate = this.add.image(16, y, 'nav-button').setOrigin(0);
+      plate.setDisplaySize(SIDEBAR_WIDTH - 32, 44);
+      plate.setInteractive({ useHandCursor: true });
+      if (i === this.activeNav) plate.setTint(0xffe0b0);
+
+      if (item.icon && this.textures.exists(item.icon)) {
+        const icon = this.add.image(40, y + 22, item.icon);
+        icon.setDisplaySize(24, 24);
+      }
+
+      const label = this.add
+        .text(72, y + 22, item.label, {
           fontFamily: 'Arial, sans-serif',
-          fontSize: '13px',
+          fontSize: '12px',
           fontStyle: 'bold',
-          color: i === this.activeIndex ? '#eee8de' : '#c9cec9',
+          color: i === this.activeNav ? '#eee8de' : '#c9cec9',
         })
         .setOrigin(0, 0.5);
 
-      box.on('pointerover', () => {
-        if (i !== this.activeIndex) box.setFillStyle(COLOR.panelBgHover);
-      });
-      box.on('pointerout', () => {
-        if (i !== this.activeIndex) box.setFillStyle(COLOR.panelBg);
-      });
-      box.on('pointerdown', () => this.setActive(i));
-
-      this.navBoxes.push(box);
-      this.navLabels.push(text);
+      plate.on('pointerdown', () => this.setActiveNav(i));
+      this.navRows.push({ plate, label });
     });
   }
 
-  private setActive(index: number) {
-    this.activeIndex = index;
-    this.navBoxes.forEach((box, i) => {
-      box.setStrokeStyle(1, i === index ? COLOR.accent : COLOR.accentDim);
-      box.setFillStyle(COLOR.panelBg);
-      this.navLabels[i].setColor(i === index ? '#eee8de' : '#c9cec9');
+  private setActiveNav(index: number) {
+    this.activeNav = index;
+    this.navRows.forEach((row, i) => {
+      row.plate.setTint(i === index ? 0xffe0b0 : 0xffffff);
+      row.label.setColor(i === index ? '#eee8de' : '#c9cec9');
     });
   }
 
-  private buildLamp() {
-    const x = 770;
-    const y = 140;
+  private buildTopbar(w: number) {
+    const bg = this.add.image(0, 0, 'topbar-bg').setOrigin(0);
+    bg.setDisplaySize(w, TOPBAR_HEIGHT);
 
-    // Static bulb body.
-    this.add.circle(x, y, 8, 0x2a2a2a);
+    // Logo, far left.
+    const logo = this.add.image(20, TOPBAR_HEIGHT / 2, 'logo').setOrigin(0, 0.5);
+    logo.setDisplaySize(170, 67);
 
-    // Glow that breathes in and out - the "it's alive" flicker.
-    const glow = this.add.circle(x, y, 30, COLOR.lampGlow, 0.5);
-    this.tweens.add({
-      targets: glow,
-      alpha: { from: 0.15, to: 0.55 },
-      scale: { from: 0.85, to: 1.15 },
-      duration: 900,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+    // Avatar with its frame.
+    const avatarX = 220;
+    const avatarY = TOPBAR_HEIGHT / 2;
+    const frame = this.add.image(avatarX, avatarY, 'avatar-frame').setOrigin(0.5);
+    frame.setDisplaySize(96, 96);
+    const avatar = this.add.image(avatarX, avatarY, 'avatar').setOrigin(0.5);
+    avatar.setDisplaySize(78, 78);
+
+    // Player info panel (nick, crown, gang, xp bar) - stretched player-box-bg
+    // with the photo slot on its left masked out by the avatar above.
+    const panelX = 280;
+    const panelW = 320;
+    const panelH = 100;
+    const panel = this.add.image(panelX, TOPBAR_HEIGHT / 2, 'player-box-bg').setOrigin(0, 0.5);
+    panel.setDisplaySize(panelW, panelH);
+
+    const textX = panelX + 70;
+    this.add.text(textX, 32, PLAYER.nickname, {
+      fontFamily: 'Oswald, Arial, sans-serif',
+      fontSize: '20px',
+      fontStyle: 'bold',
+      color: '#eee8de',
+    });
+    this.add.text(textX + 90, 34, '♔', { fontSize: '16px', color: '#e0873d' });
+    this.add.text(textX, 58, PLAYER.gang, {
+      fontFamily: 'Barlow Condensed, Arial, sans-serif',
+      fontSize: '13px',
+      fontStyle: 'bold',
+      color: '#c9cec9',
     });
 
-    // Occasional quick flicker on top of the slow breathing.
-    this.time.addEvent({
-      delay: 3200,
-      loop: true,
-      callback: () => {
-        this.tweens.add({
-          targets: glow,
-          alpha: 0.05,
-          duration: 60,
-          yoyo: true,
-          repeat: 2,
-        });
-      },
-    });
+    const xpTrackW = 230;
+    const xpTrack = this.add.image(textX, 88, 'xp-track').setOrigin(0, 0.5);
+    xpTrack.setDisplaySize(xpTrackW, 18);
+    const xpPct = Phaser.Math.Clamp(PLAYER.xp / PLAYER.xpMax, 0, 1);
+    const xpFill = this.add.graphics();
+    xpFill.fillStyle(0xe0873d, 1);
+    xpFill.fillRect(textX - xpTrackW / 2 + 4, 88 - 6, (xpTrackW - 8) * xpPct, 12);
+    this.add
+      .text(textX + xpTrackW + 8, 88, `${PLAYER.xp}/${PLAYER.xpMax}`, {
+        fontFamily: 'Barlow Condensed, Arial, sans-serif',
+        fontSize: '11px',
+        color: '#eee8de',
+      })
+      .setOrigin(0, 0.5);
+
+    // Resource chips: cash, points, energy.
+    let chipX = panelX + panelW + 40;
+    chipX = this.buildChip(chipX, 'money-card', `${PLAYER.cash.toLocaleString('pl-PL')} $`, 366, 165, 0.48);
+    chipX = this.buildChip(chipX, 'points-card', `${PLAYER.points}`, 395, 138, 0.34);
+    chipX = this.buildChip(chipX, 'energy-card', `${PLAYER.energy}/${PLAYER.energyMax}`, 508, 167, 0.6);
+
+    // Mail / settings / logout icons, far right.
+    const rightIconsX = w - 130;
+    const mail = this.add.image(rightIconsX, TOPBAR_HEIGHT / 2, 'icon-mail').setOrigin(0.5);
+    mail.setDisplaySize(44, 44);
+    mail.setInteractive({ useHandCursor: true });
+
+    const settings = this.add.image(rightIconsX + 56, TOPBAR_HEIGHT / 2, 'icon-settings').setOrigin(0.5);
+    settings.setDisplaySize(44, 44);
+    settings.setInteractive({ useHandCursor: true });
+
+    const logout = this.add
+      .rectangle(rightIconsX + 112, TOPBAR_HEIGHT / 2, 44, 44, 0x14181a, 1)
+      .setStrokeStyle(1, 0xe0873d)
+      .setInteractive({ useHandCursor: true });
+    this.add.text(rightIconsX + 112, TOPBAR_HEIGHT / 2, '↪', { fontSize: '18px', color: '#e0873d' }).setOrigin(0.5);
   }
 
-  private buildAmbientParticles() {
-    // Slow drifting dust motes across the content area for ambient life.
-    for (let i = 0; i < 18; i++) {
-      const x = Phaser.Math.Between(300, 1240);
-      const y = Phaser.Math.Between(0, 800);
-      const dot = this.add.circle(x, y, Phaser.Math.Between(1, 2), 0xffffff, Phaser.Math.FloatBetween(0.05, 0.15));
-      this.tweens.add({
-        targets: dot,
-        y: y - Phaser.Math.Between(60, 160),
-        alpha: 0,
-        duration: Phaser.Math.Between(4000, 8000),
-        repeat: -1,
-        delay: Phaser.Math.Between(0, 4000),
-        onRepeat: () => {
-          dot.y = Phaser.Math.Between(400, 800);
-          dot.x = Phaser.Math.Between(300, 1240);
-          dot.alpha = Phaser.Math.FloatBetween(0.05, 0.15);
-        },
-      });
-    }
+  private buildChip(x: number, textureKey: string, value: string, naturalW: number, naturalH: number, textOffsetRatio: number): number {
+    const targetH = 64;
+    const scale = targetH / naturalH;
+    const targetW = naturalW * scale;
+
+    const chip = this.add.image(x, TOPBAR_HEIGHT / 2, textureKey).setOrigin(0, 0.5);
+    chip.setDisplaySize(targetW, targetH);
+
+    this.add
+      .text(x + targetW * textOffsetRatio, TOPBAR_HEIGHT / 2, value, {
+        fontFamily: 'Oswald, Arial, sans-serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        color: '#eee8de',
+      })
+      .setOrigin(0, 0.5);
+
+    return x + targetW + 24;
   }
 }

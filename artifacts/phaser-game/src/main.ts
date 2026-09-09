@@ -4,8 +4,11 @@ import { MainScene } from './scenes/MainScene';
 new Phaser.Game({
   type: Phaser.AUTO,
   parent: 'game',
-  width: 1280,
-  height: 800,
   backgroundColor: '#06090a',
+  scale: {
+    mode: Phaser.Scale.RESIZE,
+    width: '100%',
+    height: '100%',
+  },
   scene: [MainScene],
 });
