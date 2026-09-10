@@ -13,6 +13,7 @@
 
 import { characterInventoryItemsData, type ItemInstance } from '../data/items';
 import { characterDefaultEquipped, characterDefaultOwnedItems, characterStatsList, statUpgradeCost, type CharacterStat } from '../data/character';
+import { fightOpponents, type FightResult } from '../data/activities';
 
 const PROGRESS_STORAGE_KEY = 'prison-life-progress';
 const CREATOR_STORAGE_KEY = 'prison-life-creator';
@@ -67,6 +68,15 @@ export class GameState {
   stats: CharacterStat[];
   equipped: Record<string, string | null>;
   ownedItems: ItemInstance[];
+
+  // Ephemeral session state for Work/Training/Fight - not persisted, same
+  // as the original's per-mounted-view local React state (a reload or
+  // leaving the section loses in-progress work/training there too).
+  selectedWorkHours = 8;
+  activeWork: { totalMs: number; endsAt: number } | null = null;
+  activeTraining: Record<string, { endsAt: number }> = {};
+  selectedFightOpponentId = fightOpponents[0].id;
+  lastFightResult: FightResult | null = null;
 
   constructor() {
     const saved = readJson<StoredProgress>(PROGRESS_STORAGE_KEY);
@@ -126,6 +136,12 @@ export class GameState {
   }
   canAffordMoney(amount: number): boolean {
     return this.balance >= amount;
+  }
+
+  addReputation(amount: number) {
+    if (amount <= 0) return;
+    this.reputation += amount;
+    this.save();
   }
 
   addPoints(amount: number) {

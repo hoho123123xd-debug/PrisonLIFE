@@ -2,6 +2,9 @@ import Phaser from 'phaser';
 import { GameState } from '../game/state';
 import { buildCellScene, CELL_HOTSPOT_MESSAGES, type CellSlotId } from './CellContent';
 import { buildCharacterScene } from './CharacterContent';
+import { buildWorkScene } from './WorkContent';
+import { buildTrainingScene } from './TrainingContent';
+import { buildFightScene } from './FightContent';
 import { characterInventoryItemsData } from '../data/items';
 
 type NavItem = { key: string; label: string; icon?: string };
@@ -29,6 +32,7 @@ export class MainScene extends Phaser.Scene {
   private player = new GameState();
   private visitedHotspots = new Set<CellSlotId>();
   private contentContainer?: Phaser.GameObjects.Container;
+  private contentTimers: Phaser.Time.TimerEvent[] = [];
   private topbarContainer?: Phaser.GameObjects.Container;
   private noticeBg?: Phaser.GameObjects.Rectangle;
   private noticeText?: Phaser.GameObjects.Text;
@@ -77,6 +81,8 @@ export class MainScene extends Phaser.Scene {
   }
 
   private rebuildContent() {
+    this.contentTimers.forEach((timer) => timer.remove(false));
+    this.contentTimers = [];
     this.contentContainer?.destroy();
     const container = this.add.container(0, 0);
     this.contentContainer = container;
@@ -91,6 +97,14 @@ export class MainScene extends Phaser.Scene {
     };
 
     const navKey = NAV_ITEMS[this.activeNav]?.key;
+    const ctx = {
+      onNotice: (message: string) => this.showNotice(message),
+      onChange: () => {
+        this.refreshTopbar();
+        this.rebuildContent();
+      },
+      addTimer: (timer: Phaser.Time.TimerEvent) => this.contentTimers.push(timer),
+    };
 
     if (navKey === 'home') {
       buildCellScene(this, container, area, this.visitedHotspots, (id) => {
@@ -101,13 +115,26 @@ export class MainScene extends Phaser.Scene {
     }
 
     if (navKey === 'character') {
-      buildCharacterScene(this, container, area, this.player, {
-        onNotice: (message) => this.showNotice(message),
-        onChange: () => {
-          this.refreshTopbar();
-          this.rebuildContent();
-        },
-      });
+      buildCharacterScene(this, container, area, this.player, ctx);
+      return;
+    }
+
+    if (navKey === 'work') {
+      buildWorkScene(this, container, area, this.player, ctx);
+      return;
+    }
+
+    if (navKey === 'gym') {
+      buildTrainingScene(this, container, area, this.player, ctx);
+      return;
+    }
+
+    // WIEZIENIE doesn't have its own view yet (Task #8 will give it the
+    // real CellDevelopmentView) - fighting lives here for now since the
+    // new 11-item sidebar (matched to the reference mockup) has no
+    // dedicated WALKA slot. Easy to move once there's a better home.
+    if (navKey === 'cell') {
+      buildFightScene(this, container, area, this.player, ctx);
       return;
     }
 
