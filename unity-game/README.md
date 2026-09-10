@@ -30,6 +30,13 @@ gry przechodzi na Unity WebGL — ten folder jest nowym punktem startowym.
 - `Assets/Scripts/HelloWorld.cs` — rysuje napis "Hello, Prison Life!" na
   środku ekranu (przez `OnGUI`, więc działa bez dodatkowych zależności
   typu Canvas/TextMeshPro).
+- `Assets/Scripts/UIBootstrap.cs` — buduje w `Awake()` prawdziwy `Canvas`
+  (uGUI) z dwoma pełnoszerokościowymi paskami: `TopBar` (info o postaci)
+  i `BottomBar` (menu), na razie jako kolorowe tło do podmiany. Obiekt
+  `UIBootstrap` w scenie ma pola `topBarHeight`/`topBarColor` i
+  `bottomBarHeight`/`bottomBarColor` widoczne w Inspectorze, więc
+  wysokości/kolory placeholderów można od razu poprawić bez ruszania
+  kodu.
 - `ProjectSettings/` — nazwa produktu/firmy, rozdzielczość domyślna,
   ustawienia WebGL (kompresja, limity pamięci) już skonfigurowane.
 - `Packages/manifest.json` — tylko wbudowane moduły silnika (żadnych
