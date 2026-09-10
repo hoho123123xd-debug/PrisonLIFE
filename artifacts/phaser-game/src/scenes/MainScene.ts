@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GameState } from '../game/state';
+import { buildCellScene, CELL_HOTSPOT_MESSAGES, type CellSlotId } from './CellContent';
 
 type NavItem = { key: string; label: string; icon?: string };
 
@@ -24,6 +25,11 @@ export class MainScene extends Phaser.Scene {
   private activeNav = 0;
   private navRows: { plate: Phaser.GameObjects.Image; label: Phaser.GameObjects.Text; highlight: Phaser.GameObjects.Rectangle }[] = [];
   private player = new GameState();
+  private visitedHotspots = new Set<CellSlotId>();
+  private contentContainer?: Phaser.GameObjects.Container;
+  private noticeBg?: Phaser.GameObjects.Rectangle;
+  private noticeText?: Phaser.GameObjects.Text;
+  private noticeTimer?: Phaser.Time.TimerEvent;
 
   constructor() {
     super('MainScene');
@@ -45,6 +51,7 @@ export class MainScene extends Phaser.Scene {
     this.load.image('energy-card', `${base}images/energy-card.png`);
     this.load.image('icon-mail', `${base}images/icon-mail.png`);
     this.load.image('icon-settings', `${base}images/icon-settings.png`);
+    this.load.image('cell-reference', `${base}images/cell/cell-reference.png`);
     for (const icon of ['gang', 'zlecenia', 'trening', 'cela', 'ranking', 'sklep']) {
       this.load.image(`icon-${icon}`, `${base}images/icons/${icon}.png`);
     }
@@ -54,20 +61,79 @@ export class MainScene extends Phaser.Scene {
     const w = this.scale.width;
     const h = this.scale.height;
 
-    this.buildContentBackground(w, h);
+    this.navRows = [];
+    this.add.rectangle(0, 0, w, h, 0x06090a).setOrigin(0);
     this.buildSidebar(h);
     this.buildTopbar(w);
+    this.rebuildContent();
 
     this.scale.on('resize', () => this.scene.restart());
   }
 
-  private buildContentBackground(w: number, h: number) {
-    this.add.rectangle(0, 0, w, h, 0x06090a).setOrigin(0);
-    const bg = this.add.image(SIDEBAR_WIDTH, TOPBAR_HEIGHT, 'content-bg').setOrigin(0);
-    bg.setDisplaySize(Math.max(1, w - SIDEBAR_WIDTH), Math.max(1, h - TOPBAR_HEIGHT));
-    this.add
-      .rectangle(SIDEBAR_WIDTH, TOPBAR_HEIGHT, w - SIDEBAR_WIDTH, h - TOPBAR_HEIGHT, 0x000000, 0.35)
-      .setOrigin(0);
+  private rebuildContent() {
+    this.contentContainer?.destroy();
+    const container = this.add.container(0, 0);
+    this.contentContainer = container;
+
+    const w = this.scale.width;
+    const h = this.scale.height;
+    const area = {
+      x: SIDEBAR_WIDTH,
+      y: TOPBAR_HEIGHT,
+      width: Math.max(1, w - SIDEBAR_WIDTH),
+      height: Math.max(1, h - TOPBAR_HEIGHT),
+    };
+
+    if (NAV_ITEMS[this.activeNav]?.key === 'home') {
+      buildCellScene(this, container, area, this.visitedHotspots, (id) => {
+        this.visitedHotspots.add(id);
+        this.showNotice(CELL_HOTSPOT_MESSAGES[id]);
+      });
+      return;
+    }
+
+    const bg = this.add.image(area.x, area.y, 'content-bg').setOrigin(0);
+    bg.setDisplaySize(area.width, area.height);
+    container.add(bg);
+    const dim = this.add.rectangle(area.x, area.y, area.width, area.height, 0x000000, 0.35).setOrigin(0);
+    container.add(dim);
+  }
+
+  private showNotice(message: string) {
+    this.noticeTimer?.remove();
+    this.noticeBg?.destroy();
+    this.noticeText?.destroy();
+
+    const w = this.scale.width;
+    const h = this.scale.height;
+    const padX = 16;
+    const maxWidth = Math.min(420, Math.max(120, w - SIDEBAR_WIDTH - 64));
+    const text = this.add
+      .text(0, 0, message, {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        color: '#eee8de',
+        wordWrap: { width: maxWidth },
+      })
+      .setDepth(1001);
+    const bgW = text.width + padX * 2;
+    const bgH = text.height + 20;
+    const x = SIDEBAR_WIDTH + (w - SIDEBAR_WIDTH - bgW) / 2;
+    const y = h - bgH - 24;
+    const bg = this.add
+      .rectangle(x, y, bgW, bgH, 0x14181a, 0.95)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0xe0873d)
+      .setDepth(1000);
+    text.setPosition(x + padX, y + 10);
+
+    this.noticeBg = bg;
+    this.noticeText = text;
+    this.noticeTimer = this.time.delayedCall(3200, () => {
+      this.noticeBg?.destroy();
+      this.noticeText?.destroy();
+    });
   }
 
   private buildSidebar(h: number) {
@@ -126,6 +192,7 @@ export class MainScene extends Phaser.Scene {
       row.highlight.setVisible(active).setAlpha(1);
       row.label.setColor(active ? '#eee8de' : '#c9cec9');
     });
+    this.rebuildContent();
   }
 
   private buildTopbar(w: number) {
