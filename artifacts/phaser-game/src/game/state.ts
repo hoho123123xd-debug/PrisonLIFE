@@ -11,6 +11,9 @@
 // doesn't know about yet (equipped items, cell upgrades, etc. - not ported
 // here yet) survive being written from this app.
 
+import { characterInventoryItemsData, type ItemInstance } from '../data/items';
+import { characterDefaultEquipped, characterDefaultOwnedItems, characterStatsList, statUpgradeCost, type CharacterStat } from '../data/character';
+
 const PROGRESS_STORAGE_KEY = 'prison-life-progress';
 const CREATOR_STORAGE_KEY = 'prison-life-creator';
 
@@ -32,6 +35,9 @@ type StoredProgress = {
   xpMax?: number;
   energy?: number;
   energyUpdatedAt?: number;
+  stats?: Record<string, number>;
+  equipped?: Record<string, string | null>;
+  ownedItems?: ItemInstance[];
 };
 
 function readJson<T>(key: string): Partial<T> {
@@ -58,6 +64,10 @@ export class GameState {
   energy: number;
   energyUpdatedAt: number;
 
+  stats: CharacterStat[];
+  equipped: Record<string, string | null>;
+  ownedItems: ItemInstance[];
+
   constructor() {
     const saved = readJson<StoredProgress>(PROGRESS_STORAGE_KEY);
     const creator = readJson<{ nickname: string }>(CREATOR_STORAGE_KEY);
@@ -78,6 +88,10 @@ export class GameState {
     this.energy = saved.energy ?? ENERGY_MAX;
     this.energyUpdatedAt = saved.energyUpdatedAt ?? Date.now();
     this.applyEnergyRegen();
+
+    this.stats = characterStatsList.map((stat) => ({ ...stat, value: saved.stats?.[stat.key] ?? stat.value }));
+    this.equipped = saved.equipped ?? { ...characterDefaultEquipped };
+    this.ownedItems = saved.ownedItems ?? characterDefaultOwnedItems.map((entry) => ({ ...entry }));
   }
 
   get energyMax(): number {
@@ -160,6 +174,75 @@ export class GameState {
     this.save();
   }
 
+  // Sum of every equipped item's stat bonuses, keyed by stat - added on top
+  // of the base stat value wherever it's displayed.
+  get equipmentStatBonuses(): Record<string, number> {
+    const bonuses: Record<string, number> = {};
+    for (const instanceId of Object.values(this.equipped)) {
+      if (!instanceId) continue;
+      const instance = this.ownedItems.find((entry) => entry.instanceId === instanceId);
+      if (!instance) continue;
+      for (const [stat, amount] of Object.entries(instance.bonuses)) {
+        bonuses[stat] = (bonuses[stat] ?? 0) + amount;
+      }
+    }
+    return bonuses;
+  }
+
+  getEquippedItem(slot: string) {
+    const instanceId = this.equipped[slot];
+    if (!instanceId) return undefined;
+    const instance = this.ownedItems.find((entry) => entry.instanceId === instanceId);
+    if (!instance) return undefined;
+    const item = characterInventoryItemsData.find((entry) => entry.id === instance.itemId);
+    return item ? { instance, item } : undefined;
+  }
+
+  // Equips an owned instance into its item's slot. Returns the item name on
+  // success, or null if the instance isn't owned.
+  equipInstance(instanceId: string): string | null {
+    const instance = this.ownedItems.find((entry) => entry.instanceId === instanceId);
+    if (!instance) return null;
+    const item = characterInventoryItemsData.find((entry) => entry.id === instance.itemId);
+    if (!item) return null;
+    this.equipped[item.slot] = instanceId;
+    this.save();
+    return item.name;
+  }
+
+  // Returns the unequipped item's label, or null if the slot was empty.
+  unequipSlot(slot: string): string | null {
+    const equipped = this.getEquippedItem(slot);
+    if (!equipped) return null;
+    this.equipped[slot] = null;
+    this.save();
+    return equipped.item.name;
+  }
+
+  // Sells an owned (and not equipped) instance for its catalog value.
+  // Returns { name, value } on success, or null if it wasn't sellable.
+  sellInstance(instanceId: string): { name: string; value: number } | null {
+    const instance = this.ownedItems.find((entry) => entry.instanceId === instanceId);
+    if (!instance) return null;
+    const item = characterInventoryItemsData.find((entry) => entry.id === instance.itemId);
+    if (!item) return null;
+    this.ownedItems = this.ownedItems.filter((entry) => entry.instanceId !== instanceId);
+    this.addMoney(item.value);
+    return { name: item.name, value: item.value };
+  }
+
+  // Spends cash to raise a stat by one point. Returns the cost paid on
+  // success, or null if maxed out / unaffordable.
+  increaseStat(key: string): number | null {
+    const stat = this.stats.find((entry) => entry.key === key);
+    if (!stat || stat.value >= stat.max) return null;
+    const cost = statUpgradeCost(stat.value);
+    if (!this.removeMoney(cost)) return null;
+    stat.value = Math.min(stat.max, stat.value + 1);
+    this.save();
+    return cost;
+  }
+
   save() {
     this.applyEnergyRegen();
     const existing = readJson<Record<string, unknown>>(PROGRESS_STORAGE_KEY);
@@ -173,6 +256,9 @@ export class GameState {
       xpMax: this.xpMax,
       energy: this.energy,
       energyUpdatedAt: this.energyUpdatedAt,
+      stats: Object.fromEntries(this.stats.map((stat) => [stat.key, stat.value])),
+      equipped: this.equipped,
+      ownedItems: this.ownedItems,
     };
     try {
       window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(merged));

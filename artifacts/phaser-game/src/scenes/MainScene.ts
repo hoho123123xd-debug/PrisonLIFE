@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import { GameState } from '../game/state';
 import { buildCellScene, CELL_HOTSPOT_MESSAGES, type CellSlotId } from './CellContent';
+import { buildCharacterScene } from './CharacterContent';
+import { characterInventoryItemsData } from '../data/items';
 
 type NavItem = { key: string; label: string; icon?: string };
 
@@ -27,6 +29,7 @@ export class MainScene extends Phaser.Scene {
   private player = new GameState();
   private visitedHotspots = new Set<CellSlotId>();
   private contentContainer?: Phaser.GameObjects.Container;
+  private topbarContainer?: Phaser.GameObjects.Container;
   private noticeBg?: Phaser.GameObjects.Rectangle;
   private noticeText?: Phaser.GameObjects.Text;
   private noticeTimer?: Phaser.Time.TimerEvent;
@@ -54,6 +57,9 @@ export class MainScene extends Phaser.Scene {
     this.load.image('cell-reference', `${base}images/cell/cell-reference.png`);
     for (const icon of ['gang', 'zlecenia', 'trening', 'cela', 'ranking', 'sklep']) {
       this.load.image(`icon-${icon}`, `${base}images/icons/${icon}.png`);
+    }
+    for (const item of characterInventoryItemsData) {
+      this.load.image(`item-${item.id}`, `${base}${item.asset}`);
     }
   }
 
@@ -84,10 +90,23 @@ export class MainScene extends Phaser.Scene {
       height: Math.max(1, h - TOPBAR_HEIGHT),
     };
 
-    if (NAV_ITEMS[this.activeNav]?.key === 'home') {
+    const navKey = NAV_ITEMS[this.activeNav]?.key;
+
+    if (navKey === 'home') {
       buildCellScene(this, container, area, this.visitedHotspots, (id) => {
         this.visitedHotspots.add(id);
         this.showNotice(CELL_HOTSPOT_MESSAGES[id]);
+      });
+      return;
+    }
+
+    if (navKey === 'character') {
+      buildCharacterScene(this, container, area, this.player, {
+        onNotice: (message) => this.showNotice(message),
+        onChange: () => {
+          this.refreshTopbar();
+          this.rebuildContent();
+        },
       });
       return;
     }
@@ -195,13 +214,23 @@ export class MainScene extends Phaser.Scene {
     this.rebuildContent();
   }
 
+  private refreshTopbar() {
+    this.topbarContainer?.destroy();
+    this.buildTopbar(this.scale.width);
+  }
+
   private buildTopbar(w: number) {
+    const container = this.add.container(0, 0);
+    this.topbarContainer = container;
+
     const bg = this.add.image(0, 0, 'topbar-bg').setOrigin(0);
     bg.setDisplaySize(w, TOPBAR_HEIGHT);
+    container.add(bg);
 
     // Logo, far left.
     const logo = this.add.image(20, TOPBAR_HEIGHT / 2, 'logo').setOrigin(0, 0.5);
     logo.setDisplaySize(170, 67);
+    container.add(logo);
 
     // Avatar with its frame.
     const avatarX = 220;
@@ -210,6 +239,8 @@ export class MainScene extends Phaser.Scene {
     frame.setDisplaySize(96, 96);
     const avatar = this.add.image(avatarX, avatarY, 'avatar').setOrigin(0.5);
     avatar.setDisplaySize(78, 78);
+    container.add(frame);
+    container.add(avatar);
 
     // Player info panel (nick, crown, gang, xp bar) - stretched player-box-bg
     // with the photo slot on its left masked out by the avatar above.
@@ -218,76 +249,91 @@ export class MainScene extends Phaser.Scene {
     const panelH = 100;
     const panel = this.add.image(panelX, TOPBAR_HEIGHT / 2, 'player-box-bg').setOrigin(0, 0.5);
     panel.setDisplaySize(panelW, panelH);
+    container.add(panel);
 
     const textX = panelX + 70;
-    this.add.text(textX, 32, this.player.nickname, {
-      fontFamily: 'Oswald, Arial, sans-serif',
-      fontSize: '20px',
-      fontStyle: 'bold',
-      color: '#eee8de',
-    });
-    this.add.text(textX + 90, 34, '♔', { fontSize: '16px', color: '#e0873d' });
-    this.add.text(textX, 58, this.player.gang, {
-      fontFamily: 'Barlow Condensed, Arial, sans-serif',
-      fontSize: '13px',
-      fontStyle: 'bold',
-      color: '#c9cec9',
-    });
+    container.add(
+      this.add.text(textX, 32, this.player.nickname, {
+        fontFamily: 'Oswald, Arial, sans-serif',
+        fontSize: '20px',
+        fontStyle: 'bold',
+        color: '#eee8de',
+      }),
+    );
+    container.add(this.add.text(textX + 90, 34, '♔', { fontSize: '16px', color: '#e0873d' }));
+    container.add(
+      this.add.text(textX, 58, this.player.gang, {
+        fontFamily: 'Barlow Condensed, Arial, sans-serif',
+        fontSize: '13px',
+        fontStyle: 'bold',
+        color: '#c9cec9',
+      }),
+    );
 
     const xpTrackW = 230;
     const xpTrack = this.add.image(textX, 88, 'xp-track').setOrigin(0, 0.5);
     xpTrack.setDisplaySize(xpTrackW, 18);
+    container.add(xpTrack);
     const xpPct = Phaser.Math.Clamp(this.player.xp / this.player.xpMax, 0, 1);
     const xpFill = this.add.graphics();
     xpFill.fillStyle(0xe0873d, 1);
     xpFill.fillRect(textX - xpTrackW / 2 + 4, 88 - 6, (xpTrackW - 8) * xpPct, 12);
-    this.add
-      .text(textX + xpTrackW + 8, 88, `${this.player.xp}/${this.player.xpMax}`, {
-        fontFamily: 'Barlow Condensed, Arial, sans-serif',
-        fontSize: '11px',
-        color: '#eee8de',
-      })
-      .setOrigin(0, 0.5);
+    container.add(xpFill);
+    container.add(
+      this.add
+        .text(textX + xpTrackW + 8, 88, `${this.player.xp}/${this.player.xpMax}`, {
+          fontFamily: 'Barlow Condensed, Arial, sans-serif',
+          fontSize: '11px',
+          color: '#eee8de',
+        })
+        .setOrigin(0, 0.5),
+    );
 
     // Resource chips: cash, points, energy.
     let chipX = panelX + panelW + 40;
-    chipX = this.buildChip(chipX, 'money-card', `${this.player.balance.toLocaleString('pl-PL')} $`, 366, 165, 0.48);
-    chipX = this.buildChip(chipX, 'points-card', `${this.player.points}`, 395, 138, 0.34);
-    chipX = this.buildChip(chipX, 'energy-card', `${this.player.energy}/${this.player.energyMax}`, 508, 167, 0.6);
+    chipX = this.buildChip(container, chipX, 'money-card', `${this.player.balance.toLocaleString('pl-PL')} $`, 366, 165, 0.48);
+    chipX = this.buildChip(container, chipX, 'points-card', `${this.player.points}`, 395, 138, 0.34);
+    chipX = this.buildChip(container, chipX, 'energy-card', `${this.player.energy}/${this.player.energyMax}`, 508, 167, 0.6);
 
     // Mail / settings / logout icons, far right.
     const rightIconsX = w - 130;
     const mail = this.add.image(rightIconsX, TOPBAR_HEIGHT / 2, 'icon-mail').setOrigin(0.5);
     mail.setDisplaySize(44, 44);
     mail.setInteractive({ useHandCursor: true });
+    container.add(mail);
 
     const settings = this.add.image(rightIconsX + 56, TOPBAR_HEIGHT / 2, 'icon-settings').setOrigin(0.5);
     settings.setDisplaySize(44, 44);
     settings.setInteractive({ useHandCursor: true });
+    container.add(settings);
 
     const logout = this.add
       .rectangle(rightIconsX + 112, TOPBAR_HEIGHT / 2, 44, 44, 0x14181a, 1)
       .setStrokeStyle(1, 0xe0873d)
       .setInteractive({ useHandCursor: true });
-    this.add.text(rightIconsX + 112, TOPBAR_HEIGHT / 2, '↪', { fontSize: '18px', color: '#e0873d' }).setOrigin(0.5);
+    container.add(logout);
+    container.add(this.add.text(rightIconsX + 112, TOPBAR_HEIGHT / 2, '↪', { fontSize: '18px', color: '#e0873d' }).setOrigin(0.5));
   }
 
-  private buildChip(x: number, textureKey: string, value: string, naturalW: number, naturalH: number, textOffsetRatio: number): number {
+  private buildChip(container: Phaser.GameObjects.Container, x: number, textureKey: string, value: string, naturalW: number, naturalH: number, textOffsetRatio: number): number {
     const targetH = 64;
     const scale = targetH / naturalH;
     const targetW = naturalW * scale;
 
     const chip = this.add.image(x, TOPBAR_HEIGHT / 2, textureKey).setOrigin(0, 0.5);
     chip.setDisplaySize(targetW, targetH);
+    container.add(chip);
 
-    this.add
-      .text(x + targetW * textOffsetRatio, TOPBAR_HEIGHT / 2, value, {
-        fontFamily: 'Oswald, Arial, sans-serif',
-        fontSize: '13px',
-        fontStyle: 'bold',
-        color: '#eee8de',
-      })
-      .setOrigin(0, 0.5);
+    container.add(
+      this.add
+        .text(x + targetW * textOffsetRatio, TOPBAR_HEIGHT / 2, value, {
+          fontFamily: 'Oswald, Arial, sans-serif',
+          fontSize: '13px',
+          fontStyle: 'bold',
+          color: '#eee8de',
+        })
+        .setOrigin(0, 0.5),
+    );
 
     return x + targetW + 24;
   }

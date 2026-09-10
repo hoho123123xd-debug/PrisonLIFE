@@ -11,4 +11,7 @@ new Phaser.Game({
     height: '100%',
   },
   scene: [MainScene],
+  // Inventory items are right-clicked to sell - the browser's native
+  // context menu would otherwise pop up over the canvas every time.
+  disableContextMenu: true,
 });
