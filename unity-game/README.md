@@ -52,6 +52,21 @@ gry przechodzi na Unity WebGL — ten folder jest nowym punktem startowym.
 4. **Build And Run** — Unity zbuduje grę i otworzy ją w domyślnej
    przeglądarce przez lokalny serwer testowy.
 
+## Automatyczne pobieranie zmian (bez ręcznego "Pull")
+
+Git nie ściąga zmian w pełni automatycznie (celowe zabezpieczenie), ale w
+`tools/` jest skrypt, który robi to za Ciebie w tle, co 60 sekund:
+
+- Windows: uruchom `unity-game\tools\auto-pull.bat` (dwuklik albo z terminala)
+- macOS/Linux: `bash unity-game/tools/auto-pull.sh`
+
+Zostaw okno otwarte w tle — Unity ma domyślnie włączony "Auto Refresh"
+(Edit → Preferences → Asset Pipeline), więc gdy skrypt ściągnie nowe pliki,
+Editor sam je wykryje i zaimportuje bez dodatkowych kliknięć. Jeśli masz
+niezapisane lokalne zmiany (np. pogrzebałeś przy kolorach w Inspectorze),
+pull się nie powiedzie zamiast nadpisać Twoją pracę — skrypt po prostu
+spróbuje ponownie za minutę.
+
 ## Dalsze kroki (do ustalenia)
 
 - Podpięcie realnej mechaniki gry (na razie jest tylko napis powitalny).
