@@ -11,9 +11,25 @@
 // doesn't know about yet (equipped items, cell upgrades, etc. - not ported
 // here yet) survive being written from this app.
 
-import { characterInventoryItemsData, type ItemInstance } from '../data/items';
+import {
+  characterInventoryItemsData,
+  filterPoolByLevel,
+  illegalEquipIds,
+  illegalGoodsPool,
+  legalEquipIds,
+  legalGoodsPool,
+  OFFER_REFRESH_COST,
+  OFFER_SIZE,
+  pickRandomOfferIds,
+  restockOfferSlot,
+  rollItemInstance,
+  rollOfferIfStale,
+  type ItemInstance,
+  type OfferState,
+} from '../data/items';
 import { characterDefaultEquipped, characterDefaultOwnedItems, characterStatsList, statUpgradeCost, type CharacterStat } from '../data/character';
 import { fightOpponents, type FightResult } from '../data/activities';
+import { MEAL_BUFF_DURATION_MS, mealEffectStatKey, type Meal } from '../data/canteen';
 
 const PROGRESS_STORAGE_KEY = 'prison-life-progress';
 const CREATOR_STORAGE_KEY = 'prison-life-creator';
@@ -39,7 +55,12 @@ type StoredProgress = {
   stats?: Record<string, number>;
   equipped?: Record<string, string | null>;
   ownedItems?: ItemInstance[];
+  shopOffer?: OfferState;
+  marketOffer?: OfferState;
+  foodBuffs?: FoodBuff[];
 };
+
+type FoodBuff = { id: string; statKey: string; amount: number; expiresAt: number };
 
 function readJson<T>(key: string): Partial<T> {
   try {
@@ -69,6 +90,10 @@ export class GameState {
   equipped: Record<string, string | null>;
   ownedItems: ItemInstance[];
 
+  shopOffer: OfferState;
+  marketOffer: OfferState;
+  foodBuffs: FoodBuff[];
+
   // Ephemeral session state for Work/Training/Fight - not persisted, same
   // as the original's per-mounted-view local React state (a reload or
   // leaving the section loses in-progress work/training there too).
@@ -76,6 +101,7 @@ export class GameState {
   activeWork: { totalMs: number; endsAt: number } | null = null;
   activeTraining: Record<string, { endsAt: number }> = {};
   selectedFightOpponentId = fightOpponents[0].id;
+  selectedShopTab: 'shop' | 'market' | 'canteen' = 'shop';
   lastFightResult: FightResult | null = null;
 
   constructor() {
@@ -102,6 +128,11 @@ export class GameState {
     this.stats = characterStatsList.map((stat) => ({ ...stat, value: saved.stats?.[stat.key] ?? stat.value }));
     this.equipped = saved.equipped ?? { ...characterDefaultEquipped };
     this.ownedItems = saved.ownedItems ?? characterDefaultOwnedItems.map((entry) => ({ ...entry }));
+
+    // Elite listings are hidden from both storefronts below ELITE_MIN_LEVEL.
+    this.shopOffer = rollOfferIfStale(saved.shopOffer, filterPoolByLevel(legalGoodsPool, this.level));
+    this.marketOffer = rollOfferIfStale(saved.marketOffer, filterPoolByLevel(illegalGoodsPool, this.level));
+    this.foodBuffs = (saved.foodBuffs ?? []).filter((buff) => buff.expiresAt > Date.now());
   }
 
   get energyMax(): number {
@@ -259,6 +290,69 @@ export class GameState {
     return cost;
   }
 
+  // No "already own it" gate: every purchase rolls its own instance, so
+  // buying the same item twice just means two copies with (probably)
+  // different bonuses. Returns true on success.
+  buyLegalGood(itemId: string, price: number): boolean {
+    if (!this.removeMoney(price)) return false;
+    if (legalEquipIds.has(itemId)) this.ownedItems.push(rollItemInstance(itemId));
+    this.shopOffer = restockOfferSlot(this.shopOffer, filterPoolByLevel(legalGoodsPool, this.level), itemId);
+    this.save();
+    return true;
+  }
+
+  // `price` should already include whatever gang-control markup applies
+  // (blackMarketTaxCut in the original - always 0 here until gangs are
+  // ported, so callers pass the plain listed price for now).
+  buyIllegalGood(itemId: string, price: number): boolean {
+    if (!this.removeMoney(price)) return false;
+    if (illegalEquipIds.has(itemId)) this.ownedItems.push(rollItemInstance(itemId));
+    this.marketOffer = restockOfferSlot(this.marketOffer, filterPoolByLevel(illegalGoodsPool, this.level), itemId);
+    this.save();
+    return true;
+  }
+
+  refreshShopOffer(): boolean {
+    if (!this.removePoints(OFFER_REFRESH_COST)) return false;
+    this.shopOffer = { ids: pickRandomOfferIds(filterPoolByLevel(legalGoodsPool, this.level), OFFER_SIZE), refreshedAt: Date.now() };
+    this.save();
+    return true;
+  }
+
+  refreshMarketOffer(): boolean {
+    if (!this.removePoints(OFFER_REFRESH_COST)) return false;
+    this.marketOffer = { ids: pickRandomOfferIds(filterPoolByLevel(illegalGoodsPool, this.level), OFFER_SIZE), refreshedAt: Date.now() };
+    this.save();
+    return true;
+  }
+
+  // Sum of every active meal buff's bonus, keyed by stat - same shape as
+  // equipmentStatBonuses, stacked on top of it wherever stats are shown.
+  get foodStatBonuses(): Record<string, number> {
+    this.pruneFoodBuffs();
+    const bonuses: Record<string, number> = {};
+    for (const buff of this.foodBuffs) bonuses[buff.statKey] = (bonuses[buff.statKey] ?? 0) + buff.amount;
+    return bonuses;
+  }
+
+  private pruneFoodBuffs() {
+    const before = this.foodBuffs.length;
+    this.foodBuffs = this.foodBuffs.filter((buff) => buff.expiresAt > Date.now());
+    if (this.foodBuffs.length !== before) this.save();
+  }
+
+  buyMeal(meal: Meal): boolean {
+    if (!this.removeMoney(meal.price)) return false;
+    this.foodBuffs.push({
+      id: `${meal.id}-${Date.now()}`,
+      statKey: mealEffectStatKey[meal.effect],
+      amount: meal.amount,
+      expiresAt: Date.now() + MEAL_BUFF_DURATION_MS,
+    });
+    this.save();
+    return true;
+  }
+
   save() {
     this.applyEnergyRegen();
     const existing = readJson<Record<string, unknown>>(PROGRESS_STORAGE_KEY);
@@ -275,6 +369,9 @@ export class GameState {
       stats: Object.fromEntries(this.stats.map((stat) => [stat.key, stat.value])),
       equipped: this.equipped,
       ownedItems: this.ownedItems,
+      shopOffer: this.shopOffer,
+      marketOffer: this.marketOffer,
+      foodBuffs: this.foodBuffs,
     };
     try {
       window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(merged));

@@ -126,3 +126,34 @@ const illegalFlavorGoods: IllegalGood[] = [
 export const illegalEquipGoods: IllegalGood[] = characterInventoryItemsData.filter((item) => storefrontTiers.has(item.tier)).map((item) => ({ id: item.id, name: item.name, price: item.price, tier: item.tier, render: { kind: 'image', src: item.asset } }));
 export const illegalGoodsPool: IllegalGood[] = [...illegalFlavorGoods, ...illegalEquipGoods];
 export const illegalEquipIds = new Set(illegalEquipGoods.map((item) => item.id));
+
+// Sklep (legal) and Czarny Rynek (illegal) offer rotation: a rotating
+// selection of offers drawn from a pool, refreshable early for points or
+// automatically once OFFER_REFRESH_MS has elapsed since the last roll.
+export const OFFER_SIZE = 9;
+export const OFFER_REFRESH_MS = 24 * 60 * 60 * 1000;
+export const OFFER_REFRESH_COST = 1;
+export type OfferState = { ids: string[]; refreshedAt: number };
+
+export function pickRandomOfferIds(pool: { id: string }[], count: number): string[] {
+  const ids = pool.map((entry) => entry.id);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  return ids.slice(0, Math.min(count, ids.length));
+}
+
+export function rollOfferIfStale(saved: OfferState | undefined, pool: { id: string }[]): OfferState {
+  if (saved && saved.ids.length && Date.now() - saved.refreshedAt < OFFER_REFRESH_MS) return saved;
+  return { ids: pickRandomOfferIds(pool, OFFER_SIZE), refreshedAt: Date.now() };
+}
+
+// Buying a product restocks just that slot with a different item from the
+// pool (not already showing elsewhere in the offer), instead of leaving the
+// same product sitting there to be bought again.
+export function restockOfferSlot(current: OfferState, pool: { id: string }[], purchasedId: string): OfferState {
+  const candidates = pool.filter((entry) => entry.id !== purchasedId && !current.ids.includes(entry.id));
+  const replacementId = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)].id : purchasedId;
+  return { ids: current.ids.map((id) => (id === purchasedId ? replacementId : id)), refreshedAt: current.refreshedAt };
+}

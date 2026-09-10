@@ -205,7 +205,12 @@ function buildStatsPanel(
   container.add(bg);
 
   const rowH = (panelH - 24) / player.stats.length;
-  const bonuses = player.equipmentStatBonuses;
+  const equipmentBonuses = player.equipmentStatBonuses;
+  const foodBonuses = player.foodStatBonuses;
+  const bonuses: Record<string, number> = {};
+  for (const key of new Set([...Object.keys(equipmentBonuses), ...Object.keys(foodBonuses)])) {
+    bonuses[key] = (equipmentBonuses[key] ?? 0) + (foodBonuses[key] ?? 0);
+  }
 
   player.stats.forEach((stat, i) => {
     const y = panelY + 12 + i * rowH;

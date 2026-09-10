@@ -5,6 +5,7 @@ import { buildCharacterScene } from './CharacterContent';
 import { buildWorkScene } from './WorkContent';
 import { buildTrainingScene } from './TrainingContent';
 import { buildFightScene } from './FightContent';
+import { buildStorefrontHub } from './StorefrontContent';
 import { characterInventoryItemsData } from '../data/items';
 
 type NavItem = { key: string; label: string; icon?: string };
@@ -135,6 +136,11 @@ export class MainScene extends Phaser.Scene {
     // dedicated WALKA slot. Easy to move once there's a better home.
     if (navKey === 'cell') {
       buildFightScene(this, container, area, this.player, ctx);
+      return;
+    }
+
+    if (navKey === 'shop') {
+      buildStorefrontHub(this, container, area, this.player, ctx);
       return;
     }
 
