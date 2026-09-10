@@ -16,11 +16,14 @@ import {
   filterPoolByLevel,
   illegalEquipIds,
   illegalGoodsPool,
+  ITEM_DROP_CHANCE,
   legalEquipIds,
   legalGoodsPool,
   OFFER_REFRESH_COST,
   OFFER_SIZE,
+  pickRandomLootItem,
   pickRandomOfferIds,
+  POINT_DROP_CHANCE,
   restockOfferSlot,
   rollItemInstance,
   rollOfferIfStale,
@@ -30,6 +33,8 @@ import {
 import { characterDefaultEquipped, characterDefaultOwnedItems, characterStatsList, statUpgradeCost, type CharacterStat } from '../data/character';
 import { fightOpponents, type FightResult } from '../data/activities';
 import { MEAL_BUFF_DURATION_MS, mealEffectStatKey, type Meal } from '../data/canteen';
+import { MISSION_BONUS_MONEY_CHANCE, missionSkipCost, type MissionCard } from '../data/missions';
+import { cellEnergyRegenBonusPercent, cellLevelOf, cellUpgradeCost, cellUpgradeItems, CELL_UPGRADE_MAX_LEVEL, type CellUpgradeId } from '../data/cell';
 
 const PROGRESS_STORAGE_KEY = 'prison-life-progress';
 const CREATOR_STORAGE_KEY = 'prison-life-creator';
@@ -58,6 +63,7 @@ type StoredProgress = {
   shopOffer?: OfferState;
   marketOffer?: OfferState;
   foodBuffs?: FoodBuff[];
+  cellUpgradeLevels?: Record<string, number>;
 };
 
 type FoodBuff = { id: string; statKey: string; amount: number; expiresAt: number };
@@ -93,6 +99,7 @@ export class GameState {
   shopOffer: OfferState;
   marketOffer: OfferState;
   foodBuffs: FoodBuff[];
+  cellUpgradeLevels: Record<string, number>;
 
   // Ephemeral session state for Work/Training/Fight - not persisted, same
   // as the original's per-mounted-view local React state (a reload or
@@ -102,7 +109,11 @@ export class GameState {
   activeTraining: Record<string, { endsAt: number }> = {};
   selectedFightOpponentId = fightOpponents[0].id;
   selectedShopTab: 'shop' | 'market' | 'canteen' = 'shop';
+  selectedCellUpgradeId: CellUpgradeId = 'bed';
+  selectedCellTab: 'fight' | 'development' = 'fight';
+  gangTreasury = 12450; // local-only in the original too (useState, not persisted)
   lastFightResult: FightResult | null = null;
+  activeMissions: Record<string, { endsAt: number }> = {};
 
   constructor() {
     const saved = readJson<StoredProgress>(PROGRESS_STORAGE_KEY);
@@ -120,6 +131,8 @@ export class GameState {
     this.level = saved.level ?? 1;
     this.xp = saved.xp ?? 120;
     this.xpMax = saved.xpMax ?? 500;
+
+    this.cellUpgradeLevels = saved.cellUpgradeLevels ?? {};
 
     this.energy = saved.energy ?? ENERGY_MAX;
     this.energyUpdatedAt = saved.energyUpdatedAt ?? Date.now();
@@ -147,10 +160,11 @@ export class GameState {
       return;
     }
     if (this.energy >= ENERGY_MAX) return;
-    const gained = Math.floor((now - this.energyUpdatedAt) / ENERGY_REGEN_MS);
+    const regenMs = Math.round(ENERGY_REGEN_MS / (1 + cellEnergyRegenBonusPercent(this.cellUpgradeLevels) / 100));
+    const gained = Math.floor((now - this.energyUpdatedAt) / regenMs);
     if (gained <= 0) return;
     this.energy = Math.min(ENERGY_MAX, this.energy + gained);
-    this.energyUpdatedAt = this.energy >= ENERGY_MAX ? now : this.energyUpdatedAt + gained * ENERGY_REGEN_MS;
+    this.energyUpdatedAt = this.energy >= ENERGY_MAX ? now : this.energyUpdatedAt + gained * regenMs;
   }
 
   addMoney(amount: number) {
@@ -353,6 +367,71 @@ export class GameState {
     return true;
   }
 
+  cellLevelOf(id: CellUpgradeId): number {
+    return cellLevelOf(this.cellUpgradeLevels, id);
+  }
+
+  // Returns the new level on success, or null if maxed out / unaffordable.
+  upgradeCellItem(id: CellUpgradeId): number | null {
+    const item = cellUpgradeItems.find((entry) => entry.id === id)!;
+    const level = this.cellLevelOf(id);
+    if (level >= CELL_UPGRADE_MAX_LEVEL) return null;
+    const cost = cellUpgradeCost(item, level);
+    if (!this.removeMoney(cost)) return null;
+    this.cellUpgradeLevels[id] = level + 1;
+    this.save();
+    return level + 1;
+  }
+
+  startMission(mission: MissionCard): boolean {
+    if (!this.removeEnergy(mission.energy)) return false;
+    this.activeMissions[mission.id] = { endsAt: Date.now() + mission.durationMinutes * 60 * 1000 };
+    return true;
+  }
+
+  missionSkipCost(mission: MissionCard): number {
+    const active = this.activeMissions[mission.id];
+    const remainingMs = active ? Math.max(0, active.endsAt - Date.now()) : 0;
+    return missionSkipCost(remainingMs);
+  }
+
+  skipMission(mission: MissionCard): boolean {
+    const cost = this.missionSkipCost(mission);
+    if (!this.removePoints(cost)) return false;
+    return this.resolveMission(mission) !== null;
+  }
+
+  // Resolves a mission whose timer has elapsed (or been skipped). Returns
+  // the outcome for the caller to render a notice, or null if it wasn't
+  // actually active.
+  resolveMission(mission: MissionCard): { success: boolean; extras: string[] } | null {
+    if (!this.activeMissions[mission.id]) return null;
+    delete this.activeMissions[mission.id];
+    const success = Math.random() * 100 < mission.chance;
+    const extras: string[] = [];
+    if (success) {
+      this.gainXp(mission.rewardXp);
+      if (Math.random() < MISSION_BONUS_MONEY_CHANCE) {
+        const bonusMoney = Math.max(10, Math.round(mission.rewardXp * 0.15));
+        this.addMoney(bonusMoney);
+        extras.push(`${bonusMoney} $`);
+      }
+      if (Math.random() < ITEM_DROP_CHANCE) {
+        const loot = pickRandomLootItem(this.level);
+        if (loot) {
+          this.ownedItems.push(rollItemInstance(loot.id));
+          extras.push(loot.name);
+        }
+      }
+      if (Math.random() < POINT_DROP_CHANCE) {
+        this.addPoints(1);
+        extras.push('1 pkt');
+      }
+    }
+    this.save();
+    return { success, extras };
+  }
+
   save() {
     this.applyEnergyRegen();
     const existing = readJson<Record<string, unknown>>(PROGRESS_STORAGE_KEY);
@@ -372,6 +451,7 @@ export class GameState {
       shopOffer: this.shopOffer,
       marketOffer: this.marketOffer,
       foodBuffs: this.foodBuffs,
+      cellUpgradeLevels: this.cellUpgradeLevels,
     };
     try {
       window.localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(merged));

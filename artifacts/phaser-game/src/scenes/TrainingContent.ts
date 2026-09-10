@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GameState } from '../game/state';
 import { formatDuration, trainingExercises } from '../data/activities';
+import { cellTrainingBonusPercent } from '../data/cell';
 
 type Ctx = {
   onNotice: (message: string) => void;
@@ -12,17 +13,14 @@ const CARD_W = 280;
 const CARD_H = 150;
 const CARD_GAP = 20;
 
-// Ported from prison-life's TrainingExerciseTile/TrainingView. Cell-upgrade
-// training bonus (bonusPercent) is always 0 here until Task #8 ports
-// CellDevelopmentView - the math already accounts for it so it'll just
-// start applying once that lands.
+// Ported from prison-life's TrainingExerciseTile/TrainingView.
 export function buildTrainingScene(
   scene: Phaser.Scene,
   container: Phaser.GameObjects.Container,
   area: { x: number; y: number; width: number; height: number },
   player: GameState,
   ctx: Ctx,
-  bonusPercent = 0,
+  bonusPercent = cellTrainingBonusPercent(player.cellUpgradeLevels),
 ) {
   const cx = area.x + 40;
   let y = area.y + 30;

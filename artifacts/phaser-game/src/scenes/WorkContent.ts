@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { GameState } from '../game/state';
 import { formatDuration, workHourlyRate, workMaxHours, workMinHours } from '../data/activities';
+import { cellWorkBonusPercent } from '../data/cell';
 
 type Ctx = {
   onNotice: (message: string) => void;
@@ -20,6 +21,7 @@ export function buildWorkScene(
 ) {
   const cx = area.x + 40;
   let y = area.y + 30;
+  const hourlyRate = Math.round(workHourlyRate * (1 + cellWorkBonusPercent(player.cellUpgradeLevels) / 100));
 
   container.add(
     scene.add.text(cx, y, 'PRACA', {
@@ -46,7 +48,7 @@ export function buildWorkScene(
     const work = player.activeWork;
     if (!work) return false;
     if (Date.now() >= work.endsAt) {
-      const reward = Math.round((work.totalMs / (60 * 60 * 1000)) * workHourlyRate);
+      const reward = Math.round((work.totalMs / (60 * 60 * 1000)) * hourlyRate);
       player.activeWork = null;
       player.addMoney(reward);
       ctx.onNotice(`Praca zakończona. Otrzymano: ${reward} $.`);
@@ -64,7 +66,7 @@ export function buildWorkScene(
     const work = player.activeWork;
     const remainingMs = Math.max(0, work.endsAt - Date.now());
     const progressPct = work.totalMs > 0 ? Math.min(100, ((work.totalMs - remainingMs) / work.totalMs) * 100) : 0;
-    const reward = Math.round((work.totalMs / (60 * 60 * 1000)) * workHourlyRate);
+    const reward = Math.round((work.totalMs / (60 * 60 * 1000)) * hourlyRate);
 
     container.add(
       scene.add.text(cx, y, 'PRACA W TOKU: SPRZĄTANIE ODDZIAŁU', {
@@ -105,10 +107,10 @@ export function buildWorkScene(
 
   // Idle: hours picker + start button.
   const hours = player.selectedWorkHours;
-  const reward = hours * workHourlyRate;
+  const reward = hours * hourlyRate;
 
   container.add(
-    scene.add.text(cx, y, `Stawka: ${workHourlyRate} $ za godzinę  •  Dostępny czas: ${workMinHours}-${workMaxHours}h`, {
+    scene.add.text(cx, y, `Stawka: ${hourlyRate} $ za godzinę  •  Dostępny czas: ${workMinHours}-${workMaxHours}h`, {
       fontFamily: 'Arial, sans-serif',
       fontSize: '12px',
       color: '#c9cec9',

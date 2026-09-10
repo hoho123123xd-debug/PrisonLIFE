@@ -6,9 +6,13 @@ import { buildWorkScene } from './WorkContent';
 import { buildTrainingScene } from './TrainingContent';
 import { buildFightScene } from './FightContent';
 import { buildStorefrontHub } from './StorefrontContent';
+import { buildGangScene } from './GangContent';
+import { buildMissionsScene } from './MissionsContent';
+import { buildCellDevelopmentScene } from './CellDevelopmentContent';
 import { characterInventoryItemsData } from '../data/items';
 
 type NavItem = { key: string; label: string; icon?: string };
+type Ctx = { onNotice: (message: string) => void; onChange: () => void; addTimer: (timer: Phaser.Time.TimerEvent) => void };
 
 const NAV_ITEMS: NavItem[] = [
   { key: 'home', label: 'STRONA GŁÓWNA' },
@@ -130,12 +134,11 @@ export class MainScene extends Phaser.Scene {
       return;
     }
 
-    // WIEZIENIE doesn't have its own view yet (Task #8 will give it the
-    // real CellDevelopmentView) - fighting lives here for now since the
-    // new 11-item sidebar (matched to the reference mockup) has no
-    // dedicated WALKA slot. Easy to move once there's a better home.
+    // WIEZIENIE hosts both Walka and Rozwoj Celi as tabs, same overflow
+    // pattern as the SKLEP hub below - the reference sidebar has no
+    // dedicated slot for either.
     if (navKey === 'cell') {
-      buildFightScene(this, container, area, this.player, ctx);
+      this.buildPrisonHub(container, area, ctx);
       return;
     }
 
@@ -144,11 +147,66 @@ export class MainScene extends Phaser.Scene {
       return;
     }
 
+    if (navKey === 'gang') {
+      buildGangScene(this, container, area, this.player, ctx);
+      return;
+    }
+
+    if (navKey === 'quests') {
+      buildMissionsScene(this, container, area, this.player, ctx);
+      return;
+    }
+
     const bg = this.add.image(area.x, area.y, 'content-bg').setOrigin(0);
     bg.setDisplaySize(area.width, area.height);
     container.add(bg);
     const dim = this.add.rectangle(area.x, area.y, area.width, area.height, 0x000000, 0.35).setOrigin(0);
     container.add(dim);
+  }
+
+  // WIEZIENIE isn't in the reference sidebar as two separate rows, so Walka
+  // and Rozwoj Celi share this one slot as tabs - same overflow pattern as
+  // the SKLEP hub in StorefrontContent.
+  private buildPrisonHub(container: Phaser.GameObjects.Container, area: { x: number; y: number; width: number; height: number }, ctx: Ctx) {
+    const tabs: Array<{ key: 'fight' | 'development'; label: string }> = [
+      { key: 'fight', label: 'WALKA' },
+      { key: 'development', label: 'ROZWÓJ CELI' },
+    ];
+    const tabX = area.x + 40;
+    const tabY = area.y + 20;
+    let tx = tabX;
+    tabs.forEach((tab) => {
+      const active = this.player.selectedCellTab === tab.key;
+      const w = 150;
+      const btn = this.add
+        .rectangle(tx, tabY, w, 32, active ? 0xe0873d : 0x14181a, 0.95)
+        .setOrigin(0)
+        .setStrokeStyle(1, active ? 0xe0873d : 0x3a3f3c)
+        .setInteractive({ useHandCursor: true });
+      container.add(btn);
+      container.add(
+        this.add
+          .text(tx + w / 2, tabY + 16, tab.label, {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '11px',
+            fontStyle: 'bold',
+            color: active ? '#14181a' : '#c9cec9',
+          })
+          .setOrigin(0.5),
+      );
+      btn.on('pointerdown', () => {
+        this.player.selectedCellTab = tab.key;
+        ctx.onChange();
+      });
+      tx += w + 10;
+    });
+
+    const subArea = { x: area.x, y: area.y + 60, width: area.width, height: area.height - 60 };
+    if (this.player.selectedCellTab === 'development') {
+      buildCellDevelopmentScene(this, container, subArea, this.player, ctx);
+    } else {
+      buildFightScene(this, container, subArea, this.player, ctx);
+    }
   }
 
   private showNotice(message: string) {

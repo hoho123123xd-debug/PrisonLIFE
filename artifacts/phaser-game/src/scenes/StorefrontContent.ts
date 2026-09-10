@@ -11,6 +11,7 @@ import {
   type IllegalGood,
 } from '../data/items';
 import { canteenMeals, type Meal } from '../data/canteen';
+import { blackMarketTaxCut } from '../data/gang';
 
 type Ctx = {
   onNotice: (message: string) => void;
@@ -226,10 +227,12 @@ export function buildMarketScene(
   buildRefreshButton(scene, container, area.x + area.width - 260, y, player, ctx, () => player.refreshMarketOffer(), 'ODŚWIEŻ');
   y += 60;
 
-  // Gang control markup (blackMarketTaxCut in the original) is always 0
-  // here until Task #8 ports GangView - the price math already accounts
-  // for it so it'll apply automatically once that lands.
-  const offers = player.marketOffer.ids.map((id) => illegalGoodsPool.find((item) => item.id === id)).filter((item): item is IllegalGood => Boolean(item));
+  // Gang control (blackMarketTaxCut, from data/gang.ts) is a static
+  // surcharge applied to every purchase here.
+  const offers = player.marketOffer.ids
+    .map((id) => illegalGoodsPool.find((item) => item.id === id))
+    .filter((item): item is IllegalGood => Boolean(item))
+    .map((item) => ({ ...item, price: Math.round(item.price * (1 + blackMarketTaxCut / 100)) }));
   buildGrid(scene, container, x, y, area.width - 80, offers, (item) => (illegalEquipIds.has(item.id) ? `item-${item.id}` : undefined), (item) => {
     if (!player.canAffordMoney(item.price)) {
       ctx.onNotice(`Brak środków. Potrzebujesz jeszcze ${item.price - player.balance} $.`);
@@ -237,7 +240,7 @@ export function buildMarketScene(
     }
     if (player.buyIllegalGood(item.id, item.price)) {
       const isEquip = illegalEquipIds.has(item.id);
-      ctx.onNotice(`Kupiono: ${item.name.toLowerCase()}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
+      ctx.onNotice(`Kupiono: ${item.name.toLowerCase()}${blackMarketTaxCut > 0 ? ` (w tym ${blackMarketTaxCut}% haraczu)` : ''}.${isEquip ? ' Znajdziesz go w ekwipunku.' : ''}`);
       ctx.onChange();
     }
   });
